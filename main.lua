@@ -3,7 +3,6 @@ local metaroom = require("metaroom")
 local room = require("room")
 local caos = require("caos")
 local ui = require("ui")
-local nativefs = require("nativefs/nativefs")
 
 local offsetX = 0
 local offsetY = 0
@@ -29,13 +28,14 @@ love.update = function(dt)
 	
 	if fsLoad.selectedFile ~= nil and ui.metaroom == nil then
 		local path = fsLoad:absPath(fsLoad.selectedFile)
-		local fileInfo = nativefs.getInfo(path)
-		if fileInfo ~= nil then
-			local data = nativefs.read("string", path)
+		local file = io.open(path, "r")
+		if file ~= nil then
+			local data = file:read("*all")
 			if data ~= nil then
 				fsLoad.selectedFile = nil
 				loadMetaroom(data, path)
 			end
+			file:close()
 		end
 	end
 	
@@ -173,9 +173,15 @@ loadMetaroom = function(data, path)
 	ui.metaroom.path = basePath
 	if ui.metaroom.background ~= "" then
 		local backgroundPath = ui.metaroom.path .. ui.metaroom.background .. ".png"
-		if nativefs.getInfo(backgroundPath) then
-			local imageData = nativefs.read("data", backgroundPath)
-			ui.metaroom.backgroundImage = love.graphics.newImage(imageData)
+		local file = io.open(backgroundPath, "rb")
+		if file ~= nil then
+			local data = file:read("*all")
+			local fileData = love.filesystem.newFileData(data, backgroundPath)
+			local imageData = love.image.newImageData(fileData)
+			file:close()
+			if imageData ~= nil then
+				ui.metaroom.backgroundImage = love.graphics.newImage(imageData)
+			end
 		end
 	end
 
