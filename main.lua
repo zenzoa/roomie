@@ -111,14 +111,9 @@ love.mousepressed = function(x, y, button)
 						(y + 10) / scale - offsetY,
 						(y + 10) / scale - offsetY)
 					ui.metaroom:addRoom(newRoom)
-					-- if newRoom:checkCollisions() then
-						ui.metaroom.selectedRoom = newRoom
-						newRoom.selectedPart = "br"
-						newRoom:startDrag(x / scale - offsetX, y / scale - offsetY)
-					-- else
-					-- 	ui.metaroom:removeRoom(newRoom)
-					-- 	newRoom = nil
-					-- end
+					ui.metaroom.selectedRoom = newRoom
+					newRoom.selectedPart = "br"
+					newRoom:startDrag(x / scale - offsetX, y / scale - offsetY)
 				else
 					ui.metaroom:selectObject(x / scale - offsetX, y / scale - offsetY)
 				end

@@ -71,28 +71,26 @@ room.create = function(xLeft, xRight, yTopLeft, yTopRight, yBottomLeft, yBottomR
 		yTopRightStart = yTopRight or 0,
 		yBottomLeftStart = yBottomLeft or 0,
 		yBottomRightStart = yBottomRight or 0,
-
-		xLeftTemp = xLeft or 0,
-		xRightTemp = xRight or 0,
-		yTopLeftTemp = yTopLeft or 0,
-		yTopRightTemp = yTopRight or 0,
-		yBottomLeftTemp = yBottomLeft or 0,
-		yBottomRightTemp = yBottomRight or 0,
+		
+		hasCheckedCollisions = false,
+		hasCheckedConstraints = false,
+		hasCheckedConnections = false,
 	}
+
+	r.resetCheckedStatus = function(self)
+		for i = 1, #self.metaroom.rooms do
+			local other = self.metaroom.rooms[i]
+			other.hasCheckedCollisions = false
+			other.hasCheckedConstraints = false
+			other.hasCheckedConnections = false
+		end
+	end
 
 	r.getCorners = function(self)
 		local tl = { x = self.xLeft, y = self.yTopLeft }
 		local tr = { x = self.xRight, y = self.yTopRight }
 		local br = { x = self.xRight, y = self.yBottomRight }
 		local bl = { x = self.xLeft, y = self.yBottomLeft }
-		return tl, tr, br, bl
-	end
-
-	r.getTempCorners = function(self)
-		local tl = { x = self.xLeftTemp, y = self.yTopLeftTemp }
-		local tr = { x = self.xRightTemp, y = self.yTopRightTemp }
-		local br = { x = self.xRightTemp, y = self.yBottomRightTemp }
-		local bl = { x = self.xLeftTemp, y = self.yBottomLeftTemp }
 		return tl, tr, br, bl
 	end
 
@@ -112,201 +110,296 @@ room.create = function(xLeft, xRight, yTopLeft, yTopRight, yBottomLeft, yBottomR
 	end
 
 	r.updatePositions = function(self)
-		self.xLeft = math.floor(self.xLeftTemp)
-		self.xRight = math.floor(self.xRightTemp)
-		self.yTopLeft = math.floor(self.yTopLeftTemp)
-		self.yTopRight = math.floor(self.yTopRightTemp)
-		self.yBottomLeft = math.floor(self.yBottomLeftTemp)
-		self.yBottomRight = math.floor(self.yBottomRightTemp)
-	end
-
-	r.updateTempPositions = function(self)
-		self.xLeftTemp = math.floor(self.xLeft)
-		self.xRightTemp = math.floor(self.xRight)
-		self.yTopLeftTemp = math.floor(self.yTopLeft)
-		self.yTopRightTemp = math.floor(self.yTopRight)
-		self.yBottomLeftTemp = math.floor(self.yBottomLeft)
-		self.yBottomRightTemp = math.floor(self.yBottomRight)
+		self.xLeft = math.floor(self.xLeft)
+		self.xRight = math.floor(self.xRight)
+		self.yTopLeft = math.floor(self.yTopLeft)
+		self.yTopRight = math.floor(self.yTopRight)
+		self.yBottomLeft = math.floor(self.yBottomLeft)
+		self.yBottomRight = math.floor(self.yBottomRight)
 	end
 
 	r.snapToCorners = function(self)
 		for i = 1, #self.metaroom.rooms do
 			local other = self.metaroom.rooms[i]
-			local tl, tr, br, bl = self:getTempCorners()
-			local tl2, tr2, br2, bl2 = other:getTempCorners()
+			local tl, tr, br, bl = self:getCorners()
+			local tl2, tr2, br2, bl2 = other:getCorners()
 			if other ~= self then
 				if geometry.distance(tl, tr2) < cornerSnapDist then
-					self.xLeftTemp = tr2.x
-					self.yTopLeftTemp = tr2.y
+					self.xLeft = tr2.x
+					self.yTopLeft = tr2.y
 				elseif geometry.distance(tl, bl2) < cornerSnapDist then
-					self.xLeftTemp = bl2.x
-					self.yTopLeftTemp = bl2.y
+					self.xLeft = bl2.x
+					self.yTopLeft = bl2.y
 				end
 				if geometry.distance(tr, tl2) < cornerSnapDist then
-					self.xRightTemp = tl2.x
-					self.yTopRightTemp = tl2.y
+					self.xRight = tl2.x
+					self.yTopRight = tl2.y
 				elseif geometry.distance(tr, br2) < cornerSnapDist then
-					self.xRightTemp = br2.x
-					self.yTopRightTemp = br2.y
+					self.xRight = br2.x
+					self.yTopRight = br2.y
 				end
 				if geometry.distance(bl, br2) < cornerSnapDist then
-					self.xLeftTemp = br2.x
-					self.yBottomLeftTemp = br2.y
+					self.xLeft = br2.x
+					self.yBottomLeft = br2.y
 				elseif geometry.distance(bl, tl2) < cornerSnapDist then
-					self.xLeftTemp = tl2.x
-					self.yBottomLeftTemp = tl2.y
+					self.xLeft = tl2.x
+					self.yBottomLeft = tl2.y
 				end
 				if geometry.distance(br, bl2) < cornerSnapDist then
-					self.xRightTemp = bl2.x
-					self.yBottomRightTemp = bl2.y
+					self.xRight = bl2.x
+					self.yBottomRight = bl2.y
 				elseif geometry.distance(br, tr2) < cornerSnapDist then
-					self.xRightTemp = tr2.x
-					self.yBottomRightTemp = tr2.y
+					self.xRight = tr2.x
+					self.yBottomRight = tr2.y
 				end
 			end
 		end
 	end
 
 	r.checkCollisions = function(self)
-		for i = 1, #self.metaroom.rooms do
-			local other = self.metaroom.rooms[i]
+		if not self.hasCheckedCollisions then
+			self.hasCheckedCollisions = true
 
-			local x, y
-			local tl, tr, br, bl = self:getTempCorners()
-			local tl2, tr2, br2, bl2 = other:getTempCorners()
+			for i = 1, #self.metaroom.rooms do
+				local other = self.metaroom.rooms[i]
 
-			if other ~= self and geometry.polyPolyCollision({ tl, tr, br, bl }, { tl2, tr2, br2, bl2 }) then
-				-- left side intersects other's right side
-				if self.xLeftTemp < other.xRightTemp and
-					self.xRightTemp > other.xRightTemp and
-					self.xLeftTemp > other.xLeftTemp and
-					self.yTopLeftTemp < other.yBottomRightTemp and
-					self.yBottomLeftTemp > other.yTopRightTemp
+				local x, y
+				local tl, tr, br, bl = self:getCorners()
+				local tl2, tr2, br2, bl2 = other:getCorners()
+
+				if other ~= self and
+					other ~= self.connectedRoomTop and
+					other ~= self.connectedRoomBottom and
+					other ~= self.connectedRoomLeft and
+					other ~= self.connectedRoomRight and
+					geometry.polyPolyCollision({ tl, tr, br, bl }, { tl2, tr2, br2, bl2 })
 					then
-						self.xLeftTemp = other.xRightTemp
-				end
+						-- left side intersects other's right side
+						if self.xLeft < other.xRight and
+							self.xRight > other.xRight and
+							self.xLeft > other.xLeft and
+							self.yTopLeft < other.yBottomRight and
+							self.yBottomLeft > other.yTopRight
+							then
+								self.xLeft = other.xRight
+						end
 
-				-- right side intersects other's left side
-				if self.xRightTemp > other.xLeftTemp and
-					self.xLeftTemp < other.xLeftTemp and
-					self.xRightTemp < other.xRightTemp and
-					self.yTopRightTemp < other.yBottomLeftTemp and
-					self.yBottomRightTemp > other.yTopLeftTemp
-					then
-						self.xRightTemp = other.xLeftTemp
-				end
+						-- right side intersects other's left side
+						if self.xRight > other.xLeft and
+							self.xLeft < other.xLeft and
+							self.xRight < other.xRight and
+							self.yTopRight < other.yBottomLeft and
+							self.yBottomRight > other.yTopLeft
+							then
+								self.xRight = other.xLeft
+						end
 
-				-- left or right side intersects other's top side
-				x, y = geometry.lineLineIntersection(
-					self.xLeftTemp, self.yTopLeftTemp, self.xLeftTemp, self.yBottomLeftTemp,
-					other.xLeftTemp, other.yBottomLeftTemp, other.xRightTemp, other.yBottomRightTemp)
-				if y ~= nil and self.xLeftTemp ~= other.xRightTemp then
-					self.yTopLeftTemp = y
-				end
-				x, y = geometry.lineLineIntersection(
-					self.xRightTemp, self.yTopRightTemp, self.xRightTemp, self.yBottomRightTemp,
-					other.xLeftTemp, other.yBottomLeftTemp, other.xRightTemp, other.yBottomRightTemp)
-				if y ~= nil and self.xRightTemp ~= other.xLeftTemp then
-					self.yTopRightTemp = y
-				end
+						-- left or right side intersects other's top side
+						x, y = geometry.lineLineIntersection(
+							self.xLeft, self.yTopLeft, self.xLeft, self.yBottomLeft,
+							other.xLeft, other.yBottomLeft, other.xRight, other.yBottomRight)
+						if y ~= nil and self.xLeft ~= other.xRight then
+							self.yTopLeft = y
+						end
+						x, y = geometry.lineLineIntersection(
+							self.xRight, self.yTopRight, self.xRight, self.yBottomRight,
+							other.xLeft, other.yBottomLeft, other.xRight, other.yBottomRight)
+						if y ~= nil and self.xRight ~= other.xLeft then
+							self.yTopRight = y
+						end
 
-				-- left or right side intersects other's bottom side
-				x, y = geometry.lineLineIntersection(
-					self.xLeftTemp, self.yTopLeftTemp, self.xLeftTemp, self.yBottomLeftTemp,
-					other.xLeftTemp, other.yTopLeftTemp, other.xRightTemp, other.yTopRightTemp)
-				if y ~= nil and self.xLeftTemp ~= other.xRightTemp then
-					self.yBottomLeftTemp = y
-				end
-				x, y = geometry.lineLineIntersection(
-					self.xRightTemp, self.yTopRightTemp, self.xRightTemp, self.yBottomRightTemp,
-					other.xLeftTemp, other.yTopLeftTemp, other.xRightTemp, other.yTopRightTemp)
-					if y ~= nil and self.xRightTemp ~= other.xLeftTemp then
-					self.yBottomRightTemp = y
-				end
+						-- left or right side intersects other's bottom side
+						x, y = geometry.lineLineIntersection(
+							self.xLeft, self.yTopLeft, self.xLeft, self.yBottomLeft,
+							other.xLeft, other.yTopLeft, other.xRight, other.yTopRight)
+						if y ~= nil and self.xLeft ~= other.xRight then
+							self.yBottomLeft = y
+						end
+						x, y = geometry.lineLineIntersection(
+							self.xRight, self.yTopRight, self.xRight, self.yBottomRight,
+							other.xLeft, other.yTopLeft, other.xRight, other.yTopRight)
+							if y ~= nil and self.xRight ~= other.xLeft then
+							self.yBottomRight = y
+						end
 
-				-- top side intersects with other's left or right sides
-				x, y = geometry.lineLineIntersection(
-					self.xLeftTemp, self.yTopLeftTemp, self.xRightTemp, self.yTopRightTemp,
-					other.xLeftTemp, other.yTopLeftTemp, other.xLeftTemp, other.yBottomLeftTemp)
-				if y ~= nil and self.xRightTemp ~= other.xLeftTemp and self.yTopLeftTemp ~= other.yBottomLeftTemp then
-					local slope = (self.yTopRight - self.yTopLeft) / (self.xRight - self.xLeft)
-					local dLeft = self.xLeftTemp - x
-					local dRight = self.xRightTemp - x
-					self.yTopLeftTemp = other.yBottomLeftTemp + (slope * dLeft)
-					self.yTopRightTemp = other.yBottomLeftTemp + (slope * dRight)
-				end
-				x, y = geometry.lineLineIntersection(
-					self.xLeftTemp, self.yTopLeftTemp, self.xRightTemp, self.yTopRightTemp,
-					other.xRightTemp, other.yTopRightTemp, other.xRightTemp, other.yBottomRightTemp)
-				if y ~= nil and self.xLeftTemp ~= other.xRightTemp and self.yTopRightTemp ~= other.yBottomRightTemp then
-					local slope = (self.yTopRight - self.yTopLeft) / (self.xRight - self.xLeft)
-					local dLeft = self.xLeftTemp - x
-					local dRight = self.xRightTemp - x
-					self.yTopLeftTemp = other.yBottomRightTemp + (slope * dLeft)
-					self.yTopRightTemp = other.yBottomRightTemp + (slope * dRight)
-				end
+						-- top side intersects with other's left or right sides
+						x, y = geometry.lineLineIntersection(
+							self.xLeft, self.yTopLeft, self.xRight, self.yTopRight,
+							other.xLeft, other.yTopLeft, other.xLeft, other.yBottomLeft)
+						if y ~= nil and self.xRight ~= other.xLeft and self.yTopLeft ~= other.yBottomLeft then
+							local slope = (self.yTopRightStart - self.yTopLeftStart) / (self.xRightStart - self.xLeftStart)
+							local dLeft = self.xLeft - x
+							local dRight = self.xRight - x
+							self.yTopLeft = other.yBottomLeft + (slope * dLeft)
+							self.yTopRight = other.yBottomLeft + (slope * dRight)
+						end
+						x, y = geometry.lineLineIntersection(
+							self.xLeft, self.yTopLeft, self.xRight, self.yTopRight,
+							other.xRight, other.yTopRight, other.xRight, other.yBottomRight)
+						if y ~= nil and self.xLeft ~= other.xRight and self.yTopRight ~= other.yBottomRight then
+							local slope = (self.yTopRightStart - self.yTopLeftStart) / (self.xRightStart - self.xLeftStart)
+							local dLeft = self.xLeft - x
+							local dRight = self.xRight - x
+							self.yTopLeft = other.yBottomRight + (slope * dLeft)
+							self.yTopRight = other.yBottomRight + (slope * dRight)
+						end
 
-				-- bottom side intersects with other's left or right sides
-				x, y = geometry.lineLineIntersection(
-					self.xLeftTemp, self.yBottomLeftTemp, self.xRightTemp, self.yBottomRightTemp,
-					other.xLeftTemp, other.yTopLeftTemp, other.xLeftTemp, other.yBottomLeftTemp)
-				if y ~= nil and self.xRightTemp ~= other.xLeftTemp and self.yBottomLeftTemp ~= other.yTopLeftTemp then
-					local slope = (self.yBottomRightTemp - self.yBottomLeftTemp) / (self.xRightTemp - self.xLeftTemp)
-					local dLeft = self.xLeftTemp - x
-					local dRight = self.xRightTemp - x
-					self.yBottomLeftTemp = other.yTopLeftTemp + (slope * dLeft)
-					self.yBottomRightTemp = other.yTopLeftTemp + (slope * dRight)
+						-- bottom side intersects with other's left or right sides
+						x, y = geometry.lineLineIntersection(
+							self.xLeft, self.yBottomLeft, self.xRight, self.yBottomRight,
+							other.xLeft, other.yTopLeft, other.xLeft, other.yBottomLeft)
+						if y ~= nil and self.xRight ~= other.xLeft and self.yBottomLeft ~= other.yTopLeft then
+							local slope = (self.yBottomRightStart - self.yBottomLeftStart) / (self.xRightStart - self.xLeftStart)
+							local dLeft = self.xLeft - x
+							local dRight = self.xRight - x
+							self.yBottomLeft = other.yTopLeft + (slope * dLeft)
+							self.yBottomRight = other.yTopLeft + (slope * dRight)
+						end
+						x, y = geometry.lineLineIntersection(
+							self.xLeft, self.yBottomLeft, self.xRight, self.yBottomRight,
+							other.xRight, other.yTopRight, other.xRight, other.yBottomRight)
+						if y ~= nil and self.xLeft ~= other.xRight and self.yBottomRight ~= other.yTopRight then
+							local slope = (self.yBottomRightStart - self.yBottomLeftStart) / (self.xRightStart - self.xLeftStart)
+							local dLeft = self.xLeft - x
+							local dRight = self.xRight - x
+							self.yBottomLeft = other.yTopRight + (slope * dLeft)
+							self.yBottomRight = other.yTopRight + (slope * dRight)
+						end
 				end
-				x, y = geometry.lineLineIntersection(
-					self.xLeftTemp, self.yBottomLeftTemp, self.xRightTemp, self.yBottomRightTemp,
-					other.xRightTemp, other.yTopRightTemp, other.xRightTemp, other.yBottomRightTemp)
-				if y ~= nil and self.xLeftTemp ~= other.xRightTemp and self.yBottomRightTemp ~= other.yTopRightTemp then
-					local slope = (self.yBottomRightTemp - self.yBottomLeftTemp) / (self.xRightTemp - self.xLeftTemp)
-					local dLeft = self.xLeftTemp - x
-					local dRight = self.xRightTemp - x
-					self.yBottomLeftTemp = other.yTopRightTemp + (slope * dLeft)
-					self.yBottomRightTemp = other.yTopRightTemp + (slope * dRight)
-				end
+			end
+
+			if self.connectedRoomTop ~= nil then
+				self.connectedRoomTop:checkCollisions()
+			end
+			if self.connectedRoomBottom ~= nil then
+				self.connectedRoomBottom:checkCollisions()
+			end
+			if self.connectedRoomLeft ~= nil then
+				self.connectedRoomLeft:checkCollisions()
+			end
+			if self.connectedRoomRight ~= nil then
+				self.connectedRoomRight:checkCollisions()
 			end
 		end
 	end
 
-	r.checkConstraints = function(self, keepWidth, keepHeight)
-		if self.xLeftTemp < self.metaroom.x then
-			self.xLeftTemp = self.metaroom.x
-		end
-		if self.xRightTemp > self.metaroom.x + self.metaroom.width then
-			self.xRightTemp = self.metaroom.x + self.metaroom.width
-		end
-		if self.yTopLeftTemp < self.metaroom.y then
-			self.yTopLeftTemp = self.metaroom.y
-		end
-		if self.yTopRightTemp < self.metaroom.y then
-			self.yTopRightTemp = self.metaroom.y
-		end
-		if self.yBottomLeftTemp > self.metaroom.y + self.metaroom.height then
-			self.yBottomLeftTemp = self.metaroom.y + self.metaroom.height
-		end
-		if self.yBottomRightTemp > self.metaroom.y + self.metaroom.height then
-			self.yBottomRightTemp = self.metaroom.y + self.metaroom.height
-		end
+	r.checkConstraints = function(self)
+		if not self.hasCheckedConstraints then
+			self.hasCheckedConstraints = true
 
-		if self.yTopLeftTemp ~= self.yTopLeft and self.yTopLeftTemp > self.yBottomLeftTemp - 10 then
-			self.yTopLeftTemp = self.yBottomLeftTemp - 10
-		elseif self.yBottomLeftTemp ~= self.yBottomLeft and self.yBottomLeftTemp < self.yTopLeftTemp + 10 then
-			self.yBottomLeftTemp = self.yTopLeftTemp + 10
-		end
+			if self.xLeft < self.metaroom.x then
+				self.xLeft = self.metaroom.x
+			end
+			if self.xRight > self.metaroom.x + self.metaroom.width then
+				self.xRight = self.metaroom.x + self.metaroom.width
+			end
+			if self.yTopLeft < self.metaroom.y then
+				self.yTopLeft = self.metaroom.y
+			end
+			if self.yTopRight < self.metaroom.y then
+				self.yTopRight = self.metaroom.y
+			end
+			if self.yBottomLeft > self.metaroom.y + self.metaroom.height then
+				self.yBottomLeft = self.metaroom.y + self.metaroom.height
+			end
+			if self.yBottomRight > self.metaroom.y + self.metaroom.height then
+				self.yBottomRight = self.metaroom.y + self.metaroom.height
+			end
 
-		if self.yTopRightTemp ~= self.yTopRight and self.yTopRightTemp > self.yBottomRightTemp - 10 then
-			self.yTopRightTemp = self.yBottomRightTemp - 10
-		elseif self.yBottomRightTemp ~= self.yBottomRight and self.yBottomRightTemp < self.yTopRightTemp + 10 then
-			self.yBottomRightTemp = self.yTopRightTemp + 10
-		end
+			if self.yTopLeft ~= self.yTopLeftStart and self.yTopLeft > self.yBottomLeft - 10 then
+				self.yTopLeft = self.yBottomLeft - 10
+			elseif self.yBottomLeft ~= self.yBottomLeftStart and self.yBottomLeft < self.yTopLeft + 10 then
+				self.yBottomLeft = self.yTopLeft + 10
+			end
 
-		if self.xLeftTemp ~= self.xLeft and self.xLeftTemp > self.xRightTemp - 10 then
-			self.xLeftTemp = self.xRightTemp - 10
-		elseif self.xRightTemp ~= self.xRight and self.xRightTemp < self.xLeftTemp + 10 then
-			self.xRightTemp = self.xLeftTemp + 10
+			if self.yTopRight ~= self.yTopRightStart and self.yTopRight > self.yBottomRight - 10 then
+				self.yTopRight = self.yBottomRight - 10
+			elseif self.yBottomRight ~= self.yBottomRightStart and self.yBottomRight < self.yTopRight + 10 then
+				self.yBottomRight = self.yTopRight + 10
+			end
+
+			if self.xLeft ~= self.xLeftStart and self.xLeft > self.xRight - 10 then
+				self.xLeft = self.xRight - 10
+			elseif self.xRight ~= self.xRightStart and self.xRight < self.xLeft + 10 then
+				self.xRight = self.xLeft + 10
+			end
+
+			if self.connectedRoomTop ~= nil then
+				self.connectedRoomTop.xLeft = self.xLeft
+				self.connectedRoomTop.xRight = self.xRight
+				self.connectedRoomTop.yBottomLeft = self.yTopLeft
+				self.connectedRoomTop.yBottomRight = self.yTopRight
+			end
+			if self.connectedRoomBottom ~= nil then
+				self.connectedRoomBottom.xLeft = self.xLeft
+				self.connectedRoomBottom.xRight = self.xRight
+				self.connectedRoomBottom.yTopLeft = self.yBottomLeft
+				self.connectedRoomBottom.yTopRight = self.yBottomRight
+			end
+			if self.connectedRoomLeft ~= nil then
+				self.connectedRoomLeft.xRight = self.xLeft
+				self.connectedRoomLeft.yTopRight = self.yTopLeft
+				self.connectedRoomLeft.yBottomRight = self.yBottomLeft
+			end
+			if self.connectedRoomRight ~= nil then
+				self.connectedRoomRight.xLeft = self.xRight
+				self.connectedRoomRight.yTopLeft = self.yTopRight
+				self.connectedRoomRight.yBottomLeft = self.yBottomRight
+			end
+
+			if self.connectedRoomTop ~= nil then
+				self.connectedRoomTop:checkConstraints()
+			end
+			if self.connectedRoomBottom ~= nil then
+				self.connectedRoomBottom:checkConstraints()
+			end
+			if self.connectedRoomLeft ~= nil then
+				self.connectedRoomLeft:checkConstraints()
+			end
+			if self.connectedRoomRight ~= nil then
+				self.connectedRoomRight:checkConstraints()
+			end
+		end
+	end
+
+	r.checkConnections = function(self)
+		if not self.hasCheckedConnections then
+			self.hasCheckedConnections = true
+			if self.connectedRoomTop ~= nil and not self.connectedRoomTop.hasCheckedConnections then
+				self.connectedRoomTop.xLeft = self.xLeft
+				self.connectedRoomTop.xRight = self.xRight
+				self.connectedRoomTop.yBottomLeft = self.yTopLeft
+				self.connectedRoomTop.yBottomRight = self.yTopRight
+			end
+			if self.connectedRoomBottom ~= nil and not self.connectedRoomBottom.hasCheckedConnections then
+				self.connectedRoomBottom.xLeft = self.xLeft
+				self.connectedRoomBottom.xRight = self.xRight
+				self.connectedRoomBottom.yTopLeft = self.yBottomLeft
+				self.connectedRoomBottom.yTopRight = self.yBottomRight
+			end
+			if self.connectedRoomLeft ~= nil and not self.connectedRoomLeft.hasCheckedConnections then
+				self.connectedRoomLeft.xRight = self.xLeft
+				self.connectedRoomLeft.yTopRight = self.yTopLeft
+				self.connectedRoomLeft.yBottomRight = self.yBottomLeft
+			end
+			if self.connectedRoomRight ~= nil and not self.connectedRoomRight.hasCheckedConnections then
+				self.connectedRoomRight.xLeft = self.xRight
+				self.connectedRoomRight.yTopLeft = self.yTopRight
+				self.connectedRoomRight.yBottomLeft = self.yBottomRight
+			end
+
+			if self.connectedRoomTop ~= nil then
+				self.connectedRoomTop:checkConnections()
+			end
+			if self.connectedRoomBottom ~= nil then
+				self.connectedRoomBottom:checkConnections()
+			end
+			if self.connectedRoomLeft ~= nil then
+				self.connectedRoomLeft:checkConnections()
+			end
+			if self.connectedRoomRight ~= nil then
+				self.connectedRoomRight:checkConnections()
+			end
 		end
 	end
 
@@ -314,12 +407,16 @@ room.create = function(xLeft, xRight, yTopLeft, yTopRight, yBottomLeft, yBottomR
 		self.isBeingDragged = true
 		self.dragX = x
 		self.dragY = y
-		self.xLeftStart = self.xLeft
-		self.xRightStart = self.xRight
-		self.yTopLeftStart = self.yTopLeft
-		self.yTopRightStart = self.yTopRight
-		self.yBottomLeftStart = self.yBottomLeft
-		self.yBottomRightStart = self.yBottomRight
+
+		for i = 1, #self.metaroom.rooms do
+			local other = self.metaroom.rooms[i]
+			other.xLeftStart = other.xLeft
+			other.xRightStart = other.xRight
+			other.yTopLeftStart = other.yTopLeft
+			other.yTopRightStart = other.yTopRight
+			other.yBottomLeftStart = other.yBottomLeft
+			other.yBottomRightStart = other.yBottomRight
+		end
 
 		if self.selectedPart == "Room" then
 			self:disconnectRoom("Top")
@@ -332,10 +429,7 @@ room.create = function(xLeft, xRight, yTopLeft, yTopRight, yBottomLeft, yBottomR
 	r.drag = function(self, x, y)
 		local dx = x - self.dragX
 		local dy = y - self.dragY
-
-		self:setTargetObject(x, y)
-		self:updateTempPositions()
-
+		
 		if self.selectedPart == "Room" then
 			self:dragRoom(x, y, dx, dy)
 		elseif self.selectedPart == "Top" or self.selectedPart == "Bottom" or self.selectedPart == "Left" or self.selectedPart == "Right" then
@@ -343,55 +437,55 @@ room.create = function(xLeft, xRight, yTopLeft, yTopRight, yBottomLeft, yBottomR
 		elseif self.selectedPart == "tl" or self.selectedPart == "tr" or self.selectedPart == "br" or self.selectedPart == "bl" then
 			self:dragCorner(x, y, dx, dy)
 		end
-
-		self:checkConstraints()
+		
 		self:snapToCorners()
+
+		self:resetCheckedStatus()
+		self:checkConnections()
 		self:checkCollisions()
 		self:checkConstraints()
-		
-		self:updatePositions()
 	end
 
 	r.dragRoom = function(self, x, y, dx, dy)
-		self.xLeftTemp = self.xLeftStart + dx
-		self.xRightTemp = self.xRightStart + dx
-		self.yTopLeftTemp = self.yTopLeftStart + dy
-		self.yTopRightTemp = self.yTopRightStart + dy
-		self.yBottomLeftTemp = self.yBottomLeftStart + dy
-		self.yBottomRightTemp = self.yBottomRightStart + dy
+		self.xLeft = self.xLeftStart + dx
+		self.xRight = self.xRightStart + dx
+		self.yTopLeft = self.yTopLeftStart + dy
+		self.yTopRight = self.yTopRightStart + dy
+		self.yBottomLeft = self.yBottomLeftStart + dy
+		self.yBottomRight = self.yBottomRightStart + dy
 	end
 
 	r.dragEdge = function(self, x, y, dx, dy)
 		if self.selectedPart == "Top" then
-			self.yTopLeftTemp = self.yTopLeftStart + dy
-			self.yTopRightTemp = self.yTopRightStart + dy
+			self.yTopLeft = self.yTopLeftStart + dy
+			self.yTopRight = self.yTopRightStart + dy
 		elseif self.selectedPart == "Bottom" then
-			self.yBottomLeftTemp = self.yBottomLeftStart + dy
-			self.yBottomRightTemp = self.yBottomRightStart + dy
+			self.yBottomLeft = self.yBottomLeftStart + dy
+			self.yBottomRight = self.yBottomRightStart + dy
 		elseif self.selectedPart == "Left" then
-			self.xLeftTemp = self.xLeftStart + dx
-			self.yTopLeftTemp = self.yTopLeftStart + dy
-			self.yBottomLeftTemp = self.yBottomLeftStart + dy
+			self.xLeft = self.xLeftStart + dx
+			self.yTopLeft = self.yTopLeftStart + dy
+			self.yBottomLeft = self.yBottomLeftStart + dy
 		elseif self.selectedPart == "Right" then
-			self.xRightTemp = self.xRightStart + dx
-			self.yTopRightTemp = self.yTopRightStart + dy
-			self.yBottomRightTemp = self.yBottomRightStart + dy
+			self.xRight = self.xRightStart + dx
+			self.yTopRight = self.yTopRightStart + dy
+			self.yBottomRight = self.yBottomRightStart + dy
 		end
 	end
 
 	r.dragCorner = function(self, x, y, dx, dy)
 		if self.selectedPart == "tl" then
-			self.xLeftTemp = self.xLeftStart + dx
-			self.yTopLeftTemp = self.yTopLeftStart + dy
+			self.xLeft = self.xLeftStart + dx
+			self.yTopLeft = self.yTopLeftStart + dy
 		elseif self.selectedPart == "tr" then
-			self.xRightTemp = self.xRightStart + dx
-			self.yTopRightTemp = self.yTopRightStart + dy
+			self.xRight = self.xRightStart + dx
+			self.yTopRight = self.yTopRightStart + dy
 		elseif self.selectedPart == "br" then
-			self.xRightTemp = self.xRightStart + dx
-			self.yBottomRightTemp = self.yBottomRightStart + dy
+			self.xRight = self.xRightStart + dx
+			self.yBottomRight = self.yBottomRightStart + dy
 		elseif self.selectedPart == "bl" then
-			self.xLeftTemp = self.xLeftStart + dx
-			self.yBottomLeftTemp = self.yBottomLeftStart + dy
+			self.xLeft = self.xLeftStart + dx
+			self.yBottomLeft = self.yBottomLeftStart + dy
 		end
 	end
 
@@ -401,20 +495,15 @@ room.create = function(xLeft, xRight, yTopLeft, yTopRight, yBottomLeft, yBottomR
 			self.targetObject.isTarget = false
 			self.targetObject = nil
 		end
-		self:checkForConnections()
+		self:findConnectedRooms()
 	end
 
 	r.setProperty = function(self, propName, propValue)
-		self:updateTempPositions()
-
-		self[propName .. "Temp"] = propValue
-
-		self:checkConstraints()
+		self[propName] = propValue
+		self:resetCheckedStatus()
+		self:checkConnections()
 		self:checkCollisions()
 		self:checkConstraints()
-
-		self:updatePositions()
-		self:checkForConnections()
 	end
 
 	r.setPermeability = function(self, side, newValue)
@@ -425,7 +514,7 @@ room.create = function(xLeft, xRight, yTopLeft, yTopRight, yBottomLeft, yBottomR
 		end
 	end
 
-	r.checkForConnections = function(self)
+	r.findConnectedRooms = function(self)
 		for i = 1, #self.metaroom.rooms do
 			local other = self.metaroom.rooms[i]
 			local tl, tr, br, bl = self:getCorners()
@@ -434,8 +523,7 @@ room.create = function(xLeft, xRight, yTopLeft, yTopRight, yBottomLeft, yBottomR
 				if (tl.x == bl2.x and tl.y == bl2.y and tr.x == br2.x and tr.y == br2.y) or
 					(bl.x == tl2.x and bl.y == tl2.y and br.x == tr2.x and br.y == tr2.y) or
 					(tl.x == tr2.x and tl.y == tr2.y and bl.x == br2.x and bl.y == br2.y) or
-					(tr.x == tl2.x and tr.y == tl2.y and br.x == bl2.x and br.y == bl2.y) or
-					(geometry.polyPolyCollision({ tl, tr, br, bl }, { tl2, tr2, br2, bl2 }) and (self.xLeft == other.xRight or self.xRight == other.xLeft))
+					(tr.x == tl2.x and tr.y == tl2.y and br.x == bl2.x and br.y == bl2.y)
 					then
 						self:connectRoom(other)
 				end
@@ -542,7 +630,7 @@ room.create = function(xLeft, xRight, yTopLeft, yTopRight, yBottomLeft, yBottomR
 	end
 
 	r.drawRoom = function(self, oX, oY, selectedRoom)
-		if (self == selectedRoom and self.selectedPart == "Room") then --or self.isTarget then
+		if (self == selectedRoom and self.selectedPart == "Room") then
 			local tl, tr, br, bl = self:getCorners()
 			love.graphics.setColor(colorSelectedBackground)
 			love.graphics.polygon("fill",
