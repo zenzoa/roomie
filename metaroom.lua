@@ -30,9 +30,18 @@ metaroom.create = function(x, y, width, height, background)
 		love.graphics.setColor(1, 0, 1)
 		love.graphics.setLineWidth(4)
 		love.graphics.rectangle("line", self.x + offsetX, self.y + offsetY, self.width, self.height)
+		
 		for i = 1, #self.rooms do
 			local r = self.rooms[i]
-			r:draw(offsetX, offsetY, self.selectedRoom, self.targetObject)
+			r:drawRoom(offsetX, offsetY, self.selectedRoom)
+		end
+		for i = 1, #self.rooms do
+			local r = self.rooms[i]
+			r:drawEdges(offsetX, offsetY, self.selectedRoom)
+		end
+		for i = 1, #self.rooms do
+			local r = self.rooms[i]
+			r:drawCorners(offsetX, offsetY, self.selectedRoom)
 		end
 	end
 
@@ -72,10 +81,25 @@ metaroom.create = function(x, y, width, height, background)
 	m.selectObject = function(self, mx, my)
 		local tempObject = nil
 		for i = 1, #self.rooms do
-			local r = self.rooms[i]
-			tempObject = r:selectObject(mx, my)
+			tempObject = self.rooms[i]:selectCorner(mx, my)
 			if tempObject ~= nil then
 				break
+			end
+		end
+		if tempObject == nil then
+			for i = 1, #self.rooms do
+				tempObject = self.rooms[i]:selectEdge(mx, my)
+				if tempObject ~= nil then
+					break
+				end
+			end
+		end
+		if tempObject == nil then
+			for i = 1, #self.rooms do
+				tempObject = self.rooms[i]:selectRoom(mx, my)
+				if tempObject ~= nil then
+					break
+				end
 			end
 		end
 		self.selectedRoom = tempObject

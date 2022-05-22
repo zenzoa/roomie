@@ -1,22 +1,22 @@
 local geometry = {}
 
-local length = function(x, y)
+geometry.length = function(x, y)
 	return math.sqrt(x ^ 2 + y ^ 2)
 end
 
-local distance = function(a, b)
+geometry.distance = function(a, b)
 	return math.sqrt((a.x - b.x) ^ 2 + (a.y - b.y) ^ 2)
 end
 
-local normalize = function(a)
-	local len = length(a.x, a.y)
+geometry.normalize = function(a)
+	local len = geometry.length(a.x, a.y)
 	return {
 		x = a.x / len,
 		y = a.y / len
 	}
 end
 
-local dotProduct = function(a, b)
+geometry.dotProduct = function(a, b)
 	local ret = 0
   for i = 1, #a do
     ret = ret + a[i] * b[i]
