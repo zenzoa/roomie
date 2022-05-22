@@ -156,6 +156,14 @@ caos.encodeMetaroom = function(m)
 		m.x + math.floor(m.width / 2), m.y + math.floor(m.height / 2), m.music))
 
 	table.insert(lines, "")
+
+	local sides = { "Top", "Bottom", "Left", "Right" }
+	local doors = {}
+
+	for i = 1, #m.rooms do
+		local r = m.rooms[i]
+		m.rooms[i].index = i
+	end
 	
 	for i = 1, #m.rooms do
 		local r = m.rooms[i]
@@ -171,6 +179,37 @@ caos.encodeMetaroom = function(m)
 		table.insert(lines, string.format(
 			"    setv game \"map_tmp_%s\" va00",
 			i - 1))
+
+		for j = 1, #sides do
+			local connectedRoom = r["connectedRoom" .. sides[j]]
+			if connectedRoom ~= nil then
+				local k = connectedRoom.index
+				local doorExists = false
+				for n = 1, #doors do
+					local d = doors[n]
+					if (d.roomIndex1 == i and d.roomIndex2 == k) or (d.roomIndex1 == k and d.roomIndex2 == i) then
+						doorExists = true
+					end
+				end
+				if not doorExists then
+					table.insert(doors, {
+						roomIndex1 = i,
+						roomIndex2 = k,
+						permeability = r["permeability" .. sides[j]]
+					})
+				end
+			end
+		end
+	end
+
+	table.insert(lines, "")
+
+	-- add doors
+	for i = 1, #doors do
+		local d = doors[i]
+		table.insert(lines, string.format(
+			"door game \"map_tmp_%s\" game \"map_tmp_%s\" %s",
+			d.roomIndex1 - 1, d.roomIndex2 - 1, d.permeability))
 	end
 
 	table.insert(lines, "")

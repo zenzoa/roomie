@@ -1,7 +1,3 @@
--- TODO:
--- fix adjacent-side/kitty-corner join issue
--- include connections/doors when saving
-
 local geometry = require("geometry")
 local metaroom = require("metaroom")
 local room = require("room")
@@ -225,7 +221,7 @@ loadMetaroom = function(data, path)
 end
 
 saveMetaroom = function(metaroom, newPath)
-	local path = newPath or (metaroom.path .. "newmetaroom.cos")
+	local path = newPath or (metaroom.path .. metaroom.filename)
 	local file = io.open(path, "w")
 	if file ~= nil then
 		local lines = caos.encodeMetaroom(metaroom)
