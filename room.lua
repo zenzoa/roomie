@@ -430,14 +430,20 @@ room.create = function(xLeft, xRight, yTopLeft, yTopRight, yBottomLeft, yBottomR
 			local other = self.metaroom.rooms[i]
 			local tl, tr, br, bl = self:getCorners()
 			local tl2, tr2, br2, bl2 = other:getCorners()
-
-			if other ~= self and geometry.polyPolyCollision({ tl, tr, br, bl }, { tl2, tr2, br2, bl2 }) then
-				self:connectRoom(self, other)
+			if other ~= self then
+				if (tl.x == bl2.x and tl.y == bl2.y and tr.x == br2.x and tr.y == br2.y) or
+					(bl.x == tl2.x and bl.y == tl2.y and br.x == tr2.x and br.y == tr2.y) or
+					(tl.x == tr2.x and tl.y == tr2.y and bl.x == br2.x and bl.y == br2.y) or
+					(tr.x == tl2.x and tr.y == tl2.y and br.x == bl2.x and br.y == bl2.y) or
+					(geometry.polyPolyCollision({ tl, tr, br, bl }, { tl2, tr2, br2, bl2 }) and (self.xLeft == other.xRight or self.xRight == other.xLeft))
+					then
+						self:connectRoom(other)
+				end
 			end
 		end
 	end
 
-	r.connectRoom = function(self, other, initialConnection, permeability)
+	r.connectRoom = function(self, other, permeability)
 		local selfTopY = math.max(self.yTopLeft, self.yTopRight) 
 		local selfBottomY = math.min(self.yBottomLeft, self.yBottomRight)
 		local otherTopY = math.max(other.yTopLeft, other.yTopRight) 

@@ -119,7 +119,7 @@ caos.decodeToken = function(tokens)
 				r1 = caos.metaroom.rooms[roomId1]
 				r2 = caos.metaroom.rooms[roomId2]
 				if r1 ~= nil and r2 ~= nil then
-					r1:connectRoom(r2, true, permeability)
+					r1:connectRoom(r2, permeability)
 				end
 			end
 		elseif token.value == "delg" then
