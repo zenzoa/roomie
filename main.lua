@@ -1,3 +1,7 @@
+-- TODO:
+-- fix adjacent-side/kitty-corner join issue
+-- include connections/doors when saving
+
 local geometry = require("geometry")
 local metaroom = require("metaroom")
 local room = require("room")
@@ -16,31 +20,60 @@ local startY = 0
 local isDragging = false
 local isPanning = false
 
-local fsLoad, fsSave
-
 love.load = function()
-	fsLoad = lovefs()
-	fsSave = lovefs()
-	ui:setup(fsLoad, fsSave)
+	ui:setup()
 end
 
 love.update = function(dt)
 	
-	if fsLoad.selectedFile ~= nil and ui.metaroom == nil then
-		local path = fsLoad:absPath(fsLoad.selectedFile)
-		local file = io.open(path, "r")
-		if file ~= nil then
-			local data = file:read("*all")
-			if data ~= nil then
-				fsLoad.selectedFile = nil
-				loadMetaroom(data, path)
+	if ui.fsLoad.selectedFile ~= nil and ui.loadingType ~= nil then
+		local path = ui.fsLoad:absPath(ui.fsLoad.selectedFile)
+		local filename = string.match(path, "[/\\](%w+)%.")
+
+		if ui.loadingType == "metaroom" and ui.metaroom == nil then
+			local file = io.open(path, "r")
+			if file ~= nil then
+				local data = file:read("*all")
+				if data ~= nil then
+					loadMetaroom(data, path)
+				end
+				file:close()
 			end
-			file:close()
+
+		elseif ui.loadingType == "background" and ui.metaroom ~= nil then
+			ui.metaroom.background = filename
+			local file = io.open(path, "rb")
+			if file ~= nil then
+				ui.fsLoad.selectedFile = nil
+				local data = file:read("*all")
+				local fileData = love.filesystem.newFileData(data, path)
+				local imageData = love.image.newImageData(fileData)
+				file:close()
+				if imageData ~= nil then
+					ui.metaroom.backgroundImage = love.graphics.newImage(imageData)
+					ui.metaroom.width = ui.metaroom.backgroundImage:getWidth()
+					ui.metaroom.height = ui.metaroom.backgroundImage:getHeight()
+				end
+			end
+			ui:updateMetaSidePanel()
+
+		elseif ui.loadingType == "music" and ui.metaroom ~= nil then
+			ui.metaroom.music = filename
+			ui:updateMetaSidePanel()
+
+		elseif ui.loadingType == "roomMusic" and ui.metaroom ~= nil and ui.metaroom.selectedRoom ~= nil then
+			ui.metaroom.selectedRoom.music = filename
+			ui:updateRoomSidePanel()
+
 		end
+
+		ui.loadingType = nil
+		ui.fsLoad.selectedFile = nil
 	end
 	
-	if fsSave.selectedFile and ui.metaroom ~= nil then
-		local path = fsSave:absPath(fsSave.selectedFile)
+	if ui.fsSave.selectedFile and ui.metaroom ~= nil then
+		local path = ui.fsSave:absPath(ui.fsSave.selectedFile)
+		ui.fsSave.selectedFile = nil
 		saveMetaroom(ui.metaroom, path)
 	end
 	
@@ -63,7 +96,7 @@ love.resize = function(w, h)
 end
 
 love.mousepressed = function(x, y, button)
-	if y > ui.topPanelHeight and x < ui.metaSidePanel:GetX() then
+	if y > ui.topPanelHeight and x < ui.metaSidePanel:GetX() and ui.fsLoad.dialog == nil and ui.fsSave.dialog == nil then
 		if button == 1 then
 			mouseDown = true
 			startX = x
@@ -78,13 +111,13 @@ love.mousepressed = function(x, y, button)
 						(y + 20) / scale - offsetY,
 						(y + 20) / scale - offsetY)
 					ui.metaroom:addRoom(newRoom)
-					if newRoom:hasCollision() then
-						ui.metaroom:removeRoom(newRoom)
-						newRoom = nil
-					else
+					-- if newRoom:checkCollisions() then
 						ui.metaroom.selectedRoom = newRoom
 						newRoom:selectObject((x + 20) / scale - offsetX, (y + 20) / scale - offsetY)
-					end
+					-- else
+					-- 	ui.metaroom:removeRoom(newRoom)
+					-- 	newRoom = nil
+					-- end
 				else
 					ui.metaroom:selectObject(x / scale - offsetX, y / scale - offsetY)
 				end
@@ -140,10 +173,12 @@ love.mousereleased = function(x, y, button)
 end
 
 love.wheelmoved = function(x, y)
-	if y > 0 and scale < 3 then
-		scale = scale + 0.1
-	elseif y < 0 and scale > 0.5 then
-		scale = scale - 0.1
+	if ui.fsLoad.dialog == nil and ui.fsSave.dialog == nil then
+		if y > 0 and scale < 3 then
+			scale = scale + 0.1
+		elseif y < 0 and scale > 0.5 then
+			scale = scale - 0.1
+		end
 	end
 end
 
@@ -164,13 +199,14 @@ newMetaroom = function()
 	ui.metaroom = metaroom.create()
 	offsetX = 20
 	offsetY = ui.topPanelHeight + 20
-	ui:setRoomInputsMinMax()
+	ui:updateMetaSidePanel()
 end
 
 loadMetaroom = function(data, path)
 	local basePath = string.gsub(path, "%w+.cos", "")
 	ui.metaroom = caos.decode(caos.parse(data))
 	ui.metaroom.path = basePath
+	ui.metaroom.filename = string.sub(path, #basePath)
 	if ui.metaroom.background ~= "" then
 		local backgroundPath = ui.metaroom.path .. ui.metaroom.background .. ".png"
 		local file = io.open(backgroundPath, "rb")
@@ -189,8 +225,17 @@ loadMetaroom = function(data, path)
 	offsetY = -ui.metaroom.y
 	scale = 1
 
-	ui:setRoomInputsMinMax()
+	ui:updateMetaSidePanel()
 end
 
 saveMetaroom = function(metaroom, newPath)
+	local path = newPath or (metaroom.path .. "newmetaroom.cos")
+	local file = io.open(path, "w")
+	if file ~= nil then
+		local lines = caos.encodeMetaroom(metaroom)
+		for i = 1, #lines do
+			file:write(lines[i] .. "\n")
+		end
+		file:close()
+	end
 end

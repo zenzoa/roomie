@@ -145,4 +145,43 @@ caos.decode = function(tokens)
 	return caos.metaroom
 end
 
+caos.encodeMetaroom = function(m)
+	local lines = {}
+
+	table.insert(lines, string.format(
+		"setv va01 addm %s %s %s %s \"%s\"",
+		m.x, m.y, m.width, m.height, m.background))
+	table.insert(lines, string.format(
+		"mmsc %s %s \"%s\"",
+		m.x + math.floor(m.width / 2), m.y + math.floor(m.height / 2), m.music))
+
+	table.insert(lines, "")
+	
+	for i = 1, #m.rooms do
+		local r = m.rooms[i]
+		table.insert(lines, string.format(
+			"setv va00 addr va01 %s %s %s %s %s %s",
+			r.xLeft, r.xRight, r.yTopLeft, r.yTopRight, r.yBottomLeft, r.yBottomRight))
+		table.insert(lines, string.format(
+			"    rtyp va00 %s",
+			r.type))
+		table.insert(lines, string.format(
+			"    rmsc %s %s \"%s\"",
+			r:centerX(), r:centerY(), r.music))
+		table.insert(lines, string.format(
+			"    setv game \"map_tmp_%s\" va00",
+			i - 1))
+	end
+
+	table.insert(lines, "")
+
+	for i = 1, #m.rooms do
+		table.insert(lines, string.format(
+			"delg \"map_tmp_%s\"",
+			i - 1))
+	end
+
+	return lines
+end
+
 return caos

@@ -24,6 +24,7 @@ metaroom.create = function(x, y, width, height, background)
 			love.graphics.setColor(0.2, 0.2, 0.2)
 			love.graphics.rectangle("fill", self.x + offsetX, self.y + offsetY, self.width, self.height)
 		else
+			love.graphics.setColor(1, 1, 1)
 			love.graphics.draw(self.backgroundImage, self.x + offsetX, self.y + offsetY)
 		end
 		love.graphics.setColor(1, 0, 1)
@@ -45,6 +46,7 @@ metaroom.create = function(x, y, width, height, background)
 			"Remove Room",
 			"Remove selected room?",
 			{"Cancel", "Yes"})
+
 		if pressedButton == 2 then
 			local removalIndex = nil
 			for i = 1, #self.rooms do
