@@ -78,15 +78,17 @@ metaroom.create = function(x, y, width, height, background)
 		return geometry.pointPolyCollision(px, py, { tl, tr, br, bl })
 	end
 
-	m.selectObject = function(self, mx, my)
+	m.selectObject = function(self, mx, my, type)
 		local tempObject = nil
-		for i = 1, #self.rooms do
-			tempObject = self.rooms[i]:selectCorner(mx, my)
-			if tempObject ~= nil then
-				break
+		if type == "corner" or type == nil then
+			for i = 1, #self.rooms do
+				tempObject = self.rooms[i]:selectCorner(mx, my)
+				if tempObject ~= nil then
+					break
+				end
 			end
 		end
-		if tempObject == nil then
+		if (type == "edge" or type == nil) and tempObject == nil then
 			for i = 1, #self.rooms do
 				tempObject = self.rooms[i]:selectEdge(mx, my)
 				if tempObject ~= nil then
@@ -94,7 +96,7 @@ metaroom.create = function(x, y, width, height, background)
 				end
 			end
 		end
-		if tempObject == nil then
+		if (type == "room" or type == nil) and tempObject == nil then
 			for i = 1, #self.rooms do
 				tempObject = self.rooms[i]:selectRoom(mx, my)
 				if tempObject ~= nil then

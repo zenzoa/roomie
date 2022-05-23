@@ -439,11 +439,11 @@ room.create = function(xLeft, xRight, yTopLeft, yTopRight, yBottomLeft, yBottomR
 		end
 		
 		self:snapToCorners()
-
 		self:resetCheckedStatus()
 		self:checkConnections()
 		self:checkCollisions()
 		self:checkConstraints()
+		self:updatePositions()
 	end
 
 	r.dragRoom = function(self, x, y, dx, dy)
@@ -504,6 +504,7 @@ room.create = function(xLeft, xRight, yTopLeft, yTopRight, yBottomLeft, yBottomR
 		self:checkConnections()
 		self:checkCollisions()
 		self:checkConstraints()
+		self:updatePositions()
 	end
 
 	r.setPermeability = function(self, side, newValue)
@@ -523,7 +524,8 @@ room.create = function(xLeft, xRight, yTopLeft, yTopRight, yBottomLeft, yBottomR
 				if (tl.x == bl2.x and tl.y == bl2.y and tr.x == br2.x and tr.y == br2.y) or
 					(bl.x == tl2.x and bl.y == tl2.y and br.x == tr2.x and br.y == tr2.y) or
 					(tl.x == tr2.x and tl.y == tr2.y and bl.x == br2.x and bl.y == br2.y) or
-					(tr.x == tl2.x and tr.y == tl2.y and br.x == bl2.x and br.y == bl2.y)
+					(tr.x == tl2.x and tr.y == tl2.y and br.x == bl2.x and br.y == bl2.y) --or
+					-- ((self.xLeft == other.xRight or self.xRight == other.xLeft) and geometry.polyPolyCollision({ tl, tr, br, bl }, { tl2, tr2, br2, bl2 }))
 					then
 						self:connectRoom(other)
 				end

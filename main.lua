@@ -15,6 +15,7 @@ local startX = 0
 local startY = 0
 local isDragging = false
 local isPanning = false
+local isExtruding = false
 
 love.load = function()
 	ui:setup()
@@ -92,35 +93,35 @@ love.resize = function(w, h)
 end
 
 love.mousepressed = function(x, y, button)
+	local x2 = x / scale - offsetX
+	local y2 = y / scale - offsetY
+
 	if y > ui.topPanelHeight and x < ui.metaSidePanel:GetX() and ui.fsLoad.dialog == nil and ui.fsSave.dialog == nil then
+		mouseDown = true
+		startX = x
+		startY = y
+
 		if button == 1 then
-			mouseDown = true
-			startX = x
-			startY = y
 			if ui.metaroom ~= nil then
 				if ui.isAddingRoom then
-					local newRoom = room.create(
-						x / scale - offsetX,
-						(x + 10) / scale - offsetX,
-						y / scale - offsetY,
-						y / scale - offsetY,
-						(y + 10) / scale - offsetY,
-						(y + 10) / scale - offsetY)
+					local newRoom = room.create(x2, x2 + 10, y2, y2, y2 + 10, y2 + 10)
 					ui.metaroom:addRoom(newRoom)
 					ui.metaroom.selectedRoom = newRoom
 					newRoom.selectedPart = "br"
-					newRoom:startDrag(x / scale - offsetX, y / scale - offsetY)
+					newRoom:startDrag(x2, y2)
 				else
-					ui.metaroom:selectObject(x / scale - offsetX, y / scale - offsetY)
+					ui.metaroom:selectObject(x2, y2)
+				end
+				if ui.metaroom.selectedRoom == nil then
+					isPanning = true
 				end
 			end
-		end
 
-		if ui.metaroom ~= nil and ui.metaroom.selectedRoom == nil or button == 2 then
-			mouseDown = true
-			startX = x
-			startY = y
-			isPanning = true
+		elseif button == 2 then
+			ui.metaroom:selectObject(x2, y2, "edge")
+			if ui.metaroom.selectedRoom ~= nil then
+				isExtruding = true
+			end
 		end
 	end
 
@@ -131,11 +132,40 @@ love.mousemoved = function(x, y, dx, dy)
 	if mouseDown and isPanning then
 		offsetX = offsetX + dx / scale
 		offsetY = offsetY + dy / scale
+
 	elseif mouseDown and isDragging and ui.metaroom ~= nil and ui.metaroom.selectedRoom ~= nil then
 		ui.metaroom:drag(x / scale - offsetX, y / scale - offsetY)
 		if ui.isAddingRoom then
 			ui.metaroom.selectedRoom.yBottomLeft = ui.metaroom.selectedRoom.yBottomRight
 		end
+
+	elseif mouseDown and isExtruding and ui.metaroom ~= nil and ui.metaroom.selectedRoom ~= nil then
+		local distSq = (x - startX) ^ 2 + (y - startY) ^ 2
+		if distSq > dragStartDistSq then
+			local rm = ui.metaroom.selectedRoom
+			local side = rm.selectedPart
+			local newRoom
+			if side == "Top" then
+				newRoom = room.create(rm.xLeft, rm.xRight, rm.yTopLeft - 10, rm.yTopRight - 10, rm.yTopLeft, rm.yTopRight)
+				newRoom.selectedPart = "Top"
+			elseif side == "Bottom" then
+				newRoom = room.create(rm.xLeft, rm.xRight, rm.yBottomLeft, rm.yBottomRight, rm.yBottomLeft + 10, rm.yBottomRight + 10)
+				newRoom.selectedPart = "Bottom"
+			elseif side == "Left" then
+				newRoom = room.create(rm.xLeft, rm.xLeft + 10, rm.yTopLeft, rm.yTopLeft, rm.yBottomLeft, rm.yBottomLeft)
+				newRoom.selectedPart = "Left"
+			elseif side == "Right" then
+				newRoom = room.create(rm.xRight, rm.xRight + 10, rm.yTopRight, rm.yTopRight, rm.yBottomRight, rm.yBottomRight)
+				newRoom.selectedPart = "Right"
+			end
+			if newRoom ~= nil then
+				ui.metaroom:addRoom(newRoom)
+				ui.metaroom.selectedRoom = newRoom
+				newRoom:startDrag(startX / scale - offsetX, startY / scale - offsetY)
+				isExtruding = false
+			end
+		end
+
 	elseif mouseDown and ui.metaroom ~= nil then
 		local distSq = (x - startX) ^ 2 + (y - startY) ^ 2
 		if distSq > dragStartDistSq then
@@ -149,6 +179,7 @@ love.mousereleased = function(x, y, button)
 	mouseDown = false
 	isPanning = false
 	isDragging = false
+	isExtruding = false
 
 	if ui.isAddingRoom then
 		ui.newRoomButton:SetEnabled(true)
@@ -175,6 +206,16 @@ love.wheelmoved = function(x, y)
 end
 
 love.keypressed = function(key, isrepeat)
+	if key == "r" and ui.metaroom ~= nil then
+		ui.isAddingRoom = not ui.isAddingRoom
+		ui.newRoomButton:SetEnabled(not ui.isAddingRoom)
+		ui.newRoomButton2:SetEnabled(not ui.isAddingRoom)
+
+	elseif key == "backspace" and ui.metaroom ~= nil and ui.metaroom.selectedRoom ~= nil then
+		ui.metaroom:removeRoom(ui.metaroom.selectedRoom)
+		ui.metaroom.selectedRoom = nil
+	end
+
 	ui:keypressed(key, isrepeat)
 end
 
