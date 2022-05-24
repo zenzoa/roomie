@@ -15,33 +15,33 @@ metaroom.create = function(x, y, width, height, background)
 		backgroundImage = nil,
 		music = "",
 		rooms = {},
+		selectedParts = {},
 		selectedRoom = nil,
-		targetObject = nil
 	}
 
-	m.draw = function(self, offsetX, offsetY)
+	m.draw = function(self)
 		if self.backgroundImage == nil then
 			love.graphics.setColor(0.2, 0.2, 0.2)
-			love.graphics.rectangle("fill", self.x + offsetX, self.y + offsetY, self.width, self.height)
+			love.graphics.rectangle("fill", 0, 0, self.width, self.height)
 		else
 			love.graphics.setColor(1, 1, 1)
-			love.graphics.draw(self.backgroundImage, self.x + offsetX, self.y + offsetY)
+			love.graphics.draw(self.backgroundImage, 0, 0)
 		end
 		love.graphics.setColor(1, 0, 1)
 		love.graphics.setLineWidth(4)
-		love.graphics.rectangle("line", self.x + offsetX, self.y + offsetY, self.width, self.height)
+		love.graphics.rectangle("line", 0, 0, self.width, self.height)
 		
 		for i = 1, #self.rooms do
 			local r = self.rooms[i]
-			r:drawRoom(offsetX, offsetY, self.selectedRoom)
+			r:drawRoom(self.selectedRoom)
 		end
 		for i = 1, #self.rooms do
 			local r = self.rooms[i]
-			r:drawEdges(offsetX, offsetY, self.selectedRoom)
+			r:drawEdges(self.selectedRoom)
 		end
 		for i = 1, #self.rooms do
 			local r = self.rooms[i]
-			r:drawCorners(offsetX, offsetY, self.selectedRoom)
+			r:drawCorners(self.selectedRoom)
 		end
 	end
 
@@ -79,37 +79,55 @@ metaroom.create = function(x, y, width, height, background)
 	end
 
 	m.selectObject = function(self, mx, my, type)
-		local tempObject = nil
+		self:deselect()
+
+		local tempObject
+
 		if type == "corner" or type == nil then
 			for i = 1, #self.rooms do
 				tempObject = self.rooms[i]:selectCorner(mx, my)
 				if tempObject ~= nil then
-					break
+					self.selectedRoom = tempObject
+					table.insert(self.selectedParts, { room = tempObject })
 				end
 			end
 		end
-		if (type == "edge" or type == nil) and tempObject == nil then
+
+		if (type == "edge" or type == nil) and self.selectedRoom == nil then
 			for i = 1, #self.rooms do
 				tempObject = self.rooms[i]:selectEdge(mx, my)
 				if tempObject ~= nil then
-					break
+					self.selectedRoom = tempObject
+					table.insert(self.selectedParts, { room = tempObject })
 				end
 			end
 		end
-		if (type == "room" or type == nil) and tempObject == nil then
+
+		if (type == "room" or type == nil) and self.selectedRoom == nil then
 			for i = 1, #self.rooms do
 				tempObject = self.rooms[i]:selectRoom(mx, my)
 				if tempObject ~= nil then
+					self.selectedRoom = tempObject
 					break
 				end
 			end
 		end
-		self.selectedRoom = tempObject
+	end
+
+	m.deselect = function(self)
+		self.selectedRoom = nil
+		self.selectedParts = {}
 	end
 
 	m.startDrag = function(self, x, y)
 		if self.selectedRoom ~= nil then
 			self.selectedRoom:startDrag(x, y)
+		end
+		for i = 1, #self.selectedParts do
+			local part = self.selectedParts[i]
+			if part.room ~= self.selectedRoom then
+				part.room:startDrag(x, y)
+			end
 		end
 	end
 
@@ -117,11 +135,23 @@ metaroom.create = function(x, y, width, height, background)
 		if self.selectedRoom ~= nil then
 			self.selectedRoom:drag(x, y)
 		end
+		for i = 1, #self.selectedParts do
+			local part = self.selectedParts[i]
+			if part.room ~= self.selectedRoom then
+				part.room:drag(x, y)
+			end
+		end
 	end
 
 	m.endDrag = function(self, x, y)
 		if self.selectedRoom ~= nil then
 			self.selectedRoom:endDrag(x, y)
+		end
+		for i = 1, #self.selectedParts do
+			local part = self.selectedParts[i]
+			if part.room ~= self.selectedRoom then
+				part.room:endDrag(x, y)
+			end
 		end
 	end
 

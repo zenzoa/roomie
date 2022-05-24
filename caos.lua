@@ -72,12 +72,12 @@ caos.decodeToken = function(tokens)
 			return 1
 		elseif token.value == "addr" then
 			local metaroomId = caos.decodeToken(tokens)
-			local xLeft = caos.decodeToken(tokens)
-			local xRight = caos.decodeToken(tokens)
-			local yTopLeft = caos.decodeToken(tokens)
-			local yTopRight = caos.decodeToken(tokens)
-			local yBottomLeft = caos.decodeToken(tokens)
-			local yBottomRight = caos.decodeToken(tokens)
+			local xLeft = caos.decodeToken(tokens) - caos.metaroom.x
+			local xRight = caos.decodeToken(tokens) - caos.metaroom.x
+			local yTopLeft = caos.decodeToken(tokens) - caos.metaroom.y
+			local yTopRight = caos.decodeToken(tokens) - caos.metaroom.y
+			local yBottomLeft = caos.decodeToken(tokens) - caos.metaroom.y
+			local yBottomRight = caos.decodeToken(tokens) - caos.metaroom.y
 			if metaroomId == 1 and caos.metaroom ~= nil then
 				local r = room.create(xLeft, xRight, yTopLeft, yTopRight, yBottomLeft, yBottomRight)
 				caos.metaroom:addRoom(r)
@@ -99,8 +99,8 @@ caos.decodeToken = function(tokens)
 				caos.metaroom.music = metaMusicTrackName
 			end
 		elseif token.value == "rmsc" then
-			local roomMusicX = caos.decodeToken(tokens)
-			local roomMusicY = caos.decodeToken(tokens)
+			local roomMusicX = caos.decodeToken(tokens) - caos.metaroom.x
+			local roomMusicY = caos.decodeToken(tokens) - caos.metaroom.y
 			local roomMusicTrackName = caos.decodeToken(tokens)
 			if caos.metaroom ~= nil then
 				for i = 1, #caos.metaroom.rooms do
@@ -169,7 +169,7 @@ caos.encodeMetaroom = function(m)
 		local r = m.rooms[i]
 		table.insert(lines, string.format(
 			"setv va00 addr va01 %s %s %s %s %s %s",
-			r.xLeft, r.xRight, r.yTopLeft, r.yTopRight, r.yBottomLeft, r.yBottomRight))
+			r.xLeft + m.x, r.xRight + m.x, r.yTopLeft + m.y, r.yTopRight + m.y, r.yBottomLeft + m.y, r.yBottomRight + m.y))
 		table.insert(lines, string.format(
 			"    rtyp va00 %s",
 			r.type))
@@ -180,31 +180,28 @@ caos.encodeMetaroom = function(m)
 			"    setv game \"map_tmp_%s\" va00",
 			i - 1))
 
-		for j = 1, #sides do
-			local connectedRoom = r["connectedRoom" .. sides[j]]
-			if connectedRoom ~= nil then
-				local k = connectedRoom.index
-				local doorExists = false
-				for n = 1, #doors do
-					local d = doors[n]
-					if (d.roomIndex1 == i and d.roomIndex2 == k) or (d.roomIndex1 == k and d.roomIndex2 == i) then
-						doorExists = true
-					end
+		for j = 1, #r.connections do
+			local connection = r.connections[j]
+			local doorExists = false
+			local i2 = connection.room.index
+			for k = 1, #doors do
+				local d = doors[k]
+				if (d.roomIndex1 == i and d.roomIndex2 == i2) or (d.roomIndex1 == i2 and d.roomIndex2 == i) then
+					doorExists = true
 				end
-				if not doorExists then
-					table.insert(doors, {
-						roomIndex1 = i,
-						roomIndex2 = k,
-						permeability = r["permeability" .. sides[j]]
-					})
-				end
+			end
+			if not doorExists then
+				table.insert(doors, {
+					roomIndex1 = i,
+					roomIndex2 = i2,
+					permeability = r["permeability" .. connection.side]
+				})
 			end
 		end
 	end
 
 	table.insert(lines, "")
 
-	-- add doors
 	for i = 1, #doors do
 		local d = doors[i]
 		table.insert(lines, string.format(

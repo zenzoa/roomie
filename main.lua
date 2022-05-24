@@ -81,7 +81,8 @@ love.draw = function()
 	if ui.metaroom ~= nil then
 		love.graphics.push()
 		love.graphics.scale(scale)
-		ui.metaroom:draw(offsetX, offsetY)
+		love.graphics.translate(offsetX, offsetY)
+		ui.metaroom:draw()
 		love.graphics.pop()
 	end
 
@@ -101,7 +102,10 @@ love.mousepressed = function(x, y, button)
 		startX = x
 		startY = y
 
-		if button == 1 then
+		if love.keyboard.isDown("space") then
+			isPanning = true
+
+		elseif button == 1 then
 			if ui.metaroom ~= nil then
 				if ui.isAddingRoom then
 					local newRoom = room.create(x2, x2 + 10, y2, y2, y2 + 10, y2 + 10)
@@ -119,9 +123,7 @@ love.mousepressed = function(x, y, button)
 
 		elseif button == 2 then
 			ui.metaroom:selectObject(x2, y2, "edge")
-			if ui.metaroom.selectedRoom ~= nil then
-				isExtruding = true
-			end
+			isExtruding = true
 		end
 	end
 
@@ -129,6 +131,9 @@ love.mousepressed = function(x, y, button)
 end
 
 love.mousemoved = function(x, y, dx, dy)
+	local startX2 = startX / scale - offsetX
+	local startY2 = startY / scale - offsetY
+
 	if mouseDown and isPanning then
 		offsetX = offsetX + dx / scale
 		offsetY = offsetY + dy / scale
@@ -139,29 +144,42 @@ love.mousemoved = function(x, y, dx, dy)
 			ui.metaroom.selectedRoom.yBottomLeft = ui.metaroom.selectedRoom.yBottomRight
 		end
 
-	elseif mouseDown and isExtruding and ui.metaroom ~= nil and ui.metaroom.selectedRoom ~= nil then
+	elseif mouseDown and isExtruding and ui.metaroom ~= nil then
 		local distSq = (x - startX) ^ 2 + (y - startY) ^ 2
 		if distSq > dragStartDistSq then
 			local rm = ui.metaroom.selectedRoom
-			local side = rm.selectedPart
 			local newRoom
-			if side == "Top" then
-				newRoom = room.create(rm.xLeft, rm.xRight, rm.yTopLeft - 10, rm.yTopRight - 10, rm.yTopLeft, rm.yTopRight)
-				newRoom.selectedPart = "Top"
-			elseif side == "Bottom" then
-				newRoom = room.create(rm.xLeft, rm.xRight, rm.yBottomLeft, rm.yBottomRight, rm.yBottomLeft + 10, rm.yBottomRight + 10)
-				newRoom.selectedPart = "Bottom"
-			elseif side == "Left" then
-				newRoom = room.create(rm.xLeft, rm.xLeft + 10, rm.yTopLeft, rm.yTopLeft, rm.yBottomLeft, rm.yBottomLeft)
-				newRoom.selectedPart = "Left"
-			elseif side == "Right" then
-				newRoom = room.create(rm.xRight, rm.xRight + 10, rm.yTopRight, rm.yTopRight, rm.yBottomRight, rm.yBottomRight)
-				newRoom.selectedPart = "Right"
-			end
-			if newRoom ~= nil then
+			if rm ~= nil then
+				ui.metaroom:deselect()
+				local side = rm.selectedPart
+				if side == "Top" then
+					newRoom = room.create(rm.xLeft, rm.xRight, rm.yTopLeft - 10, rm.yTopRight - 10, rm.yTopLeft, rm.yTopRight)
+					newRoom.selectedPart = "Top"
+				elseif side == "Bottom" then
+					newRoom = room.create(rm.xLeft, rm.xRight, rm.yBottomLeft, rm.yBottomRight, rm.yBottomLeft + 10, rm.yBottomRight + 10)
+					newRoom.selectedPart = "Bottom"
+				elseif side == "Left" then
+					newRoom = room.create(rm.xLeft, rm.xLeft + 10, rm.yTopLeft, rm.yTopLeft, rm.yBottomLeft, rm.yBottomLeft)
+					newRoom.selectedPart = "Left"
+				elseif side == "Right" then
+					newRoom = room.create(rm.xRight, rm.xRight + 10, rm.yTopRight, rm.yTopRight, rm.yBottomRight, rm.yBottomRight)
+					newRoom.selectedPart = "Right"
+				end
+				if newRoom ~= nil then
+					ui.metaroom:addRoom(newRoom)
+					ui.metaroom.selectedRoom = newRoom
+					ui.metaroom:startDrag(startX2, startY2)
+					isDragging = true
+					isExtruding = false
+				end
+			else
+				newRoom = room.create(startX2, startX2 + 10, startY2, startY2, startY2 + 10, startY2 + 10)
+				newRoom.selectedPart = "br"
 				ui.metaroom:addRoom(newRoom)
 				ui.metaroom.selectedRoom = newRoom
-				newRoom:startDrag(startX / scale - offsetX, startY / scale - offsetY)
+				ui.metaroom:startDrag(startX2, startY2)
+				ui.isAddingRoom = true
+				isDragging = true
 				isExtruding = false
 			end
 		end
@@ -170,7 +188,7 @@ love.mousemoved = function(x, y, dx, dy)
 		local distSq = (x - startX) ^ 2 + (y - startY) ^ 2
 		if distSq > dragStartDistSq then
 			isDragging = true
-			ui.metaroom:startDrag(startX / scale - offsetX, startY / scale - offsetY)
+			ui.metaroom:startDrag(startX2, startY2)
 		end
 	end
 end
@@ -197,21 +215,43 @@ end
 
 love.wheelmoved = function(x, y)
 	if ui.fsLoad.dialog == nil and ui.fsSave.dialog == nil then
+		local oldScale = scale
+		local mX = x - offsetX
+		local mY = y - offsetY
 		if y > 0 and scale < 3 then
 			scale = scale + 0.1
 		elseif y < 0 and scale > 0.5 then
 			scale = scale - 0.1
 		end
+		local newX = mX * (scale / oldScale)
+		local newY = mY * (scale / oldScale)
+		offsetX = offsetX + mX - newX
+		offsetY = offsetY + mY - newY
 	end
 end
 
 love.keypressed = function(key, isrepeat)
-	if key == "r" and ui.metaroom ~= nil then
+	local ctrlPressed = love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl")
+	local shiftPressed = love.keyboard.isDown("lshift") or love.keyboard.isDown("rshift")
+
+	if ctrlPressed and key == "n" then
+		ui.newMetaroomButton:OnClick()
+
+	elseif ctrlPressed and key == "o" then
+		ui.openMetaroomButton:OnClick()
+
+	elseif ctrlPressed and key == "s" then
+		ui.saveMetaroomButton:OnClick()
+
+	elseif ctrlPressed and shiftPressed and key == "s" then
+		ui.saveAsMetaroomButton:OnClick()
+
+	elseif shiftPressed and key == "r" and ui.metaroom ~= nil then
 		ui.isAddingRoom = not ui.isAddingRoom
 		ui.newRoomButton:SetEnabled(not ui.isAddingRoom)
 		ui.newRoomButton2:SetEnabled(not ui.isAddingRoom)
 
-	elseif key == "backspace" and ui.metaroom ~= nil and ui.metaroom.selectedRoom ~= nil then
+	elseif shiftPressed and key == "x" and ui.metaroom ~= nil and ui.metaroom.selectedRoom ~= nil then
 		ui.metaroom:removeRoom(ui.metaroom.selectedRoom)
 		ui.metaroom.selectedRoom = nil
 	end
@@ -232,6 +272,7 @@ newMetaroom = function()
 	ui.metaroom = metaroom.create()
 	offsetX = 20
 	offsetY = ui.topPanelHeight + 20
+	scale = 1
 	ui:updateMetaSidePanel()
 end
 
@@ -254,8 +295,8 @@ loadMetaroom = function(data, path)
 		end
 	end
 
-	offsetX = -ui.metaroom.x
-	offsetY = -ui.metaroom.y
+	offsetX = 20
+	offsetY = ui.topPanelHeight + 20
 	scale = 1
 
 	ui:updateMetaSidePanel()

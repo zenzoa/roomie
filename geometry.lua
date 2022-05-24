@@ -1,5 +1,7 @@
 local geometry = {}
 
+local ep = 0.0001
+
 geometry.length = function(x, y)
 	return math.sqrt(x ^ 2 + y ^ 2)
 end
@@ -97,20 +99,32 @@ geometry.polyLineCollision = function(vertices, x1, y1, x2, y2)
 	return false
 end
 
-geometry.lineLineCollision = function(x1, y1, x2, y2, x3, y3, x4, y4)
-	local uA = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1))
-  local uB = ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1))
-	return (uA >= 0 and uA <= 1 and uB >= 0 and uB <= 1)
+geometry.lineLineOverlap = function(x1, y1, x2, y2, x3, y3, x4, y4)
+	local uAt = (x4-x3) * (y1-y3) - (y4-y3) * (x1-x3)
+  local uBt = (x2-x1) * (y1-y3) - (y2-y1) * (x1-x3)
+	local uC = (y4-y3) * (x2-x1) - (x4-x3) * (y2-y1)
+	if (-ep < uC and uC < ep) and ((-ep < uAt and uAt < ep) or (-ep < uBt and uBt < ep)) then
+		return true
+	else
+		return false
+	end
 end
 
 geometry.lineLineIntersection = function(x1, y1, x2, y2, x3, y3, x4, y4)
-	local uA = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1))
-  local uB = ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1))
+	local uAt = (x4-x3) * (y1-y3) - (y4-y3) * (x1-x3)
+  local uBt = (x2-x1) * (y1-y3) - (y2-y1) * (x1-x3)
+	local uC = (y4-y3) * (x2-x1) - (x4-x3) * (y2-y1)
+	local uA = uAt / uC
+	local uB = uBt / uC
 	if (uA >= 0 and uA <= 1 and uB >= 0 and uB <= 1) then
 		return x1 + (uA * (x2-x1)), y1 + (uA * (y2-y1))
 	else
 		return nil, nil
 	end
+end
+
+geometry.lineLineCollision = function(x1, y1, x2, y2, x3, y3, x4, y4)
+	return geometry.lineLineIntersection(x1, y1, x2, y2, x3, y3, x4, y4) ~= nil
 end
 
 geometry.linePointCollision = function(x1, y1, x2, y2, px, py)

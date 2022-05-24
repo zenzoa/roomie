@@ -93,7 +93,7 @@ ui.setup = function(self)
 	self.saveMetaroomButton:SetText("Save")
 	self.saveMetaroomButton.OnClick = function(obj)
 		if self.metaroom ~= nil then
-			if self.metaroom.path == "" then
+			if self.metaroom.filename == "" then
 				self.fsSave:saveDialog(loveframes)
 			else
 				saveMetaroom(self.metaroom)
@@ -138,13 +138,7 @@ ui.setup = function(self)
 	self.metaroomXInput:SetMinMax(0, 100000)
 	self.metaroomXInput.OnValueChanged = function(obj, newValue)
 		if self.metaroom ~= nil then
-			local diff = newValue - self.metaroom.x
 			self.metaroom.x = newValue
-			for i = 1, #self.metaroom.rooms do
-				local r = self.metaroom.rooms[i]
-				r.xLeft = r.xLeft + diff
-				r.xRight = r.xRight + diff
-			end
 		end
 	end
 	y = y + self.metaroomXInput:GetHeight() + self.panelSpacing
@@ -159,15 +153,7 @@ ui.setup = function(self)
 	self.metaroomYInput:SetMinMax(0, 100000)
 	self.metaroomYInput.OnValueChanged = function(obj, newValue)
 		if self.metaroom ~= nil then
-			local diff = newValue - self.metaroom.y
 			self.metaroom.y = newValue
-			for i = 1, #self.metaroom.rooms do
-				local r = self.metaroom.rooms[i]
-				r.yTopLeft = r.yTopLeft + diff
-				r.yTopRight = r.yTopRight + diff
-				r.yBottomLeft = r.yBottomLeft + diff
-				r.yBottomRight = r.yBottomRight + diff
-			end
 		end
 	end
 	y = y + self.metaroomYInput:GetHeight() + self.panelSpacing
@@ -185,8 +171,8 @@ ui.setup = function(self)
 			local newWidth = newValue
 			for i = 1, #self.metaroom.rooms do
 				local r = self.metaroom.rooms[i]
-				if r.xRight - self.metaroom.x > newWidth then
-					newWidth = r.xRight - self.metaroom.x
+				if r.xRight > newWidth then
+					newWidth = r.xRight
 				end
 			end
 			self.metaroom.width = newWidth
@@ -207,11 +193,11 @@ ui.setup = function(self)
 			local newHeight = newValue
 			for i = 1, #self.metaroom.rooms do
 				local r = self.metaroom.rooms[i]
-				if r.yBottomLeft - self.metaroom.y > newHeight then
-					newHeight = r.yBottomLeft - self.metaroom.y
+				if r.yBottomLeft > newHeight then
+					newHeight = r.yBottomLeft
 				end
-				if r.yBottomRight - self.metaroom.y > newHeight then
-					newHeight = r.yBottomRight - self.metaroom.y
+				if r.yBottomRight > newHeight then
+					newHeight = r.yBottomRight
 				end
 			end
 			self.metaroom.height = newHeight
@@ -552,12 +538,12 @@ ui.updateMetaSidePanel = function(self)
 end
 
 ui.setRoomInputsMinMax = function(self)
-	self.xLeftInput:SetMinMax(self.metaroom.x, self.metaroom.x + self.metaroom.width)
-	self.xRightInput:SetMinMax(self.metaroom.x, self.metaroom.x + self.metaroom.width)
-	self.yTopLeftInput:SetMinMax(self.metaroom.y, self.metaroom.y + self.metaroom.height)
-	self.yTopRightInput:SetMinMax(self.metaroom.y, self.metaroom.y + self.metaroom.height)
-	self.yBottomLeftInput:SetMinMax(self.metaroom.y, self.metaroom.y + self.metaroom.height)
-	self.yBottomRightInput:SetMinMax(self.metaroom.y, self.metaroom.y + self.metaroom.height)
+	self.xLeftInput:SetMinMax(0, self.metaroom.width)
+	self.xRightInput:SetMinMax(0, self.metaroom.width)
+	self.yTopLeftInput:SetMinMax(0, self.metaroom.height)
+	self.yTopRightInput:SetMinMax(0, self.metaroom.height)
+	self.yBottomLeftInput:SetMinMax(0, self.metaroom.height)
+	self.yBottomRightInput:SetMinMax(0, self.metaroom.height)
 end
 
 ui.updateRoomSidePanel = function(self)
