@@ -98,8 +98,8 @@ exports.Sketch = class Sketch {
 		this.xLast = x
 		this.yLast = y
 
-		this.menuExtrude.enabled = false
-		this.menuDelete.enabled = false
+		menu.extrude.enabled = false
+		menu.delete.enabled = false
 
 		if ((p.keyIsDown(32)) || p.mouseButton === p.CENTER) {
 			this.isPanning = true
@@ -116,9 +116,9 @@ exports.Sketch = class Sketch {
 					this.metaroom.selectObject(x2, y2)
 					if (this.metaroom.selectedRoom) {
 						if (this.metaroom.selectedRoom.selectedPart === 'Room') {
-							this.menuDelete.enabled = true
+							menu.delete.enabled = true
 						} else if (['Top', 'Bottom', 'Left', 'Right'].includes(this.metaroom.selectedRoom.selectedPart)) {
-							this.menuExtrude.enabled = true
+							menu.extrude.enabled = true
 						}
 					}
 				}
@@ -296,9 +296,11 @@ exports.Sketch = class Sketch {
 			// ask first
 		} else {
 			this.metaroom = new Metaroom()
-			this.menuSave.enabled = true
-			this.menuSaveAs.enabled = true
-			this.menuCreateRoom.enabled = true
+			menu.save.enabled = true
+			menu.saveAs.enabled = true
+			menu.createRoom.enabled = true
+			menu.exportBgAsBLK.enabled = false
+			menu.exportBgAsPNG.enabled = false
 			this.xOffset = 20
 			this.yOffset = 20
 			this.scale = 1
@@ -324,15 +326,23 @@ exports.Sketch = class Sketch {
 							const caosFile = reader.result
 							const tokens = caos.parse(caosFile)
 							const m = caos.decode(tokens)
-							m.filename = file.name
-							m.path = file.path.match(/^.*[\\\/]/)[0]
-							m.loadBackground()
 							this.metaroom = m
-							this.menuSave.enabled = true
-							this.menuSaveAs.enabled = true
-							this.menuCreateRoom.enabled = true
+
+							menu.save.enabled = true
+							menu.saveAs.enabled = true
+							menu.createRoom.enabled = true
+							menu.exportBgAsBLK.enabled = false
+							menu.exportBgAsPNG.enabled = false
+
+							this.metaroom.filename = file.name
+							this.metaroom.path = file.path.match(/^.*[\\\/]/)[0]
+							if (this.metaroom.bg !== '') {
+								this.metaroom.loadBackground()
+							}
+
 							this.updateTitle()
 							panel.update(this.metaroom)
+
 						} catch(error) {
 							alert('Unable to open metaroom. Invalid data.')
 							console.log(error)
@@ -369,6 +379,27 @@ exports.Sketch = class Sketch {
 			}
 			fileInput.click()
 			this.updateTitle()
+		}
+	}
+
+	exportBgAsBLK() {
+		if (this.metaroom && this.metaroom.bgImage) {
+			const fileInput = nw.Window.get().window.document.getElementById('fileSaveAs')
+			fileInput.nwsaveas = (this.metaroom.bg || 'untitled') + '.blk'
+			if (this.metaroom.path) {
+				fileInput.nwworkingdir = this.metaroom.path
+			}
+			fileInput.onchange = (event) => {
+				const file = event.target.files[0]
+				this.metaroom.saveBgAsBLK(file.path)
+			}
+			fileInput.click()
+		}
+	}
+
+	exportBgAsPNG() {
+		if (this.metaroom && this.metaroom.bgImage) {
+			this.metaroom.saveBgAsPNG()
 		}
 	}
 

@@ -1,21 +1,20 @@
 /*
 - CA links (link vertical rooms)
 - CA emitters
-- BLK file support
 - favorite places code
 */
 
 const sketch = require('./script/sketch')
 
-const nwWin = nw.Window.get()
-
 window.onload = () => {
-	chrome.developerPrivate.openDevTools({
-    renderViewId: -1,
-    renderProcessId: -1,
-    extensionId: chrome.runtime.id
-	})
-	nwWin.showDevTools()
+	if (process.versions['nw-flavor'] === 'sdk') {
+		chrome.developerPrivate.openDevTools({
+			renderViewId: -1,
+			renderProcessId: -1,
+			extensionId: chrome.runtime.id
+		})
+		nw.Window.get().showDevTools()
+	}
 
 	document.body.addEventListener('contextmenu', (event) => {
 		event.preventDefault()

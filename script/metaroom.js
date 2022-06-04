@@ -1,7 +1,9 @@
 const fs = require('fs')
+const menu = require('./menu')
 const geometry = require('./geometry')
 const caos = require('./caos')
 const panel = require('./panel')
+const blk = require('./blk')
 
 let doorWeight = 2
 let doorSelectedWeight = 4
@@ -204,22 +206,6 @@ exports.Metaroom = class Metaroom {
 		})
 	}
 
-	loadBackground() {
-		let filePath = this.path + this.bg + '.png'
-		fs.readFile(filePath, 'binary', (error, data) => {
-			if (!error) {
-				let buf = new Buffer(data, 'binary')
-				let str = 'data:image/png;base64,' + buf.toString('base64')
-				let p = nw.Window.get().window.p
-				this.bgImage = p.loadImage(str, () => {
-					this.w = this.bgImage.width
-					this.h = this.bgImage.height
-					panel.update(this)
-				})
-			}
-		})
-	}
-
 	chooseBackground() {
 		const fileInput = nw.Window.get().window.document.getElementById('fileOpen')
 		fileInput.accept = '.png,.blk'
@@ -238,6 +224,82 @@ exports.Metaroom = class Metaroom {
 			}
 		}
 		fileInput.click()
+	}
+
+	setBackground(image) {
+		menu.exportBgAsBLK.enabled = true
+		menu.exportBgAsPNG.enabled = true
+		this.bgImage = image
+		this.w = image.width
+		this.h = image.height
+		panel.update(this)
+	}
+
+	loadBackground() {
+		let setBackground = this.setBackground.bind(this)
+		let filepath = this.path + this.bg
+		fs.access(filepath + '.blk', fs.constants.R_OK, (error) => {
+			if (!error) {
+				this.loadBgFromBLK(filepath + '.blk', setBackground)
+			} else {
+				fs.access(filepath + '.png', fs.constants.R_OK, (error) => {
+					if (!error) {
+						this.loadBgFromPNG(filepath + '.png', setBackground)
+					}
+				})
+			}
+		})
+	}
+
+	loadBgFromPNG(filePath, onSuccess) {
+		fs.readFile(filePath, 'binary', (error, data) => {
+			if (!error) {
+				let buf = new Buffer(data, 'binary')
+				let str = 'data:image/png;base64,' + buf.toString('base64')
+				let p = nw.Window.get().window.p
+				p.loadImage(str, onSuccess, () => {
+					alert('Unable to load PNG file.')
+				})
+			} else {
+				alert('Unable to load PNG file.')
+				console.log(error)
+			}
+		})
+	}
+
+	loadBgFromBLK(filePath, onSuccess) {
+		fs.readFile(filePath, (error, data) => {
+			if (!error) {
+				try {
+					let image = blk.toImage(data)
+					onSuccess(image)
+				} catch (e) {
+					alert('Unable to load BLK file.')
+					console.log(e)
+				}
+			} else {
+				alert('Unable to load BLK file.')
+				console.log(error)
+			}
+		})
+	}
+
+	saveBgAsPNG() {
+		if (this.bgImage) {
+			this.bgImage.save(this.bg, 'png')
+		}
+	}
+
+	saveBgAsBLK(filepath) {
+		if (this.bgImage && filepath) {
+			let data = blk.fromImage(this.bgImage)
+			fs.writeFile(filepath, data, (error) => {
+				if (error) {
+					alert('Unable to save BLK file. File not accessible.')
+					console.log(error)
+				}
+			})
+		}
 	}
 
 	chooseMusic() {
