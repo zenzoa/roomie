@@ -6,7 +6,7 @@ exports.toImage = (data) => {
 	let dataView = new DataView(data.buffer)
 
 	// read file header
-	let pixelFormat = dataView.getUint32(0, true)
+	let pixelFormat = dataView.getUint32(0, true /* little-endian */)
 	let blockWidth = dataView.getUint16(4, true)
 	let blockHeight = dataView.getUint16(6, true)
 	let spriteCount = dataView.getUint16(8, true)
@@ -101,7 +101,7 @@ exports.fromImage = (image) => {
 	let dataView = new DataView(buffer)
 
 	// write file header
-	dataView.setUint32(0, 1, true) // use 565 pixel format
+	dataView.setUint32(0, 1 /* 565 format */, true /* little-endian */)
 	dataView.setUint16(4, blockWidth, true)
 	dataView.setUint16(6, blockHeight, true)
 	dataView.setUint16(8, sprites.length, true)
@@ -121,7 +121,7 @@ exports.fromImage = (image) => {
 		s.forEach((pixel, i) => {
 			let pixelOffset = offset + (i * 2)
 			let { r, g, b } = pixel
-			let pixelData = (r << 8) | (g << 3) | (b >> 3)
+			let pixelData = ((r << 8) & 0xF800) | ((g << 3) & 0x07E0) | ((b >> 3) & 0x001F)
 			dataView.setUint16(pixelOffset, pixelData, true)
 		})
 	})
