@@ -1,15 +1,8 @@
-const fs = require('fs')
-const menu = require('./menu')
-const geometry = require('./geometry')
-const caos = require('./caos')
-const panel = require('./panel')
-const blk = require('./blk')
-
 let doorWeight = 2
 let doorSelectedWeight = 4
 let doorSelectDist = 6
 
-exports.Metaroom = class Metaroom {
+class Metaroom {
 	constructor(x = 0, y = 0, w = 800, h = 600, bg = '') {
 		this.x = x
 		this.y = y
@@ -34,13 +27,18 @@ exports.Metaroom = class Metaroom {
 		this.isModified = false
 	}
 
+	setModified(value) {
+		this.isModified = value
+		window.api.fileModified(value)
+	}
+
 	addRoom(r) {
 		r.parentMetaroom = this
 		this.rooms.push(r)
 	}
 
 	removeRoom(r) {
-		this.isModified = true
+		this.setModified(true)
 		this.doors = this.doors.filter((d) => {
 			return d.r1 !== r && d.r2 !== r
 		})
@@ -174,7 +172,7 @@ exports.Metaroom = class Metaroom {
 
 	startDrag(x, y) {
 		if (this.selectedRoom) {
-			this.isModified = true
+			this.setModified(true)
 			this.selectedRoom.startDrag(x, y)
 		}
 		this.selectedParts.forEach((part) => {
@@ -207,80 +205,64 @@ exports.Metaroom = class Metaroom {
 	}
 
 	chooseBackground() {
-		const fileInput = nw.Window.get().window.document.getElementById('fileOpen')
-		fileInput.accept = '.png,.blk'
-		if (this.path) {
-			fileInput.nwworkingdir = this.path
-		}
-		fileInput.onchange = (event) => {
-			const file = event.target.files[0]
-			if (file) {
-				this.bg = file.name.replace('.png', '').replace('.blk', '')
+		window.api.showOpenDialog(this.path || '', [
+			{ name: 'Images', extensions: ['png', 'blk'] },
+			{ name: 'All Files', extensions: ['*'] }
+		]).then((result) => {
+			if (result.filePaths.length > 0) {
+				let filePath = result.filePaths[0]
+				let fileName = filePath.match(/[^\\//]+?$/)[0]
+				this.bg = fileName.replace('.png', '').replace('.blk', '')
 				if (this.path === '') {
-					this.path = file.path.match(/^.*[\\\/]/)[0]
+					this.path = filePath.match(/^.*[\\\/]/)[0]
 				}
 				this.loadBackground()
-				panel.update(this)
 			}
-		}
-		fileInput.click()
+		})
 	}
 
 	setBackground(image) {
-		menu.exportBgAsBLK.enabled = true
-		menu.exportBgAsPNG.enabled = true
+		window.api.bgImageOpen(true)
 		this.bgImage = image
 		this.w = image.width
 		this.h = image.height
-		panel.update(this)
+		updatePanel(this)
 	}
 
 	loadBackground() {
 		let setBackground = this.setBackground.bind(this)
 		let filepath = this.path + this.bg
-		fs.access(filepath + '.blk', fs.constants.R_OK, (error) => {
-			if (!error) {
-				this.loadBgFromBLK(filepath + '.blk', setBackground)
-			} else {
-				fs.access(filepath + '.png', fs.constants.R_OK, (error) => {
-					if (!error) {
-						this.loadBgFromPNG(filepath + '.png', setBackground)
-					}
-				})
-			}
-		})
+		if (window.api.doesFileExist(filepath + '.blk')) {
+			this.loadBgFromBLK(filepath + '.blk', setBackground)
+		} else if (window.api.doesFileExist(filepath + '.png')) {
+			this.loadBgFromPNG(filepath + '.png', setBackground)
+		}
 	}
 
 	loadBgFromPNG(filePath, onSuccess) {
-		fs.readFile(filePath, 'binary', (error, data) => {
-			if (!error) {
-				let buf = new Buffer(data, 'binary')
-				let str = 'data:image/png;base64,' + buf.toString('base64')
-				let p = nw.Window.get().window.p
-				p.loadImage(str, onSuccess, () => {
-					alert('Unable to load PNG file.')
-				})
-			} else {
-				alert('Unable to load PNG file.')
-				console.log(error)
-			}
+		window.api.readFile(filePath, 'binary').then((data) => {
+			let str = 'data:image/png;base64,' + window.api.dataToString(data)
+			window.p.loadImage(str, onSuccess, () => {
+				window.api.showErrorDialog('Unable to load PNG file.')
+			})
+		}).catch((error) => {
+			window.api.showErrorDialog('Unable to load PNG file.')
+			console.log(error)
 		})
 	}
 
 	loadBgFromBLK(filePath, onSuccess) {
-		fs.readFile(filePath, (error, data) => {
-			if (!error) {
-				try {
-					let image = blk.toImage(data)
-					onSuccess(image)
-				} catch (e) {
-					alert('Unable to load BLK file.')
-					console.log(e)
-				}
-			} else {
-				alert('Unable to load BLK file.')
-				console.log(error)
+		window.api.readFile(filePath).then((data) => {
+			try {
+				let image = blk.toImage(data)
+				onSuccess(image)
+			} catch (e) {
+				window.api.showErrorDialog('Unable to load BLK file.')
+				console.log(e)
 			}
+		}).catch((error) => {
+			window.api.showErrorDialog('Unable to load PNG file.')
+			console.log(error)
 		})
 	}
 
@@ -293,46 +275,35 @@ exports.Metaroom = class Metaroom {
 	saveBgAsBLK(filepath) {
 		if (this.bgImage && filepath) {
 			let data = blk.fromImage(this.bgImage)
-			fs.writeFile(filepath, data, (error) => {
-				if (error) {
-					alert('Unable to save BLK file. File not accessible.')
-					console.log(error)
-				}
+			window.api.writeFile(filepath, data).catch((error) => {
+				window.api.showErrorDialog('Unable to save BLK file. File not accessible.')
+				console.log(error)
 			})
 		}
 	}
 
 	chooseMusic() {
-		const fileInput = nw.Window.get().window.document.getElementById('fileOpen')
-		fileInput.accept = '.mng'
-		if (this.path) {
-			fileInput.nwworkingdir = this.path
-		}
-		fileInput.onchange = (event) => {
-			const file = event.target.files[0]
-			if (file) {
-				this.music = file.name.replace('.mng', '')
-				panel.update(this)
+		window.api.showOpenDialog(this.path || '', [
+			{ name: 'Music', extensions: ['mng'] },
+			{ name: 'All Files', extensions: ['*'] }
+		]).then((result) => {
+			if (result.filePaths.length > 0) {
+				let filePath = result.filePaths[0]
+				let fileName = filePath.match(/[^\\//]+?$/)[0]
+				this.music = fileName.replace('.mng', '')
+				this.setModified(true)
+				updatePanel(this)
 			}
-		}
-		fileInput.click()
+		})
 	}
 
-	save(filepath) {
-		if (this.containsCollisions()) {
-			let dialog = confirm('This metaroom contains overlapping rooms.\nSave anyway?')
-			if (!dialog) {
-				return
-			}
-		}
-		this.isModified = false
-		filepath = filepath || (this.path + this.filename)
+	save() {
+		this.setModified(false)
+		filepath = this.path + this.filename
 		let contents = caos.encode(this)
-		fs.writeFile(filepath, contents, (error) => {
-			if (error) {
-				alert('Unable to save metaroom. File not accessible.')
-				console.log(error)
-			}
+		window.api.writeFile(filepath, contents).catch((error) => {
+			window.api.showErrorDialog('Unable to save metaroom. File not accessible.')
+			console.log(error)
 		})
 	}
 

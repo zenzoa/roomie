@@ -1,4 +1,4 @@
-const { h, render, Component } = require('../library/preact.min.js')
+const { h, render, Component } = preact
 
 class NumberInput extends Component {
 	render({ label, value, min, max, onChange }) {
@@ -132,7 +132,7 @@ class RoomSettings extends Component {
 					'9 Salt Water',
 					'10 Ettin Home'
 				],
-				onChange: (v) => { room.type = v }
+				onChange: (v) => { room.setType(v) }
 			}),
 			h(FileInput, { label: 'Music',
 				value: room.music,
@@ -181,10 +181,9 @@ class Panel extends Component {
 	}
 }
 
-exports.update = (metaroom) => {
-	let win = nw.Window.get()
-	let container = win.window.document.getElementById('main')
-	let node = win.window.document.getElementById('panel')
+let updatePanel = (metaroom) => {
+	let container = document.getElementById('main')
+	let node = document.getElementById('panel')
 	render(
 		h(Panel, { metaroom: metaroom }), container, node
 	)

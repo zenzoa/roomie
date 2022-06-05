@@ -1,4 +1,8 @@
 {
-    "name": "roomie",
-    "main": "index.html"
+	"name": "Roomie",
+	"version": "0.1.0",
+	"description": "A metaroom editor for Creatures 3 and Docking Station.",
+	"main": "main.js",
+	"author": "Zenzoa",
+	"license": "MIT"
 }

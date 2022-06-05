@@ -1,6 +1,3 @@
-const geometry = require('./geometry')
-const panel = require('./panel')
-
 let edgeWeight = 2
 let edgeSelectedWeight = 4
 let edgeSelectDist = 6
@@ -10,7 +7,7 @@ let cornerSelectedRadius = 7
 let cornerSelectDist = 7
 let snapDist = 10
 
-exports.Room = class Room {
+class Room {
 	constructor(xL = 0, xR = 0, yTL = 0, yTR = 0, yBL = 0, yBR = 0) {
 		this.parentMetaroom = null
 		this.type = 0
@@ -39,6 +36,11 @@ exports.Room = class Room {
 		this.corners = [ 'TL', 'TR', 'BL', 'BR' ]
 
 		this.hasCollisions = false
+	}
+
+	setType(type) {
+		this.type = type
+		this.parentMetaroom.setModified(true)
 	}
 
 	getCorners() {
@@ -141,13 +143,13 @@ exports.Room = class Room {
 		this.parentMetaroom.rooms.forEach((r) => {
 			if (r !== this) {
 				if (geometry.lineCircleCollision(r.xR, r.yTR, r.xR, r.yBR, this.xL, this.yTL, snapDist) ||
-					geometry.lineCircleCollision(r.xR, r.yTR, r.xR, r.yBR, this.xL, this.yBL, snapDist) ||
-					Math.abs(this.xL - r.xR) < snapDist) {
+					geometry.lineCircleCollision(r.xR, r.yTR, r.xR, r.yBR, this.xL, this.yBL, snapDist)) { //||
+					// Math.abs(this.xL - r.xR) < snapDist) {
 						this.xL = r.xR
 				}
 				if (geometry.lineCircleCollision(r.xL, r.yTL, r.xL, r.yBL, this.xR, this.yTR, snapDist) ||
-					geometry.lineCircleCollision(r.xL, r.yTL, r.xL, r.yBL, this.xR, this.yBR, snapDist) ||
-					Math.abs(this.xR - r.xL) < snapDist) {
+					geometry.lineCircleCollision(r.xL, r.yTL, r.xL, r.yBL, this.xR, this.yBR, snapDist)) { //||
+					// Math.abs(this.xR - r.xL) < snapDist) {
 						this.xR = r.xL
 				}
 				if (geometry.lineCircleCollision(r.xL, r.yBL, r.xR, r.yBR, this.xL, this.yTL, snapDist)) {
@@ -401,19 +403,18 @@ exports.Room = class Room {
 	}
 
 	chooseMusic() {
-		const fileInput = nw.Window.get().window.document.getElementById('fileOpen')
-		fileInput.accept = '.mng'
-		if (this.parentMetaroom.path) {
-			fileInput.nwworkingdir = this.parentMetaroom.path
-		}
-		fileInput.onchange = (event) => {
-			const file = event.target.files[0]
-			if (file) {
-				this.music = file.name.replace('.mng', '')
-				panel.update(this.parentMetaroom)
+		window.api.showOpenDialog(this.parentMetaroom.path || '', [
+			{ name: 'Music', extensions: ['mng'] },
+			{ name: 'All Files', extensions: ['*'] }
+		]).then((result) => {
+			if (result.filePaths.length > 0) {
+				let filePath = result.filePaths[0]
+				let fileName = filePath.match(/[^\\//]+?$/)[0]
+				this.music = fileName.replace('.mng', '')
+				this.parentMetaroom.setModified(true)
+				updatePanel(this.parentMetaroom)
 			}
-		}
-		fileInput.click()
+		})
 	}
 
 	drawRoom(p, selectedRoom) {

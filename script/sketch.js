@@ -1,44 +1,4 @@
-const menu = require('./menu')
-const panel = require('./panel')
-const caos = require('./caos')
-const { Metaroom } = require('./metaroom')
-const { Room } = require('./room')
-
-exports.setup = (p5) => {
-	let s = (p) => {
-		let sketch = new exports.Sketch()
-		p.setup = () => sketch.setup(p)
-		p.draw = () => sketch.draw(p)
-		p.windowResized = () => sketch.windowResized(p)
-		p.mousePressed = () => sketch.mousePressed(p)
-		p.mouseMoved = () => sketch.mouseMoved(p)
-		p.mouseDragged = () => sketch.mouseDragged(p)
-		p.mouseReleased = () => sketch.mouseReleased(p)
-		p.mouseWheel = (event) => sketch.mouseWheel(p, event)
-		p.keyPressed = () => sketch.keyPressed(p)
-		p.keyReleased = () => sketch.keyReleased(p)
-
-		menu.setup(sketch)
-
-		nw.Window.get().on('close', () => {
-			let reallyClose = () => {
-				nw.Window.get().close(true)
-				nw.App.quit()
-			}
-			if (sketch.metaroom && sketch.metaroom.isModified) {
-				let dialog = confirm('Are you sure you want to quit without saving?')
-				if (dialog) {
-					reallyClose()
-				}
-			} else {
-				reallyClose()
-			}
-		})
-	}
-	new p5(s, 'sketch')
-}
-
-exports.Sketch = class Sketch {
+class Sketch {
 	constructor() {
 		this.metaroom = null
 
@@ -61,9 +21,9 @@ exports.Sketch = class Sketch {
 	}
 
 	setup(p) {
-		nw.Window.get().window.p = p
+		window.p = p
 		p.createCanvas(p.windowWidth, p.windowHeight)
-		panel.update(this.metaroom)
+		updatePanel(this.metaroom)
 	}
 
 	draw(p) {
@@ -98,8 +58,8 @@ exports.Sketch = class Sketch {
 		this.xLast = x
 		this.yLast = y
 
-		menu.extrude.enabled = false
-		menu.delete.enabled = false
+		window.api.roomSelect(false)
+		window.api.edgeSelect(false)
 
 		if ((p.keyIsDown(32)) || p.mouseButton === p.CENTER) {
 			this.isPanning = true
@@ -116,9 +76,9 @@ exports.Sketch = class Sketch {
 					this.metaroom.selectObject(x2, y2)
 					if (this.metaroom.selectedRoom) {
 						if (this.metaroom.selectedRoom.selectedPart === 'Room') {
-							menu.delete.enabled = true
+							window.api.roomSelect(true)
 						} else if (['Top', 'Bottom', 'Left', 'Right'].includes(this.metaroom.selectedRoom.selectedPart)) {
-							menu.extrude.enabled = true
+							window.api.edgeSelect(true)
 						}
 					}
 				}
@@ -131,7 +91,7 @@ exports.Sketch = class Sketch {
 			this.metaroom && this.metaroom.selectObject(x2, y2, 'edge')
 			this.isExtrudingRoom = true
 		}
-		panel.update(this.metaroom)
+		updatePanel(this.metaroom)
 	}
 
 	mouseMoved(p) {
@@ -217,7 +177,7 @@ exports.Sketch = class Sketch {
 				this.metaroom.startDrag(xStart2, yStart2)
 			}
 		}
-		panel.update(this.metaroom)
+		updatePanel(this.metaroom)
 	}
 
 	mouseReleased(p) {
@@ -237,7 +197,7 @@ exports.Sketch = class Sketch {
 		this.updateTitle()
 
 		if (x < p.windowWidth - 200) {
-			panel.update(this.metaroom)
+			updatePanel(this.metaroom)
 		}
 	}
 
@@ -249,7 +209,7 @@ exports.Sketch = class Sketch {
 		}
 	}
 
-	zoomReset() {
+	resetZoom() {
 		this.scale = 1
 		this.xOffset = 0
 		this.yOffset = 0
@@ -267,19 +227,6 @@ exports.Sketch = class Sketch {
 		}
 	}
 
-	keyPressed(p) {
-		if (p.key === 'a') {
-			this.createRoom()
-		} else if (p.key === 'e') {
-			this.extrudeRoom()
-		} else if (p.keyCode === p.BACKSPACE || p.keyCode === p.DELETE) {
-			this.deleteRoom()
-		}
-	}
-
-	keyReleased(p) {
-	}
-
 	updateTitle() {
 		let title = 'Roomie'
 		if (this.metaroom) {
@@ -288,112 +235,133 @@ exports.Sketch = class Sketch {
 				title += '*'
 			}
 		}
-		nw.Window.get().window.document.title = title
+		document.title = title
 	}
 
 	newMetaroom() {
-		if (this.metaroom && this.metaroom.isModified) {
-			// ask first
-		} else {
+		let createIt = () => {
 			this.metaroom = new Metaroom()
-			menu.save.enabled = true
-			menu.saveAs.enabled = true
-			menu.createRoom.enabled = true
-			menu.exportBgAsBLK.enabled = false
-			menu.exportBgAsPNG.enabled = false
+			window.api.metaroomOpen(true)
+			window.api.bgImageOpen(false)
 			this.xOffset = 20
 			this.yOffset = 20
 			this.scale = 1
-			panel.update(this.metaroom)
+			updatePanel(this.metaroom)
 			this.updateTitle()
+		}
+
+		if (this.metaroom && this.metaroom.isModified) {
+			window.api.showConfirmDialog('Are you sure you want to create a new metaroom?', 'Unsaved changes will be lost.').then((response) => {
+				if (response === 0) {
+					createIt()
+				}
+			})
+		} else {
+			createIt()
 		}
 	}
 
 	openMetaroom() {
-		let okToOpen = true
-		if (this.metaroom && this.metaroom.isModified) {
-			okToOpen = confirm('Are you sure you want to open a new metaroom?\nYou will lose all unsaved changes.')
-		}
-		if (okToOpen) {
-			const fileInput = nw.Window.get().window.document.getElementById('fileOpen')
-			fileInput.accept = '.cos'
-			fileInput.onchange = (event) => {
-				const file = event.target.files[0]
-				if (file) {
-					const reader = new FileReader()
-					reader.addEventListener('load', () => {
+		let openIt = () => {
+			window.api.showOpenDialog('', [
+				{ name: 'Scripts', extensions: ['cos'] },
+				{ name: 'All Files', extensions: ['*'] }
+			]).then((result) => {
+				if (result.filePaths.length > 0) {
+					let filePath = result.filePaths[0]
+					window.api.readFile(filePath, 'utf8').then((data) => {
 						try {
-							const caosFile = reader.result
-							const tokens = caos.parse(caosFile)
+							const tokens = caos.parse(data)
 							const m = caos.decode(tokens)
 							this.metaroom = m
 
-							menu.save.enabled = true
-							menu.saveAs.enabled = true
-							menu.createRoom.enabled = true
-							menu.exportBgAsBLK.enabled = false
-							menu.exportBgAsPNG.enabled = false
+							window.api.metaroomOpen(true)
+							window.api.bgImageOpen(false)
 
-							this.metaroom.filename = file.name
-							this.metaroom.path = file.path.match(/^.*[\\\/]/)[0]
+							this.metaroom.filename = filePath.match(/[^\\//]+?$/)[0]
+							this.metaroom.path = filePath.match(/^.*[\\\/]/)[0]
 							if (this.metaroom.bg !== '') {
 								this.metaroom.loadBackground()
 							}
 
 							this.updateTitle()
-							panel.update(this.metaroom)
+							updatePanel(this.metaroom)
 
-						} catch(error) {
-							alert('Unable to open metaroom. Invalid data.')
+						} catch (error) {
+							window.api.showErrorDialog('Unable to open metaroom. Invalid data.')
 							console.log(error)
 						}
-					}, false)
-					reader.readAsText(file)
+					}).catch((error) => {
+						window.api.showErrorDialog('Unable to open COS file.')
+						console.log(error)
+					})
 				}
-			}
-			fileInput.click()
+			})
+		}
+
+		if (this.metaroom && this.metaroom.isModified) {
+			window.api.showConfirmDialog('Are you sure you want to open a new metaroom?', 'Unsaved changes will be lost.').then((response) => {
+				if (response === 0) {
+					openIt()
+				}
+			})
+		} else {
+			openIt()
 		}
 	}
 
 	saveMetaroom() {
 		if (this.metaroom && this.metaroom.path) {
-			this.metaroom.save()
+			
+			if (this.metaroom.containsCollisions()) {
+				window.api.showConfirmDialog('This metaroom contains overlapping rooms. Save anyway?').then((response) => {
+					if (response === 0) {
+						this.metaroom.save()
+					}
+				})
+			}
+
 		} else {
-			this.saveAsMetaroom()
+			this.saveMetaroomAs()
 		}
 		this.updateTitle()
 	}
 
-	saveAsMetaroom() {
+	saveMetaroomAs() {
 		if (this.metaroom) {
-			const fileInput = nw.Window.get().window.document.getElementById('fileSaveAs')
-			fileInput.nwsaveas = this.metaroom.filename + '.cos'
-			if (this.metaroom.path) {
-				fileInput.nwworkingdir = this.metaroom.path
+			if (this.metaroom.containsCollisions()) {
+				window.api.showConfirmDialog('This metaroom contains overlapping rooms. Save anyway?').then((response) => {
+					if (response === 0) {
+						
+						window.api.showSaveDialog(this.metaroom.path || '', [
+							{ name: 'Scripts', extensions: ['cos'] },
+							{ name: 'All Files', extensions: ['*'] }
+						]).then((filePath) => {
+							if (filePath) {
+								this.metaroom.filename = filePath.match(/[^\\//]+?$/)[0]
+								this.metaroom.path = filePath.match(/^.*[\\\/]/)[0]
+								this.metaroom.save()
+								this.updateTitle()
+							}
+						})
+
+					}
+				})
 			}
-			fileInput.onchange = (event) => {
-				const file = event.target.files[0]
-				this.metaroom.filename = file.name
-				this.metaroom.path = file.path.match(/^.*[\\\/]/)[0]
-				this.metaroom.save()
-			}
-			fileInput.click()
-			this.updateTitle()
 		}
 	}
 
 	exportBgAsBLK() {
 		if (this.metaroom && this.metaroom.bgImage) {
-			const fileInput = nw.Window.get().window.document.getElementById('fileSaveAs')
-			fileInput.nwsaveas = (this.metaroom.bg || 'untitled') + '.blk'
-			if (this.metaroom.path) {
-				fileInput.nwworkingdir = this.metaroom.path
-			}
-			fileInput.onchange = (event) => {
-				const file = event.target.files[0]
-				this.metaroom.saveBgAsBLK(file.path)
-			}
-			fileInput.click()
+			let filepath = (this.metaroom.path || '') + (this.metaroom.bg || 'untitled') + '.blk'
+			window.api.showSaveDialog(filepath, [
+				{ name: 'Images', extensions: ['blk'] },
+				{ name: 'All Files', extensions: ['*'] }
+			]).then((filePath) => {
+				if (filePath) {
+					this.metaroom.saveBgAsBLK(filePath)
+				}
+			})
 		}
 	}
 
@@ -414,21 +382,52 @@ exports.Sketch = class Sketch {
 		if (this.metaroom && this.metaroom.selectedRoom &&
 			['Top', 'Bottom', 'Left', 'Right'].includes(this.metaroom.selectedRoom.selectedPart)
 			) {
-				let p = nw.Window.get().window.p
 				this.isExtrudingRoom = true
-				this.xStart = p.mouseX
-				this.yStart = p.mouseY
-				this.xLast = p.mouseX
-				this.yLast = p.mouseY
+				this.xStart = window.p.mouseX
+				this.yStart = window.p.mouseY
+				this.xLast = window.p.mouseX
+				this.yLast = window.p.mouseY
 		}
 	}
 
 	deleteRoom() {
 		if (this.metaroom && this.metaroom.selectedRoom) {
-			let dialog = confirm('Are you sure you want to delete this room?')
-			if (dialog) {
-				this.metaroom.removeRoom(this.metaroom.selectedRoom)
-			}
+			window.api.showConfirmDialog('Are you sure you want to delete this room?').then((response) => {
+				if (response === 0) {
+					this.metaroom.removeRoom(this.metaroom.selectedRoom)
+				}
+			})
 		}
 	}
 }
+
+let s = (p) => {
+	let sketch = new Sketch()
+	p.setup = () => sketch.setup(p)
+	p.draw = () => sketch.draw(p)
+	p.windowResized = () => sketch.windowResized(p)
+	p.mousePressed = () => sketch.mousePressed(p)
+	p.mouseMoved = () => sketch.mouseMoved(p)
+	p.mouseDragged = () => sketch.mouseDragged(p)
+	p.mouseReleased = () => sketch.mouseReleased(p)
+	p.mouseWheel = (event) => sketch.mouseWheel(p, event)
+
+	// file menu
+	window.api.doOn('newMetaroom', () => { sketch.newMetaroom() })
+	window.api.doOn('openMetaroom', () => { sketch.openMetaroom() })
+	window.api.doOn('saveMetaroom', () => { sketch.saveMetaroom() })
+	window.api.doOn('saveMetaroomAs', () => { sketch.saveMetaroomAs() })
+	window.api.doOn('exportBgAsBLK', () => { sketch.exportBgAsBLK() })
+	window.api.doOn('exportBgAsPNG', () => { sketch.exportBgAsPNG() })
+
+	// room menu
+	window.api.doOn('createRoom', () => { sketch.createRoom() })
+	window.api.doOn('extrudeRoom', () => { sketch.extrudeRoom() })
+	window.api.doOn('deleteRoom', () => { sketch.deleteRoom() })
+
+	// view menu
+	window.api.doOn('resetZoom', () => { sketch.resetZoom() })
+	window.api.doOn('zoomIn', () => { sketch.zoomIn() })
+	window.api.doOn('zoomOut', () => { sketch.zoomOut() })
+}
+new p5(s, 'sketch')

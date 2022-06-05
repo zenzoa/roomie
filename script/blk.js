@@ -2,7 +2,9 @@
 // https://creatures.wiki/BLK_files
 // https://creatures.wiki/555/565
 
-exports.toImage = (data) => {
+let blk = {}
+
+blk.toImage = (data) => {
 	let dataView = new DataView(data.buffer)
 
 	// read file header
@@ -50,10 +52,9 @@ exports.toImage = (data) => {
 	})
 
 	// stitch sprites together
-	let p = nw.Window.get().window.p
 	let combinedWidth = blockWidth * 128
 	let combinedHeight = blockHeight * 128
-	let image = p.createImage(combinedWidth, combinedHeight)
+	let image = window.p.createImage(combinedWidth, combinedHeight)
 	image.loadPixels()
 	for (let y = 0; y < combinedHeight; y++) {
 		for (let x = 0; x < combinedWidth; x++) {
@@ -73,7 +74,7 @@ exports.toImage = (data) => {
 	return image
 }
 
-exports.fromImage = (image) => {
+blk.fromImage = (image) => {
 	image.loadPixels()
 	let blockWidth = Math.ceil(image.width / 128)
 	let blockHeight = Math.ceil(image.height / 128)

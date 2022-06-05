@@ -69,6 +69,10 @@ label + label {
 	margin-left: 5px;
 }
 
+input[type="file"] {
+	display: none;
+}
+
 input[type="text"], input[type="number"], select {
 	display: block;
 	width: 100%;
