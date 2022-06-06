@@ -172,54 +172,6 @@ class Room {
 		})
 	}
 
-	checkSides(a, b) {
-		let i = geometry.lineLineIntersection(a[0].x, a[0].y, a[1].x, a[1].y, b[0].x, b[0].y, b[1].x, b[1].y)
-		if (
-			geometry.pointOnLine(a[0].x, a[0].y,  b[0].x, b[0].y, b[1].x, b[1].y) ||
-			geometry.pointOnLine(a[1].x, a[1].y,  b[0].x, b[0].y, b[1].x, b[1].y) ||
-			geometry.pointOnLine(b[0].x, b[0].y,  a[0].x, a[0].y, a[1].x, a[1].y) ||
-			geometry.pointOnLine(b[1].x, b[1].y,  a[0].x, a[0].y, a[1].x, a[1].y)
-		) {
-			i = null
-		}
-		return i
-	}
-
-	checkCollisions() {
-		this.parentMetaroom.rooms.forEach((r1) => {
-			r1.hasCollisions = false
-			let top1 = [ { x: r1.xL, y: r1.yTL }, { x: r1.xR, y: r1.yTR } ]
-			let bottom1 = [ { x: r1.xL, y: r1.yBL }, { x: r1.xR, y: r1.yBR } ]
-			let left1 = [ { x: r1.xL, y: r1.yTL }, { x: r1.xL, y: r1.yBL } ]
-			let right1 = [ { x: r1.xR, y: r1.yTR }, { x: r1.xR, y: r1.yBR } ]
-			this.parentMetaroom.rooms.forEach((r2) => {
-				if (r1 !== r2) {
-					let top2 = [ { x: r2.xL, y: r2.yTL }, { x: r2.xR, y: r2.yTR } ]
-					let bottom2 = [ { x: r2.xL, y: r2.yBL }, { x: r2.xR, y: r2.yBR } ]
-					let left2 = [ { x: r2.xL, y: r2.yTL }, { x: r2.xL, y: r2.yBL } ]
-					let right2 = [ { x: r2.xR, y: r2.yTR }, { x: r2.xR, y: r2.yBR } ]
-					if (this.checkSides(top1, top2) || this.checkSides(top1, bottom2) || this.checkSides(top1, left2) || this.checkSides(top1, right2)) {
-						r1.hasCollisions = true
-						return
-					}
-					if (this.checkSides(bottom1, top2) || this.checkSides(bottom1, bottom2) || this.checkSides(bottom1, left2) || this.checkSides(bottom1, right2)) {
-						r1.hasCollisions = true
-						return
-					}
-					if (this.checkSides(left1, top2) || this.checkSides(left1, bottom2) || this.checkSides(left1, left2) || this.checkSides(left1, right2)) {
-						r1.hasCollisions = true
-						return
-					}
-					if (this.checkSides(right1, top2) || this.checkSides(right1, bottom2) || this.checkSides(right1, left2) || this.checkSides(right1, right2)) {
-						r1.hasCollisions = true
-						return
-					}
-					// also check to see if one's inside the other
-				}
-			})
-		})
-	}
-
 	checkConstraints() {
 		if (this.xL < 0) {
 			this.xL = 0
@@ -337,7 +289,6 @@ class Room {
 	endDrag() {
 		this.removeDoors()
 		this.findDoors()
-		this.checkCollisions()
 	}
 
 	setProperty(propName, propValue) {
@@ -346,7 +297,6 @@ class Room {
 		this.updatePositions()
 		this.removeDoors()
 		this.findDoors()
-		this.checkCollisions()
 		updatePanel(this.parentMetaroom)
 	}
 

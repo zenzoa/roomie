@@ -34,6 +34,35 @@ class Metaroom {
 
 	setModified(value) {
 		this.isModified = value
+		updatePanel(this)
+	}
+
+	setX(x) {
+		if (x < 0) { x = 0 }
+		if (x > window.sketch.mapWidth - this.w) { x = window.sketch.mapWidth - this.w }
+		this.x = Math.floor(x)
+		this.setModified(true)
+	}
+
+	setY(y) {
+		if (y < 0) { y = 0 }
+		if (y > window.sketch.mapHeight - this.h) { y = window.sketch.mapHeight - this.h }
+		this.y = Math.floor(y)
+		this.setModified(true)
+	}
+
+	setWidth(w) {
+		if (w < 0) { w = 0 }
+		if (w > window.sketch.mapWidth - this.x) { w = window.sketch.mapWidth - this.x }
+		this.w = Math.floor(w)
+		this.setModified(true)
+	}
+
+	setHeight(h) {
+		if (h < 0) { h = 0 }
+		if (h > window.sketch.mapHeight - this.y) { h = window.sketch.mapHeight - this.y }
+		this.h = Math.floor(h)
+		this.setModified(true)
 	}
 
 	addRoom(r) {
@@ -112,6 +141,57 @@ class Metaroom {
 			}
 		})
 		return door
+	}
+
+	checkSides(a, b) {
+		let i = geometry.lineLineIntersection(a[0].x, a[0].y, a[1].x, a[1].y, b[0].x, b[0].y, b[1].x, b[1].y)
+		if (
+			geometry.pointOnLine(a[0].x, a[0].y,  b[0].x, b[0].y, b[1].x, b[1].y) ||
+			geometry.pointOnLine(a[1].x, a[1].y,  b[0].x, b[0].y, b[1].x, b[1].y) ||
+			geometry.pointOnLine(b[0].x, b[0].y,  a[0].x, a[0].y, a[1].x, a[1].y) ||
+			geometry.pointOnLine(b[1].x, b[1].y,  a[0].x, a[0].y, a[1].x, a[1].y)
+		) {
+			i = null
+		}
+		return i
+	}
+
+	checkCollisions() {
+		this.rooms.forEach((r1) => {
+			r1.hasCollisions = false
+			let top1 = [ { x: r1.xL, y: r1.yTL }, { x: r1.xR, y: r1.yTR } ]
+			let bottom1 = [ { x: r1.xL, y: r1.yBL }, { x: r1.xR, y: r1.yBR } ]
+			let left1 = [ { x: r1.xL, y: r1.yTL }, { x: r1.xL, y: r1.yBL } ]
+			let right1 = [ { x: r1.xR, y: r1.yTR }, { x: r1.xR, y: r1.yBR } ]
+			this.rooms.forEach((r2) => {
+				if (r1 !== r2) {
+					let top2 = [ { x: r2.xL, y: r2.yTL }, { x: r2.xR, y: r2.yTR } ]
+					let bottom2 = [ { x: r2.xL, y: r2.yBL }, { x: r2.xR, y: r2.yBR } ]
+					let left2 = [ { x: r2.xL, y: r2.yTL }, { x: r2.xL, y: r2.yBL } ]
+					let right2 = [ { x: r2.xR, y: r2.yTR }, { x: r2.xR, y: r2.yBR } ]
+					if (this.checkSides(top1, top2) || this.checkSides(top1, bottom2) || this.checkSides(top1, left2) || this.checkSides(top1, right2)) {
+						r1.hasCollisions = true
+						return
+					}
+					if (this.checkSides(bottom1, top2) || this.checkSides(bottom1, bottom2) || this.checkSides(bottom1, left2) || this.checkSides(bottom1, right2)) {
+						r1.hasCollisions = true
+						return
+					}
+					if (this.checkSides(left1, top2) || this.checkSides(left1, bottom2) || this.checkSides(left1, left2) || this.checkSides(left1, right2)) {
+						r1.hasCollisions = true
+						return
+					}
+					if (this.checkSides(right1, top2) || this.checkSides(right1, bottom2) || this.checkSides(right1, left2) || this.checkSides(right1, right2)) {
+						r1.hasCollisions = true
+						return
+					}
+					if (r1.isPointInside(r2.xL, r2.yTL) && r1.isPointInside(r2.xR, r2.yTR) && r1.isPointInside(r2.xL, r2.yBL) && r1.isPointInside(r2.xR, r2.yBR)) {
+						r1.hasCollisions = true
+						return
+					}
+				}
+			})
+		})
 	}
 
 	isPointInside(x, y) {
@@ -231,6 +311,7 @@ class Metaroom {
 				part.room.endDrag(x, y)
 			}
 		})
+		this.checkCollisions()
 	}
 
 	chooseBackground() {
@@ -245,7 +326,6 @@ class Metaroom {
 				if (this.path === '') {
 					this.path = filePath.match(/^.*[\\\/]/)[0]
 				}
-				this.setModified(true)
 				this.loadBackground()
 			}
 		})
@@ -256,7 +336,7 @@ class Metaroom {
 		this.bgImage = image
 		this.w = image.width
 		this.h = image.height
-		updatePanel(this)
+		this.setModified(true)
 	}
 
 	loadBackground() {

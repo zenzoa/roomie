@@ -58,21 +58,21 @@ class MetaroomSettings extends Component {
 	render({ metaroom }) {
 		return [
 			h('h3', null, 'Metaroom Properties'),
-			h(NumberInput, { label: 'X', min: 0, max: 100000,
+			h(NumberInput, { label: 'X', min: 0, max: window.sketch.mapWidth,
 				value: metaroom.x,
-				onChange: (v) => { metaroom.x = Math.floor(v) }
+				onChange: (v) => { metaroom.setX(v) }
 			}),
-			h(NumberInput, { label: 'Y', min: 0, max: 100000,
+			h(NumberInput, { label: 'Y', min: 0, max: window.sketch.mapHeight,
 				value: metaroom.y,
-				onChange: (v) => { metaroom.y = Math.floor(v) }
+				onChange: (v) => { metaroom.setY(v) }
 			}),
-			h(NumberInput, { label: 'Width', min: 100, max: 100000,
+			h(NumberInput, { label: 'Width', min: 0, max: window.sketch.mapWidth - metaroom.x,
 				value: metaroom.w,
-				onChange: (v) => { metaroom.w = Math.floor(v) }
+				onChange: (v) => { metaroom.setWidth(v) }
 			}),
-			h(NumberInput, { label: 'Height', min: 100, max: 100000,
+			h(NumberInput, { label: 'Height', min: 0, max: window.sketch.mapHeight - metaroom.y,
 				value: metaroom.h,
-				onChange: (v) => { metaroom.h = Math.floor(v) }
+				onChange: (v) => { metaroom.setHeight(v) }
 			}),
 			h('hr'),
 			h(FileInput, { label: 'Background',
@@ -180,7 +180,7 @@ class FavPlaceSettings extends Component {
 				onChange: (v) => { favPlace.sprite = v },
 				onClick: () => { favPlace.chooseSprite() }
 			}),
-			h(NumberInput, { label: 'Classifier', min: 0, max: 100000,
+			h(NumberInput, { label: 'Classifier',
 				value: favPlace.classifier,
 				onChange: (v) => { favPlace.classifier = v }
 			})

@@ -1,7 +1,5 @@
 /*
 - hold shift to lock ortho movement
-- bug where collisions don't always show up red
-- prevent extruding outside bounds of metaroom
 - CA links (link vertical rooms)
 - CA emitters
 - fix snap-to-edge when it's just edge-to-edge

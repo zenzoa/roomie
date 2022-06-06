@@ -18,6 +18,9 @@ class Sketch {
 		this.yStart = 0
 		this.xLast = 0
 		this.yLast = 0
+
+		this.mapWidth = 200000
+		this.mapHeight = 200000
 	}
 
 	setup(p) {
@@ -163,16 +166,16 @@ class Sketch {
 				if (rm) {
 					this.metaroom.deselect()
 					let side = rm.selectedPart
-					if (side === 'Top') {
+					if (side === 'Top' && rm.yTL > 10 && rm.yTR > 10) {
 						newRoom = new Room(rm.xL, rm.xR, rm.yTL - 10, rm.yTR - 10, rm.yTL, rm.yTR)
 						newRoom.selectedPart = 'Top'
-					} else if (side === 'Bottom') {
+					} else if (side === 'Bottom' && rm.yBL < this.metaroom.h - 10 && rm.yBR < this.metaroom.h - 10) {
 						newRoom = new Room(rm.xL, rm.xR, rm.yBL, rm.yBR, rm.yBL + 10, rm.yBR + 10)
 						newRoom.selectedPart = 'Bottom'
-					} else if (side === 'Left') {
+					} else if (side === 'Left' && rm.xL > 10) {
 						newRoom = new Room(rm.xL, rm.xL + 10, rm.yTL, rm.yTL, rm.yBL, rm.yBL)
 						newRoom.selectedPart = 'Left'
-					} else if (side === 'Right') {
+					} else if (side === 'Right' && rm.xR < this.metaroom.w - 10) {
 						newRoom = new Room(rm.xR, rm.xR - 10, rm.yTR, rm.yTR, rm.yBR, rm.yBR)
 						newRoom.selectedPart = 'Right'
 					}
@@ -180,9 +183,9 @@ class Sketch {
 						this.metaroom.addRoom(newRoom)
 						this.metaroom.selectedRoom = newRoom
 						this.metaroom.startDrag(xStart2, yStart2)
-						this.isExtrudingRoom = false
 						this.isDragging = true
 					}
+					this.isExtrudingRoom = false
 				} else {
 					newRoom = new Room(xStart2, xStart2 + 10, yStart2, yStart2, yStart2 + 10, yStart2 + 10)
 					newRoom.selectedPart = 'BR'
@@ -202,7 +205,6 @@ class Sketch {
 				this.metaroom.startDrag(xStart2, yStart2)
 			}
 		}
-		updatePanel(this.metaroom)
 	}
 
 	mouseReleased(p) {

@@ -235,7 +235,7 @@ caos.encode = (m) => {
 
 	// set map size
 	lines.push('*ROOMIE Expand map size')
-	lines.push('mapd 200000 200000')
+	lines.push(`mapd ${window.sketch.mapWidth} ${window.sketch.mapHeight}`)
 
 	// add metaroom
 	lines.push('')
@@ -243,9 +243,11 @@ caos.encode = (m) => {
 	lines.push(`setv va01 addm ${m.x} ${m.y} ${m.w} ${m.h} "${m.bg}"`)
 
 	// set metaroom music
-	let xCenter = m.x + Math.floor(m.w / 2)
-	let yCenter = m.y + Math.floor(m.h / 2)
-	lines.push(`mmsc ${xCenter} ${yCenter} "${m.music}"`)
+	if (m.music) {
+		let xCenter = m.x + Math.floor(m.w / 2)
+		let yCenter = m.y + Math.floor(m.h / 2)
+		lines.push(`mmsc ${xCenter} ${yCenter} "${m.music}"`)
+	}
 
 	m.rooms.forEach((r, i) => {
 		r.index = i
@@ -254,11 +256,13 @@ caos.encode = (m) => {
 		// set room type
 		lines.push(`    rtyp va00 ${r.type}`)
 		// set room music
-		let xRoomCenter = r.xL + Math.floor((r.xR - r.xL) / 2)
-		let yRoomCenterLeft = r.yTL + Math.floor((r.yBL - r.yTL) / 2)
-		let yRoomCenterRight = r.yTR + Math.floor((r.yBR - r.yTR) / 2)
-		let yRoomCenter = Math.min(yRoomCenterLeft, yRoomCenterRight) + Math.abs(Math.floor((yRoomCenterRight - yRoomCenterLeft) / 2))
-		lines.push(`    rmsc ${xRoomCenter + m.x} ${yRoomCenter + m.y} "${r.music}"`)
+		if (r.music) {
+			let xRoomCenter = r.xL + Math.floor((r.xR - r.xL) / 2)
+			let yRoomCenterLeft = r.yTL + Math.floor((r.yBL - r.yTL) / 2)
+			let yRoomCenterRight = r.yTR + Math.floor((r.yBR - r.yTR) / 2)
+			let yRoomCenter = Math.min(yRoomCenterLeft, yRoomCenterRight) + Math.abs(Math.floor((yRoomCenterRight - yRoomCenterLeft) / 2))
+			lines.push(`    rmsc ${xRoomCenter + m.x} ${yRoomCenter + m.y} "${r.music}"`)
+		}
 		// set temp variable for room id
 		lines.push(`    setv game "map_tmp_${i}" va00`)
 	})

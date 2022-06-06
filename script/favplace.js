@@ -19,14 +19,14 @@ class FavPlace {
 		if (x < 2) { x = 2}
 		if (x > this.parentMetaroom.w - 2) { x = this.parentMetaroom.w - 2}
 		this.x = Math.floor(x)
-		updatePanel(this.parentMetaroom)
+		this.parentMetaroom.setModified(true)
 	}
 
 	setY(y) {
 		if (y < 1) { y = 1}
 		if (y > this.parentMetaroom.h - 1) { y = this.parentMetaroom.h - 1}
 		this.y = Math.floor(y)
-		updatePanel(this.parentMetaroom)
+		this.parentMetaroom.setModified(true)
 	}
 
 	chooseSprite() {
@@ -39,7 +39,6 @@ class FavPlace {
 				let fileName = filePath.match(/[^\\//]+?$/)[0]
 				this.sprite = fileName.replace('.c16', '')
 				this.parentMetaroom.setModified(true)
-				updatePanel(this.parentMetaroom)
 			}
 		})
 	}
