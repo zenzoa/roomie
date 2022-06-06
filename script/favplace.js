@@ -8,7 +8,7 @@ class FavPlace {
 		
 		this.r = 22
 		this.x = Math.floor(metaroom.w / 2) - this.r
-		this.y = Math.floor(metaroom.h / 2) -this.r
+		this.y = Math.floor(metaroom.h / 2) - this.r
 		this.xDrag = this.x
 		this.yDrag = this.y
 		this.xStart = this.x
@@ -18,13 +18,15 @@ class FavPlace {
 	setX(x) {
 		if (x < 2) { x = 2}
 		if (x > this.parentMetaroom.w - 2) { x = this.parentMetaroom.w - 2}
-		this.x = x
+		this.x = Math.floor(x)
+		updatePanel(this.parentMetaroom)
 	}
 
 	setY(y) {
 		if (y < 1) { y = 1}
 		if (y > this.parentMetaroom.h - 1) { y = this.parentMetaroom.h - 1}
-		this.y = y
+		this.y = Math.floor(y)
+		updatePanel(this.parentMetaroom)
 	}
 
 	chooseSprite() {

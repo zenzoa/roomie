@@ -17,6 +17,8 @@ class Metaroom {
 
 		this.music = ''
 
+		this.favPlace = new FavPlace(this)
+		
 		this.rooms = []
 		this.doors = []
 		
@@ -25,9 +27,9 @@ class Metaroom {
 		this.selectedRoom = null
 		this.selectedParts = []
 
-		this.favPlace = new FavPlace(this)
-
 		this.isModified = false
+
+		this.ignoredLines = []
 	}
 
 	setModified(value) {

@@ -10,25 +10,28 @@ caos.parse = (text) => {
 			if (c.match(/\d/g)) {
 				tokenType = 'number'
 				tokenValue = c
-			} else if (c.match(/[A-Za-z0-9:]/g)) {
-				tokenType = 'command'
-				tokenValue = c
 			} else if (c === '"') {
 				tokenType = 'string'
 				tokenValue = ''
+			} else if (c.match(/\S/g)) {
+				tokenType = 'command'
+				tokenValue = c
 			}
 		} else {
 			if (tokenType === 'number' && (c.match(/\d/g) || c === '.')) {
 				tokenValue = tokenValue + c
-			} else if (tokenType === 'command' && c.match(/[A-Za-z0-9:]/g)) {
-				tokenValue = tokenValue + c
 			} else if (tokenType === 'string' && c !== '"') {
+				tokenValue = tokenValue + c
+			} else if (tokenType === 'command' && c.match(/\S/g)) {
 				tokenValue = tokenValue + c
 			} else {
 				tokens.push({
 					type: tokenType,
 					value: tokenValue
 				})
+				if (c === '\n' || c === '\r') {
+					tokens.push({ type: 'newline' })
+				}
 				tokenType = null
 			}
 		}
@@ -43,8 +46,11 @@ caos.decode = (tokens) => {
 
 	let target = null
 
+	let ignoredLines = []
+
 	const decodeNextToken = () => {
 		let token = tokens.shift()
+		console.log(token.type, token.value)
 		if (token.type === 'command') {
 
 			if (token.value === 'setv') {
@@ -163,6 +169,22 @@ caos.decode = (tokens) => {
 				}
 			} else if (token.value === 'tick') {
 				let tickValue = decodeNextToken()
+			} else if (token.value === 'delg') {
+				let variableToDelete = decodeNextToken()
+			} else {
+				let ignoredLine = token.value
+				let nextToken = tokens.shift()
+				while(nextToken && nextToken.type !== 'newline') {
+					if (nextToken.type === 'string') {
+						ignoredLine += ' "' + nextToken.value + '"'
+					} else {
+						ignoredLine += ' ' + nextToken.value
+					}
+					nextToken = tokens.shift()
+				}
+				if (ignoredLine && token.value !== '*ROOMIE') {
+					ignoredLines.push(ignoredLine)
+				}
 			}
 
 		} else if (token.type === 'number') {
@@ -177,6 +199,9 @@ caos.decode = (tokens) => {
 		decodeNextToken()
 	}
 
+	if (newMetaroom) {
+		newMetaroom.ignoredLines = ignoredLines
+	}
 	return newMetaroom
 }
 
@@ -184,9 +209,12 @@ caos.encode = (m) => {
 	let lines = []
 
 	// set map size
+	lines.push('*ROOMIE Expand map size')
 	lines.push('mapd 100000 100000')
 
 	// add metaroom
+	lines.push('')
+	lines.push('*ROOMIE Create new metaroom')
 	lines.push(`setv va01 addm ${m.x} ${m.y} ${m.w} ${m.h} "${m.bg}"`)
 
 	// set metaroom music
@@ -214,6 +242,7 @@ caos.encode = (m) => {
 	// add doors
 	if (m.doors.length > 0) {
 		lines.push('')
+		lines.push('*ROOMIE Add doors between rooms')
 		m.doors.forEach((d) => {
 			if (d.active) {
 				lines.push(`door game "map_tmp_${d.r1.index}" game "map_tmp_${d.r2.index}" ${d.permeability}`)
@@ -224,6 +253,7 @@ caos.encode = (m) => {
 	
 	// remove temp variables
 	lines.push('')
+	lines.push('*ROOMIE Delete temporary variables')
 	m.rooms.forEach((r, i) => {
 		lines.push(`delg "map_tmp_${i}"`)
 	})
@@ -231,6 +261,7 @@ caos.encode = (m) => {
 	// TODO: favorite place icon
 	if (m.favPlace.enabled) {
 		lines.push('')
+		lines.push('*ROOMIE Add favorite place icon')
 		lines.push(`new: simp 1 3 ${m.favPlace.classifier} "${m.favPlace.sprite}" 1 0 1`)
 		lines.push('attr 272')
 		lines.push(`mvto ${m.favPlace.x + m.x - 2} ${m.favPlace.y + m.y - 1}`)
@@ -240,6 +271,11 @@ caos.encode = (m) => {
 	// TODO: CA links
 
 	// TODO: CA emitters
+
+	if (m.ignoredLines.length > 0) {
+		lines.push('')
+		lines = lines.concat(m.ignoredLines)
+	}
 
 	return lines.join('\n')
 }

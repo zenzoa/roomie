@@ -347,6 +347,7 @@ class Room {
 		this.removeDoors()
 		this.findDoors()
 		this.checkCollisions()
+		updatePanel(this.parentMetaroom)
 	}
 
 	findDoors() {
