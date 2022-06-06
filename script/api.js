@@ -27,6 +27,7 @@ exports.api = {
 				const file = event.target.files[0]
 				if (file) {
 					let filePaths = [ file.path ]
+					fileInput.value = null
 					resolve({ filePaths })
 				} else {
 					reject()
@@ -44,6 +45,7 @@ exports.api = {
 			fileInput.onchange = (event) => {
 				const file = event.target.files[0]
 				if (file) {
+					fileInput.value = null
 					resolve(file.path)
 				} else {
 					reject()

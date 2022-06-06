@@ -10,7 +10,7 @@ class NumberInput extends Component {
 					value: value,
 					min: min,
 					max: max,
-					onChange: (e) => { onChange(e.target.value) }
+					onChange: (e) => { onChange(parseInt(e.target.value)) }
 				})
 			])
 		]
@@ -45,7 +45,7 @@ class DropdownInput extends Component {
 				h('span', null, label),
 				h('select', {
 					value: value,
-					onChange: (e) => { onChange(e.target.value) }
+					onChange: (e) => { onChange(parseInt(e.target.value)) }
 				},
 					options.map((o, i) => h('option', { value: i }, o))
 				)
@@ -66,11 +66,11 @@ class MetaroomSettings extends Component {
 				value: metaroom.y,
 				onChange: (v) => { metaroom.y = Math.floor(v) }
 			}),
-			h(NumberInput, { label: 'Width', min: 0, max: 100000,
+			h(NumberInput, { label: 'Width', min: 100, max: 100000,
 				value: metaroom.w,
 				onChange: (v) => { metaroom.w = Math.floor(v) }
 			}),
-			h(NumberInput, { label: 'Height', min: 0, max: 100000,
+			h(NumberInput, { label: 'Height', min: 100, max: 100000,
 				value: metaroom.h,
 				onChange: (v) => { metaroom.h = Math.floor(v) }
 			}),
@@ -84,7 +84,14 @@ class MetaroomSettings extends Component {
 				value: metaroom.music,
 				onChange: (v) => { metaroom.music = v },
 				onClick: () => { metaroom.chooseMusic() }
-			})
+			}),
+			h(DropdownInput, { label: 'Favorite Place Icon', value: (metaroom.favPlace.enabled ? 0 : 1),
+				options: [
+					'Include',
+					'Don\'t Include'
+				],
+				onChange: (v) => { metaroom.favPlace.enabled = (v === 0) }
+			}),
 		]
 	}
 }
@@ -155,10 +162,42 @@ class DoorSettings extends Component {
 	}
 }
 
+class FavPlaceSettings extends Component {
+	render({ metaroom, favPlace }) {
+		return [
+			h('h3', null, 'Favorite Place Icon'),
+			h(NumberInput, { label: 'X', min: 2, max: metaroom.w - 2,
+				value: favPlace.x,
+				onChange: (v) => { favPlace.setX(v) }
+			}),
+			h(NumberInput, { label: 'Y', min: 1, max: metaroom.h - 1,
+				value: favPlace.y,
+				onChange: (v) => { favPlace.setY(v) }
+			}),
+			h('hr'),
+			h(FileInput, { label: 'Sprite',
+				value: favPlace.sprite,
+				onChange: (v) => { favPlace.sprite = v },
+				onClick: () => { favPlace.chooseSprite() }
+			}),
+			h(NumberInput, { label: 'Classifier', min: 0, max: 100000,
+				value: favPlace.classifier,
+				onChange: (v) => { favPlace.classifier = v }
+			})
+		]
+	}
+}
+
 class Panel extends Component {
 	render({ metaroom }) {
 		if (metaroom) {
-			if (metaroom.selectedDoor) {
+			if (metaroom.selectedFavPlace) {
+				return [
+					h('div', { className: 'panel'}, [
+						h(FavPlaceSettings, { metaroom: metaroom, favPlace: metaroom.favPlace })
+					])
+				]
+			} else if (metaroom.selectedDoor) {
 				return [
 					h('div', { className: 'panel'}, [
 						h(DoorSettings, { door: metaroom.selectedDoor })

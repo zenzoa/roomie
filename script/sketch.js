@@ -107,7 +107,7 @@ class Sketch {
 						}
 					}
 				}
-				if (!this.metaroom.selectedRoom) {
+				if (!this.metaroom.somethingSelected()) {
 					this.isPanning = true
 				}
 			}
@@ -149,7 +149,7 @@ class Sketch {
 			this.xOffset += dx / this.scale
 			this.yOffset += dy / this.scale
 
-		} else if (this.isDragging && this.metaroom && this.metaroom.selectedRoom) {
+		} else if (this.isDragging && this.metaroom && this.metaroom.somethingSelected()) {
 			this.metaroom.drag(x2, y2)
 			if (this.isCreatingRoom) {
 				this.metaroom.selectedRoom.yBL = this.metaroom.selectedRoom.yBR
@@ -281,6 +281,7 @@ class Sketch {
 	newMetaroom() {
 		let createIt = () => {
 			this.metaroom = new Metaroom()
+			this.metaroom.favPlace.enabled = true
 			window.api.metaroomOpen(true)
 			window.api.bgImageOpen(false)
 			this.xOffset = 20
@@ -352,15 +353,15 @@ class Sketch {
 
 	saveMetaroom() {
 		if (this.metaroom && this.metaroom.path) {
-			
 			if (this.metaroom.containsCollisions()) {
 				window.api.showConfirmDialog('This metaroom contains overlapping rooms. Save anyway?').then((response) => {
 					if (response === 0) {
 						this.metaroom.save()
 					}
 				})
+			} else {
+				this.metaroom.save()
 			}
-
 		} else {
 			this.saveMetaroomAs()
 		}
@@ -368,25 +369,30 @@ class Sketch {
 	}
 
 	saveMetaroomAs() {
+		let openSaveDialog = () => {
+			let defaultPath = this.metaroom.path || ''
+			let defaultName = (this.metaroom.filename || 'untitled.cos')
+			window.api.showSaveDialog(defaultPath, defaultName, [
+				{ name: 'Scripts', extensions: ['cos'] },
+				{ name: 'All Files', extensions: ['*'] }
+			]).then((filePath) => {
+				if (filePath) {
+					this.metaroom.filename = filePath.match(/[^\\//]+?$/)[0]
+					this.metaroom.path = filePath.match(/^.*[\\\/]/)[0]
+					this.metaroom.save()
+					this.updateTitle()
+				}
+			})
+		}
 		if (this.metaroom) {
 			if (this.metaroom.containsCollisions()) {
 				window.api.showConfirmDialog('This metaroom contains overlapping rooms. Save anyway?').then((response) => {
 					if (response === 0) {
-						let defaultPath = this.metaroom.path || ''
-						let defaultName = (this.metaroom.filename || '') + '.cos'
-						window.api.showSaveDialog(defaultPath, defaultName, [
-							{ name: 'Scripts', extensions: ['cos'] },
-							{ name: 'All Files', extensions: ['*'] }
-						]).then((filePath) => {
-							if (filePath) {
-								this.metaroom.filename = filePath.match(/[^\\//]+?$/)[0]
-								this.metaroom.path = filePath.match(/^.*[\\\/]/)[0]
-								this.metaroom.save()
-								this.updateTitle()
-							}
-						})
+						openSaveDialog()
 					}
 				})
+			} else {
+				openSaveDialog()
 			}
 		}
 	}

@@ -20,9 +20,12 @@ class Metaroom {
 		this.rooms = []
 		this.doors = []
 		
+		this.selectedFavPlace = false
 		this.selectedDoor = null
 		this.selectedRoom = null
 		this.selectedParts = []
+
+		this.favPlace = new FavPlace(this)
 
 		this.isModified = false
 	}
@@ -123,6 +126,13 @@ class Metaroom {
 		let tempObject = null
 
 		if (!type) {
+			if (geometry.pointCircleCollision(x, y, this.favPlace.x + this.favPlace.r, this.favPlace.y + this.favPlace.r, this.favPlace.r)) {
+				this.selectedFavPlace = true
+				return
+			}
+		}
+
+		if (!type) {
 			this.doors.forEach((d) => {
 				if (d.active && d.p1 && d.p2) {
 					if (geometry.lineCircleCollision(d.p1.x, d.p1.y, d.p2.x, d.p2.y, x, y, doorSelectDist)) {
@@ -163,13 +173,23 @@ class Metaroom {
 		}
 	}
 
+	somethingSelected() {
+		return this.selectedFavPlace || this.selectedRoom
+	}
+
 	deselect() {
+		this.selectedFavPlace = false
 		this.selectedDoor = null
 		this.selectedRoom = null
 		this.selectedParts = []
 	}
 
 	startDrag(x, y) {
+		if (this.selectedFavPlace) {
+			this.setModified(true)
+			this.favPlace.startDrag(x, y)
+			return
+		}
 		if (this.selectedRoom) {
 			this.setModified(true)
 			this.selectedRoom.startDrag(x, y)
@@ -182,6 +202,10 @@ class Metaroom {
 	}
 
 	drag(x, y) {
+		if (this.selectedFavPlace) {
+			this.favPlace.drag(x, y)
+			return
+		}
 		if (this.selectedRoom) {
 			this.selectedRoom.drag(x, y)
 		}
@@ -193,6 +217,10 @@ class Metaroom {
 	}
 
 	endDrag(x, y) {
+		if (this.selectedFavPlace) {
+			this.favPlace.endDrag(x, y)
+			return
+		}
 		if (this.selectedRoom) {
 			this.selectedRoom.endDrag(x, y)
 		}
@@ -215,6 +243,7 @@ class Metaroom {
 				if (this.path === '') {
 					this.path = filePath.match(/^.*[\\\/]/)[0]
 				}
+				this.setModified(true)
 				this.loadBackground()
 			}
 		})
@@ -298,7 +327,7 @@ class Metaroom {
 
 	save() {
 		this.setModified(false)
-		filepath = this.path + this.filename
+		let filepath = this.path + this.filename
 		let contents = caos.encode(this)
 		window.api.writeFile(filepath, contents).catch((error) => {
 			window.api.showErrorDialog('Unable to save metaroom. File not accessible.')
@@ -353,5 +382,9 @@ class Metaroom {
 		this.rooms.forEach((r) => {
 			r.drawCorners(p, this.selectedRoom)
 		})
+
+		if (this.favPlace.enabled) {
+			this.favPlace.draw(p, this.selectedFavPlace)
+		}
 	}
 }

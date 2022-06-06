@@ -10,7 +10,7 @@ caos.parse = (text) => {
 			if (c.match(/\d/g)) {
 				tokenType = 'number'
 				tokenValue = c
-			} else if (c.match(/\w/g)) {
+			} else if (c.match(/[A-Za-z0-9:]/g)) {
 				tokenType = 'command'
 				tokenValue = c
 			} else if (c === '"') {
@@ -20,7 +20,7 @@ caos.parse = (text) => {
 		} else {
 			if (tokenType === 'number' && (c.match(/\d/g) || c === '.')) {
 				tokenValue = tokenValue + c
-			} else if (tokenType === 'command' && c.match(/\w/g)) {
+			} else if (tokenType === 'command' && c.match(/[A-Za-z0-9:]/g)) {
 				tokenValue = tokenValue + c
 			} else if (tokenType === 'string' && c !== '"') {
 				tokenValue = tokenValue + c
@@ -40,6 +40,8 @@ caos.decode = (tokens) => {
 	let variables = []
 	let gameVariables = []
 	let newMetaroom = null
+
+	let target = null
 
 	const decodeNextToken = () => {
 		let token = tokens.shift()
@@ -133,7 +135,34 @@ caos.decode = (tokens) => {
 			} else if (token.value === 'mapd') {
 				let mapWidth = decodeNextToken()
 				let mapHeight = decodeNextToken()
-				// don't actually do anything with this
+			} else if (token.value === 'new:') {
+				let type = decodeNextToken()
+				let family = decodeNextToken()
+				let genus = decodeNextToken()
+				let species = decodeNextToken()
+				let sprite = decodeNextToken()
+				let imageCount = decodeNextToken()
+				let firstImage = decodeNextToken()
+				let plane = decodeNextToken()
+				if (newMetaroom && type === 'simp' && family === 1 && genus === 3) {
+					newMetaroom.favPlace.classifier = species
+					newMetaroom.favPlace.sprite = sprite
+					newMetaroom.favPlace.enabled = true
+					target = 'favPlace'
+				}
+			} else if (token.value === 'simp') {
+				return 'simp'
+			} else if (token.value === 'attr') {
+				let attrValue = decodeNextToken()
+			} else if (token.value === 'mvto') {
+				let mvtoX = decodeNextToken()
+				let mvtoY = decodeNextToken()
+				if (newMetaroom && target === 'favPlace') {
+					newMetaroom.favPlace.x = mvtoX - newMetaroom.x + 2
+					newMetaroom.favPlace.y = mvtoY - newMetaroom.y + 1
+				}
+			} else if (token.value === 'tick') {
+				let tickValue = decodeNextToken()
 			}
 
 		} else if (token.type === 'number') {
@@ -181,23 +210,32 @@ caos.encode = (m) => {
 		lines.push(`    setv game "map_tmp_${i}" va00`)
 	})
 
-	lines.push('')
-
+	
 	// add doors
-	m.doors.forEach((d) => {
-		if (d.active) {
-			lines.push(`door game "map_tmp_${d.r1.index}" game "map_tmp_${d.r2.index}" ${d.permeability}`)
-		}
-	})
+	if (m.doors.length > 0) {
+		lines.push('')
+		m.doors.forEach((d) => {
+			if (d.active) {
+				lines.push(`door game "map_tmp_${d.r1.index}" game "map_tmp_${d.r2.index}" ${d.permeability}`)
+			}
+		})
 
-	lines.push('')
-
+	}
+	
 	// remove temp variables
+	lines.push('')
 	m.rooms.forEach((r, i) => {
 		lines.push(`delg "map_tmp_${i}"`)
 	})
 
 	// TODO: favorite place icon
+	if (m.favPlace.enabled) {
+		lines.push('')
+		lines.push(`new: simp 1 3 ${m.favPlace.classifier} "${m.favPlace.sprite}" 1 0 1`)
+		lines.push('attr 272')
+		lines.push(`mvto ${m.favPlace.x + m.x - 2} ${m.favPlace.y + m.y - 1}`)
+		lines.push('tick 10 ')
+	}
 
 	// TODO: CA links
 
