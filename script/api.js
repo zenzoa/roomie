@@ -53,9 +53,9 @@ exports.api = {
 		})
 	},
 
-	'showConfirmDialog': (message, detail) => {
+	'showConfirmDialog': (message) => {
 		return new Promise((resolve) => {
-			let result = confirm(message + '\n' + detail)
+			let result = confirm(message)
 			if (result) {
 				resolve(0)
 			} else {
@@ -64,8 +64,8 @@ exports.api = {
 		})
 	},
 
-	'showErrorDialog': (message, detail) => {
-		alert(message + '\n' + detail)
+	'showErrorDialog': (message) => {
+		alert(message)
 	},
 
 	'metaroomOpen': (value) => {

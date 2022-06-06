@@ -70,6 +70,11 @@ class Sketch {
 			return // we're over the panel
 		}
 
+		if (this.isDragging) {
+			this.mouseReleased(p)
+			return
+		}
+
 		let x2 = x / this.scale - this.xOffset
 		let y2 = y / this.scale - this.yOffset
 
@@ -254,6 +259,8 @@ class Sketch {
 			this.extrudeRoom()
 		} else if (p.keyCode === p.BACKSPACE || p.keyCode === p.DELETE) {
 			this.deleteRoom()
+		} else if (p.keyCode === p.ESCAPE) {
+			this.isCreatingRoom = false
 		}
 	}
 
@@ -284,7 +291,7 @@ class Sketch {
 		}
 
 		if (this.metaroom && this.metaroom.isModified) {
-			window.api.showConfirmDialog('Are you sure you want to create a new metaroom?', 'Unsaved changes will be lost.').then((response) => {
+			window.api.showConfirmDialog('Are you sure you want to create a new metaroom?\nUnsaved changes will be lost.').then((response) => {
 				if (response === 0) {
 					createIt()
 				}
@@ -333,7 +340,7 @@ class Sketch {
 		}
 
 		if (this.metaroom && this.metaroom.isModified) {
-			window.api.showConfirmDialog('Are you sure you want to open a new metaroom?', 'Unsaved changes will be lost.').then((response) => {
+			window.api.showConfirmDialog('Are you sure you want to open a new metaroom?\nUnsaved changes will be lost.').then((response) => {
 				if (response === 0) {
 					openIt()
 				}
@@ -362,7 +369,7 @@ class Sketch {
 
 	saveMetaroomAs() {
 		if (this.metaroom) {
-			if (this.metaroom.contai(nsCollisions()) {
+			if (this.metaroom.containsCollisions()) {
 				window.api.showConfirmDialog('This metaroom contains overlapping rooms. Save anyway?').then((response) => {
 					if (response === 0) {
 						let defaultPath = this.metaroom.path || ''

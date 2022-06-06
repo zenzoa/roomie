@@ -3,7 +3,6 @@
 - CA emitters
 - favorite places code
 - fix snap-to-edge when it's just edge-to-edge
-- extruding on left/right sides doesn't create door
 */
 
 const { api } = require('./script/api')
