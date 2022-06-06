@@ -7,7 +7,9 @@ caos.parse = (text) => {
 	for (let i = 0; i < text.length; i++) {
 		let c = text[i]
 		if (!tokenType) {
-			if (c.match(/\d/g)) {
+			if (c === '\n' || c === '\r') {
+				tokens.push({ type: 'newline' })
+			} else if (c.match(/\d/g)) {
 				tokenType = 'number'
 				tokenValue = c
 			} else if (c === '"') {
@@ -48,9 +50,24 @@ caos.decode = (tokens) => {
 
 	let ignoredLines = []
 
+	const ignoreLine = (token, lineSoFar) => {
+		let ignoredLine = lineSoFar
+		let nextToken = tokens.shift()
+		while(nextToken && nextToken.type !== 'newline') {
+			if (nextToken.type === 'string') {
+				ignoredLine += ' "' + nextToken.value + '"'
+			} else {
+				ignoredLine += ' ' + nextToken.value
+			}
+			nextToken = tokens.shift()
+		}
+		if (ignoredLine && token.value !== '*ROOMIE') {
+			ignoredLines.push(ignoredLine)
+		}
+	}
+
 	const decodeNextToken = () => {
 		let token = tokens.shift()
-		console.log(token.type, token.value)
 		if (token.type === 'command') {
 
 			if (token.value === 'setv') {
@@ -142,49 +159,52 @@ caos.decode = (tokens) => {
 				let mapWidth = decodeNextToken()
 				let mapHeight = decodeNextToken()
 			} else if (token.value === 'new:') {
-				let type = decodeNextToken()
-				let family = decodeNextToken()
-				let genus = decodeNextToken()
-				let species = decodeNextToken()
-				let sprite = decodeNextToken()
-				let imageCount = decodeNextToken()
-				let firstImage = decodeNextToken()
-				let plane = decodeNextToken()
-				if (newMetaroom && type === 'simp' && family === 1 && genus === 3) {
-					newMetaroom.favPlace.classifier = species
-					newMetaroom.favPlace.sprite = sprite
-					newMetaroom.favPlace.enabled = true
-					target = 'favPlace'
+				let type = tokens.shift()
+				if (type.value === 'simp') {
+					let family = decodeNextToken()
+					let genus = decodeNextToken()
+					let species = decodeNextToken()
+					let sprite = decodeNextToken()
+					let imageCount = decodeNextToken()
+					let firstImage = decodeNextToken()
+					let plane = decodeNextToken()
+					if (newMetaroom && family === 1 && genus === 3) {
+						newMetaroom.favPlace.classifier = species
+						newMetaroom.favPlace.sprite = sprite
+						newMetaroom.favPlace.enabled = true
+						target = 'favPlace'
+					} else {
+						ignoredLines.push(`new: simp ${family} ${genus} ${species} "${sprite}" ${imageCount} ${firstImage} ${plane}`)
+					}
+				} else {
+					ignoreLine(token, 'new: ' + type.value)
 				}
-			} else if (token.value === 'simp') {
-				return 'simp'
 			} else if (token.value === 'attr') {
 				let attrValue = decodeNextToken()
+				if (target !== 'favPlace') {
+					ignoredLines.push(`attr ${attrValue}`)
+				}
 			} else if (token.value === 'mvto') {
 				let mvtoX = decodeNextToken()
 				let mvtoY = decodeNextToken()
 				if (newMetaroom && target === 'favPlace') {
 					newMetaroom.favPlace.x = mvtoX - newMetaroom.x + 2
 					newMetaroom.favPlace.y = mvtoY - newMetaroom.y + 1
+				} else {
+					ignoredLines.push(`mvto ${mvtoX} ${mvtoY}`)
 				}
 			} else if (token.value === 'tick') {
 				let tickValue = decodeNextToken()
+				if (target !== 'favPlace') {
+					ignoredLines.push(`tick ${tickValue}`)
+				}
 			} else if (token.value === 'delg') {
 				let variableToDelete = decodeNextToken()
+				if (!Object.keys(gameVariables).includes(variableToDelete)) {
+					ignoredLines.push(`delg "${variableToDelete}"`)
+				}
 			} else {
-				let ignoredLine = token.value
-				let nextToken = tokens.shift()
-				while(nextToken && nextToken.type !== 'newline') {
-					if (nextToken.type === 'string') {
-						ignoredLine += ' "' + nextToken.value + '"'
-					} else {
-						ignoredLine += ' ' + nextToken.value
-					}
-					nextToken = tokens.shift()
-				}
-				if (ignoredLine && token.value !== '*ROOMIE') {
-					ignoredLines.push(ignoredLine)
-				}
+				ignoreLine(token, token.value)
 			}
 
 		} else if (token.type === 'number') {
@@ -192,6 +212,11 @@ caos.decode = (tokens) => {
 
 		} else if (token.type === 'string') {
 			return token.value
+
+		} else if (token.type === 'newline') {
+			if (ignoredLines.length > 0 && ignoredLines[ignoredLines.length - 1] !== '') {
+				ignoredLines.push('')
+			}
 		}
 	}
 
@@ -210,7 +235,7 @@ caos.encode = (m) => {
 
 	// set map size
 	lines.push('*ROOMIE Expand map size')
-	lines.push('mapd 100000 100000')
+	lines.push('mapd 200000 200000')
 
 	// add metaroom
 	lines.push('')
@@ -248,8 +273,11 @@ caos.encode = (m) => {
 				lines.push(`door game "map_tmp_${d.r1.index}" game "map_tmp_${d.r2.index}" ${d.permeability}`)
 			}
 		})
-
 	}
+
+	// TODO: CA links
+
+	// TODO: CA emitters
 	
 	// remove temp variables
 	lines.push('')
@@ -258,19 +286,15 @@ caos.encode = (m) => {
 		lines.push(`delg "map_tmp_${i}"`)
 	})
 
-	// TODO: favorite place icon
+	// add favorite place icon
 	if (m.favPlace.enabled) {
 		lines.push('')
 		lines.push('*ROOMIE Add favorite place icon')
 		lines.push(`new: simp 1 3 ${m.favPlace.classifier} "${m.favPlace.sprite}" 1 0 1`)
 		lines.push('attr 272')
 		lines.push(`mvto ${m.favPlace.x + m.x - 2} ${m.favPlace.y + m.y - 1}`)
-		lines.push('tick 10 ')
+		lines.push('tick 10')
 	}
-
-	// TODO: CA links
-
-	// TODO: CA emitters
 
 	if (m.ignoredLines.length > 0) {
 		lines.push('')
