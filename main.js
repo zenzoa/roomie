@@ -3,99 +3,27 @@
 - CA emitters
 - favorite places code
 - fix snap-to-edge when it's just edge-to-edge
+- extruding on left/right sides doesn't create door
 */
 
-const path = require('path')
-const { BrowserWindow, Menu, app, ipcMain, dialog } = require('electron')
-const { menuTemplate } = require('./script/menu.js')
+const { api } = require('./script/api')
+const { buildMenu } = require('./script/menu')
 
-let mainWindow
-let fileModified = false
+nw.Window.open('index.html', {}, (mainWindow) => {
+	mainWindow.menu = buildMenu()
 
-const createWindow = () => {
-	mainWindow = new BrowserWindow({
-		title: 'Roomie',
-		width: 800,
-		height: 600,
-		webPreferences: {
-			preload: path.join(__dirname, 'script/preload.js')
-		}
-	})
+	mainWindow.width = 800
+	mainWindow.height = 600
+	mainWindow.title = "Roomie"
 
-	mainWindow.loadFile('index.html')
+	mainWindow.window.api = api
 
-	mainWindow.on('close', (event) => {
-		if (fileModified) {
-			let response = dialog.showMessageBoxSync(mainWindow, {
-				type: 'question',
-				buttons: ['Yes', 'No'],
-				title: 'Confirm',
-				message: 'Are you sure you want to quit without saving?'
-			})
-
-			if (response === 1) event.preventDefault()
-		}
-	})
-}
-
-const createMenu = () => {
-	const menu = Menu.buildFromTemplate(menuTemplate);
-	Menu.setApplicationMenu(menu);
-}
-
-app.on('ready', () => {
-	createWindow()
-	createMenu()
-
-	ipcMain.handle('dialog', (event, method, params) => {
-		return dialog[method](params)
-	})
-
-	ipcMain.handle('metaroomOpen', (event, value) => {
-		Menu.getApplicationMenu().getMenuItemById('save').enabled = value
-		Menu.getApplicationMenu().getMenuItemById('save-as').enabled = value
-		Menu.getApplicationMenu().getMenuItemById('create-room').enabled = value
-		Menu.getApplicationMenu().getMenuItemById('reset-zoom').enabled = value
-		Menu.getApplicationMenu().getMenuItemById('zoom-in').enabled = value
-		Menu.getApplicationMenu().getMenuItemById('zoom-out').enabled = value
-	})
-
-	ipcMain.handle('roomSelect', (event, value) => {
-		Menu.getApplicationMenu().getMenuItemById('delete-room').enabled = value
-	})
-
-	ipcMain.handle('edgeSelect', (event, value) => {
-		Menu.getApplicationMenu().getMenuItemById('extrude-room').enabled = value
-	})
-
-	ipcMain.handle('bgImageOpen', (event, value) => {
-		Menu.getApplicationMenu().getMenuItemById('export-blk').enabled = value
-		Menu.getApplicationMenu().getMenuItemById('export-png').enabled = value
-	})
-
-	ipcMain.handle('fileModified', (event, value) => {
-		fileModified = value
-	})
-
-	// file menu
-	ipcMain.on('newMetaroom', () => { mainWindow.webContents.send('newMetaroom') })
-	ipcMain.on('openMetaroom', () => { mainWindow.webContents.send('openMetaroom') })
-	ipcMain.on('saveMetaroom', () => { mainWindow.webContents.send('saveMetaroom') })
-	ipcMain.on('saveMetaroomAs', () => { mainWindow.webContents.send('saveMetaroomAs') })
-	ipcMain.on('exportBgAsBLK', () => { mainWindow.webContents.send('exportBgAsBLK') })
-	ipcMain.on('exportBgAsPNG', () => { mainWindow.webContents.send('exportBgAsPNG') })
-
-	// room menu
-	ipcMain.on('createRoom', () => { mainWindow.webContents.send('createRoom') })
-	ipcMain.on('extrudeRoom', () => { mainWindow.webContents.send('extrudeRoom') })
-	ipcMain.on('deleteRoom', () => { mainWindow.webContents.send('deleteRoom') })
-
-	// zoom menu
-	ipcMain.on('resetZoom', () => { mainWindow.webContents.send('resetZoom') })
-	ipcMain.on('zoomIn', () => { mainWindow.webContents.send('zoomIn') })
-	ipcMain.on('zoomOut', () => { mainWindow.webContents.send('zoomOut') })
-})
-
-app.on('window-all-closed', () => {
-	app.quit()
+	if (process.versions['nw-flavor'] === 'sdk') {
+		chrome.developerPrivate.openDevTools({
+			renderViewId: -1,
+			renderProcessId: -1,
+			extensionId: chrome.runtime.id
+		})
+		mainWindow.showDevTools()
+	}
 })

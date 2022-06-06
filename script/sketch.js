@@ -24,6 +24,26 @@ class Sketch {
 		window.p = p
 		p.createCanvas(p.windowWidth, p.windowHeight)
 		updatePanel(this.metaroom)
+
+		document.body.addEventListener('contextmenu', (event) => {
+			event.preventDefault()
+			return false
+		}, false)
+
+		let mainWindow = nw.Window.get()
+		mainWindow.on('close', () => {
+			let reallyClose = true
+			if (this.metaroom && this.metaroom.isModified) {
+				let response = confirm('Are you sure you want to quit without saving?')
+				if (!response) {
+					reallyClose = false
+				}
+			}
+			if (reallyClose) {
+				mainWindow.close(true)
+				nw.App.quit()
+			}
+		})
 	}
 
 	draw(p) {
@@ -226,6 +246,19 @@ class Sketch {
 			this.scale = this.scale - 0.1
 		}
 	}
+	
+	keyPressed(p) {
+		if (p.key === 'a') {
+			this.createRoom()
+		} else if (p.key === 'e') {
+			this.extrudeRoom()
+		} else if (p.keyCode === p.BACKSPACE || p.keyCode === p.DELETE) {
+			this.deleteRoom()
+		}
+	}
+
+	keyReleased(p) {
+	}
 
 	updateTitle() {
 		let title = 'Roomie'
@@ -329,11 +362,12 @@ class Sketch {
 
 	saveMetaroomAs() {
 		if (this.metaroom) {
-			if (this.metaroom.containsCollisions()) {
+			if (this.metaroom.contai(nsCollisions()) {
 				window.api.showConfirmDialog('This metaroom contains overlapping rooms. Save anyway?').then((response) => {
 					if (response === 0) {
-						
-						window.api.showSaveDialog(this.metaroom.path || '', [
+						let defaultPath = this.metaroom.path || ''
+						let defaultName = (this.metaroom.filename || '') + '.cos'
+						window.api.showSaveDialog(defaultPath, defaultName, [
 							{ name: 'Scripts', extensions: ['cos'] },
 							{ name: 'All Files', extensions: ['*'] }
 						]).then((filePath) => {
@@ -344,7 +378,6 @@ class Sketch {
 								this.updateTitle()
 							}
 						})
-
 					}
 				})
 			}
@@ -353,8 +386,9 @@ class Sketch {
 
 	exportBgAsBLK() {
 		if (this.metaroom && this.metaroom.bgImage) {
-			let filepath = (this.metaroom.path || '') + (this.metaroom.bg || 'untitled') + '.blk'
-			window.api.showSaveDialog(filepath, [
+			let defaultPath = (this.metaroom.path || '')
+			let defaultName = (this.metaroom.bg || 'untitled') + '.blk'
+			window.api.showSaveDialog(defaultPath, defaultName, [
 				{ name: 'Images', extensions: ['blk'] },
 				{ name: 'All Files', extensions: ['*'] }
 			]).then((filePath) => {
@@ -403,6 +437,7 @@ class Sketch {
 
 let s = (p) => {
 	let sketch = new Sketch()
+
 	p.setup = () => sketch.setup(p)
 	p.draw = () => sketch.draw(p)
 	p.windowResized = () => sketch.windowResized(p)
@@ -411,23 +446,9 @@ let s = (p) => {
 	p.mouseDragged = () => sketch.mouseDragged(p)
 	p.mouseReleased = () => sketch.mouseReleased(p)
 	p.mouseWheel = (event) => sketch.mouseWheel(p, event)
+	p.keyPressed = () => sketch.keyPressed(p)
+	p.keyReleased = () => sketch.keyReleased(p)
 
-	// file menu
-	window.api.doOn('newMetaroom', () => { sketch.newMetaroom() })
-	window.api.doOn('openMetaroom', () => { sketch.openMetaroom() })
-	window.api.doOn('saveMetaroom', () => { sketch.saveMetaroom() })
-	window.api.doOn('saveMetaroomAs', () => { sketch.saveMetaroomAs() })
-	window.api.doOn('exportBgAsBLK', () => { sketch.exportBgAsBLK() })
-	window.api.doOn('exportBgAsPNG', () => { sketch.exportBgAsPNG() })
-
-	// room menu
-	window.api.doOn('createRoom', () => { sketch.createRoom() })
-	window.api.doOn('extrudeRoom', () => { sketch.extrudeRoom() })
-	window.api.doOn('deleteRoom', () => { sketch.deleteRoom() })
-
-	// view menu
-	window.api.doOn('resetZoom', () => { sketch.resetZoom() })
-	window.api.doOn('zoomIn', () => { sketch.zoomIn() })
-	window.api.doOn('zoomOut', () => { sketch.zoomOut() })
+	window.sketch = sketch
 }
 new p5(s, 'sketch')

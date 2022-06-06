@@ -1,133 +1,173 @@
-const { ipcMain } = require('electron')
-
 const isMac = process.platform === 'darwin'
 
-exports.menuTemplate = [
-	...(isMac ? [{
-		label: 'Roomie',
-		submenu: [
-			{ role: 'about' },
-			{ type: 'separator' },
-			{ role: 'services' },
-			{ type: 'separator' },
-			{ role: 'hide' },
-			{ role: 'hideOthers' },
-			{ role: 'unhide' },
-			{ type: 'separator' },
-			{ role: 'quit' }
-		]
-	}] : []),
-	{
-		label: 'File',
-		submenu: [
-			{
-				label: 'New Metaroom',
-				accelerator: 'CommandOrControl+N',
-				click: () => ipcMain.emit('newMetaroom')
-			},
-			{
-				label: 'Open...',
-				accelerator: 'CommandOrControl+O',
-				click: () => ipcMain.emit('openMetaroom')
-			},
-			{ type: 'separator' },
-			{
-				label: 'Save',
-				id: 'save',
-				enabled: false,
-				accelerator: 'CommandOrControl+S',
-				click: () => ipcMain.emit('saveMetaroom')
-			},
-			{
-				label: 'Save As',
-				id: 'save-as',
-				enabled: false,
-				accelerator: 'Shift+CommandOrControl+S',
-				click: () => ipcMain.emit('saveMetaroomAs')
-			},
-			{ type: 'separator' },
-			{
-				label: 'Export Background As BLK...',
-				id: 'export-blk',
-				enabled: false,
-				click: () => ipcMain.emit('exportBgAsBLK')
-			},
-			{
-				label: 'Export Background As PNG...',
-				id: 'export-png',
-				enabled: false,
-				click: () => ipcMain.emit('exportBgAsPNG')
-			}
-		]
-	},
-	{
-		label: 'Room',
-		submenu: [
-			{
-				label: 'Create',
-				id: 'create-room',
-				accelerator: 'a',
-				enabled: false,
-				click: () => ipcMain.emit('createRoom')
-			},
-			{
-				label: 'Extrude',
-				id: 'extrude-room',
-				accelerator: 'e',
-				enabled: false,
-				click: () => ipcMain.emit('extrudeRoom')
-			},
-			{
-				label: 'Delete',
-				id: 'delete-room',
-				accelerator: 'Backspace',
-				enabled: false,
-				click: () => ipcMain.emit('deleteRoom')
-			}
-		]
-	},
-	{
-		label: 'View',
-		submenu: [
-			{
-				label: 'Reset Zoom',
-				id: 'reset-zoom',
-				accelerator: 'CommandOrControl+0',
-				enabled: false,
-				click: () => ipcMain.emit('resetZoom')
-			},
-			{
-				label: 'Zoom In',
-				id: 'zoom-in',
-				accelerator: 'CommandOrControl+=',
-				enabled: false,
-				click: () => ipcMain.emit('zoomIn')
-			},
-			{
-				label: 'Zoom Out',
-				id: 'zoom-out',
-				accelerator: 'CommandOrControl+-',
-				enabled: false,
-				click: () => ipcMain.emit('zoomOut')
-			}
-		]
-	},
-	{
-		label: 'Window',
-		submenu: [
-			{ role: 'reload' },
-			{ role: 'forceReload' },
-			{ role: 'toggleDevTools' },
-			{ type: 'separator' },
+exports.newMetaroom = null
+exports.openMetaroom = null
+exports.save = null
+exports.saveAs = null
 
-			{ role: 'minimize' },
-			{ role: 'zoom' },
-			...(isMac ? [
-				{ type: 'separator' },
-				{ role: 'front' }
-			] : [
-				{ role: 'close' }
-			])
-		]
+exports.exportBlk = null
+exports.exportPng = null
+
+exports.createRoom = null
+exports.extrudeRoom = null
+exports.deleteRoom = null
+
+exports.resetZoom = null
+exports.zoomIn = null
+exports.zoomOut = null
+
+let buildFileMenu = () => {
+	let fileMenu = new nw.Menu()
+
+	exports.newMetaroom = new nw.MenuItem({
+		label: 'New Metaroom',
+		modifiers: isMac ? 'cmd' : 'ctrl',
+		key: 'n',
+		click: () => { nw.Window.get().window.sketch.newMetaroom() }
+	})
+	fileMenu.append(exports.newMetaroom)
+
+	fileMenu.append(new nw.MenuItem({ type: 'separator' }))
+
+	exports.openMetaroom = new nw.MenuItem({
+		label: 'Open...',
+		modifiers: isMac ? 'cmd' : 'ctrl',
+		key: 'o',
+		click: () => { nw.Window.get().window.sketch.openMetaroom() }
+	})
+	fileMenu.append(exports.openMetaroom)
+
+	fileMenu.append(new nw.MenuItem({ type: 'separator' }))
+
+	exports.save = new nw.MenuItem({
+		label: 'Save',
+		modifiers: isMac ? 'cmd' : 'ctrl',
+		key: 's',
+		enabled: false,
+		click: () => { nw.Window.get().window.sketch.saveMetaroom() }
+	})
+	fileMenu.append(exports.save)
+
+	exports.saveAs = new nw.MenuItem({
+		label: 'Save As...',
+		modifiers: isMac ? 'cmd+shift' : 'ctrl+shift',
+		key: 's',
+		enabled: false,
+		click: () => { nw.Window.get().window.sketch.saveMetaroomAs() }
+	})
+	fileMenu.append(exports.saveAs)
+
+	fileMenu.append(new nw.MenuItem({ type: 'separator' }))
+
+	exports.exportBlk = new nw.MenuItem({
+		label: 'Export Background As BLK...',
+		enabled: false,
+		click: () => { nw.Window.get().window.sketch.exportBgAsBLK() }
+	})
+	fileMenu.append(exports.exportBlk)
+
+	exports.exportPng = new nw.MenuItem({
+		label: 'Export Background As PNG...',
+		enabled: false,
+		click: () => { nw.Window.get().window.sketch.exportBgAsPNG() }
+	})
+	fileMenu.append(exports.exportPng)
+
+	return fileMenu
+}
+
+let buildRoomMenu = () => {
+	let roomMenu = new nw.Menu()
+
+	exports.createRoom = new nw.MenuItem({
+		label: 'Create',
+		key: 'a',
+		enabled: false,
+		click: () => { nw.Window.get().window.sketch.createRoom() }
+	})
+	roomMenu.append(exports.createRoom)
+
+	roomMenu.append(new nw.MenuItem({ type: 'separator' }))
+
+	exports.extrudeRoom = new nw.MenuItem({
+		label: 'Extrude',
+		key: 'e',
+		enabled: false,
+		click: () => { nw.Window.get().window.sketch.extrudeRoom() }
+	})
+	roomMenu.append(exports.extrudeRoom)
+
+	roomMenu.append(new nw.MenuItem({ type: 'separator' }))
+
+	exports.deleteRoom = new nw.MenuItem({
+		label: 'Delete',
+		key: 'Backspace',
+		enabled: false,
+		click: () => { nw.Window.get().window.sketch.deleteRoom() }
+	})
+	roomMenu.append(exports.deleteRoom)
+
+	return roomMenu
+}
+
+let buildViewMenu = () => {
+	let viewMenu = new nw.Menu()
+
+	exports.resetZoom = new nw.MenuItem({
+		label: '100%',
+		modifiers: isMac ? 'cmd' : 'ctrl',
+		key: '0',
+		click: () => { nw.Window.get().window.sketch.resetZoom() }
+	})
+	viewMenu.append(exports.resetZoom)
+
+	exports.zoomIn = new nw.MenuItem({
+		label: 'Zoom In',
+		modifiers: isMac ? 'cmd' : 'ctrl',
+		key: '=',
+		click: () => { nw.Window.get().window.sketch.zoomIn() }
+	})
+	viewMenu.append(exports.zoomIn)
+
+	exports.zoomOut = new nw.MenuItem({
+		label: 'Zoom Out',
+		modifiers: isMac ? 'cmd' : 'ctrl',
+		key: '-',
+		click: () => { nw.Window.get().window.sketch.zoomOut() }
+	})
+	viewMenu.append(exports.zoomOut)
+
+	return viewMenu
+}
+
+exports.buildMenu = () => {
+	let menu = new nw.Menu({ type: 'menubar' })
+
+	let fileMenu = new nw.MenuItem({
+		label: 'File',
+		submenu: buildFileMenu()
+	})
+
+	let roomMenu = new nw.MenuItem({
+		label: 'Room',
+		submenu: buildRoomMenu()
+	})
+
+	let viewMenu = new nw.MenuItem({
+		label: 'View',
+		submenu: buildViewMenu()
+	})
+
+	if (isMac) {
+		menu.createMacBuiltin('Roomie')
+		menu.insert(fileMenu, 1)
+		menu.insert(roomMenu, 3)
+		menu.insert(viewMenu, 4)
+	} else {
+		menu.append(fileMenu)
+		menu.append(roomMenu)
+		menu.append(viewMenu)
 	}
-]
+
+	return menu
+}

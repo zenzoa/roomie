@@ -29,7 +29,6 @@ class Metaroom {
 
 	setModified(value) {
 		this.isModified = value
-		window.api.fileModified(value)
 	}
 
 	addRoom(r) {
