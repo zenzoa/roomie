@@ -139,6 +139,14 @@ class Sketch {
 		let dx = x - this.xLast
 		let dy = y - this.yLast
 
+		if (p.keyIsDown(p.SHIFT)) {
+			if (Math.abs(x - this.xStart) > Math.abs(y - this.yStart)) {
+				y = this.yStart
+			} else {
+				x = this.xStart
+			}
+		}
+
 		this.xLast = x
 		this.yLast = y
 
