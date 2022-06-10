@@ -102,7 +102,7 @@ class Metaroom {
 			p2 = collisionRL[1]
 		}
 
-		if ((p1 && p2) || init) {
+		if ((p1 && p2 && (p1.x !== p2.x || p1.y !== p2.y)) || init) {
 			let existingDoor = false
 			this.doors.forEach((d) => {
 				if ((d.r1 === r1 && d.r2 === r2) ||(d.r1 === r2 && d.r2 === r1)) {
