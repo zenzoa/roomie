@@ -13,6 +13,9 @@ class Room {
 		this.type = 0
 		this.music = ''
 
+		this.emitterClassifier = 1000
+		this.smells = []
+
 		this.xL = xL
 		this.xR = xR
 		this.yTL = yTL
@@ -43,6 +46,15 @@ class Room {
 		this.parentMetaroom.setModified(true)
 	}
 
+	setProperty(propName, propValue) {
+		this[propName] = propValue
+		this.checkConstraints()
+		this.updatePositions()
+		this.removeDoors()
+		this.findDoors()
+		updatePanel(this.parentMetaroom)
+	}
+
 	getCorners() {
 		return [
 			{ x: this.xL, y: this.yTL },
@@ -58,6 +70,17 @@ class Room {
 			tr: { x: this.xR, y: this.yTR },
 			br: { x: this.xR, y: this.yBR },
 			bl: { x: this.xL, y: this.yBL }
+		}
+	}
+
+	getCenter() {
+		let xRoomCenter = this.xL + Math.floor((this.xR - this.xL) / 2)
+		let yRoomCenterLeft = this.yTL + Math.floor((this.yBL - this.yTL) / 2)
+		let yRoomCenterRight = this.yTR + Math.floor((this.yBR - this.yTR) / 2)
+		let yRoomCenter = Math.min(yRoomCenterLeft, yRoomCenterRight) + Math.abs(Math.floor((yRoomCenterRight - yRoomCenterLeft) / 2))
+		return {
+			x: xRoomCenter,
+			y: yRoomCenter
 		}
 	}
 
@@ -291,15 +314,6 @@ class Room {
 		this.findDoors()
 	}
 
-	setProperty(propName, propValue) {
-		this[propName] = propValue
-		this.checkConstraints()
-		this.updatePositions()
-		this.removeDoors()
-		this.findDoors()
-		updatePanel(this.parentMetaroom)
-	}
-
 	findDoors() {
 		this.parentMetaroom.rooms.forEach((r) => {
 			this.parentMetaroom.addDoor(this, r)
@@ -363,9 +377,18 @@ class Room {
 				let fileName = filePath.match(/[^\\//]+?$/)[0]
 				this.music = fileName.replace('.mng', '')
 				this.parentMetaroom.setModified(true)
-				updatePanel(this.parentMetaroom)
 			}
 		})
+	}
+
+	addSmell(caIndex = 15, amount = 0.02) {
+		this.smells.push({ caIndex, amount })
+		this.parentMetaroom.setModified(true)
+	}
+
+	removeSmell(index) {
+		this.smells.splice(index, 1)
+		this.parentMetaroom.setModified(true)
 	}
 
 	drawRoom(p, selectedRoom) {

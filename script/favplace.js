@@ -3,7 +3,7 @@ class FavPlace {
 		this.parentMetaroom = metaroom
 		this.enabled = false
 		
-		this.classifier = 0
+		this.classifier = 1000
 		this.sprite = ''
 		
 		this.r = 22

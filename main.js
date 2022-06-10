@@ -1,6 +1,5 @@
 /*
 - CA links (link vertical rooms)
-- CA emitters
 - fix snap-to-edge when it's just edge-to-edge
 */
 

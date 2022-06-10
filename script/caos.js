@@ -1,6 +1,7 @@
 let caos = {}
 
 caos.parse = (text) => {
+	text = text + '\n'
 	let tokenType = null
 	let tokenValue = ''
 	let tokens = []
@@ -47,6 +48,7 @@ caos.decode = (tokens) => {
 	let newMetaroom = null
 
 	let target = null
+	let tempEmitter = null
 
 	let ignoredLines = []
 
@@ -173,6 +175,11 @@ caos.decode = (tokens) => {
 						newMetaroom.favPlace.sprite = sprite
 						newMetaroom.favPlace.enabled = true
 						target = 'favPlace'
+					} else if (newMetaroom && family === 3 && genus === 5 && sprite === 'blnk') {
+						target = 'emitter'
+						tempEmitter = {
+							classifier: species
+						}
 					} else {
 						ignoredLines.push(`new: simp ${family} ${genus} ${species} "${sprite}" ${imageCount} ${firstImage} ${plane}`)
 					}
@@ -190,8 +197,23 @@ caos.decode = (tokens) => {
 				if (newMetaroom && target === 'favPlace') {
 					newMetaroom.favPlace.x = mvtoX - newMetaroom.x + 2
 					newMetaroom.favPlace.y = mvtoY - newMetaroom.y + 1
+				} else if (newMetaroom && target === 'emitter') {
+					newMetaroom.rooms.forEach((r) => {
+						if (r.isPointInside(mvtoX - newMetaroom.x, mvtoY - newMetaroom.y)) {
+							r.emitterClassifier = tempEmitter.classifier
+							tempEmitter.room = r
+						}
+					})
 				} else {
 					ignoredLines.push(`mvto ${mvtoX} ${mvtoY}`)
+				}
+			} else if (token.value === 'emit') {
+				let caIndex = decodeNextToken()
+				let amount = decodeNextToken()
+				if (target === 'emitter' && tempEmitter && tempEmitter.room) {
+					tempEmitter.room.addSmell(caIndex, amount)
+				} else {
+					ignoredLines.push(`emit ${caIndex} ${amount}`)
 				}
 			} else if (token.value === 'tick') {
 				let tickValue = decodeNextToken()
@@ -257,11 +279,8 @@ caos.encode = (m) => {
 		lines.push(`    rtyp va00 ${r.type}`)
 		// set room music
 		if (r.music) {
-			let xRoomCenter = r.xL + Math.floor((r.xR - r.xL) / 2)
-			let yRoomCenterLeft = r.yTL + Math.floor((r.yBL - r.yTL) / 2)
-			let yRoomCenterRight = r.yTR + Math.floor((r.yBR - r.yTR) / 2)
-			let yRoomCenter = Math.min(yRoomCenterLeft, yRoomCenterRight) + Math.abs(Math.floor((yRoomCenterRight - yRoomCenterLeft) / 2))
-			lines.push(`    rmsc ${xRoomCenter + m.x} ${yRoomCenter + m.y} "${r.music}"`)
+			let roomCenter = r.getCenter()
+			lines.push(`    rmsc ${roomCenter.x + m.x} ${roomCenter.y + m.y} "${r.music}"`)
 		}
 		// set temp variable for room id
 		lines.push(`    setv game "map_tmp_${i}" va00`)
@@ -280,8 +299,6 @@ caos.encode = (m) => {
 	}
 
 	// TODO: CA links
-
-	// TODO: CA emitters
 	
 	// remove temp variables
 	lines.push('')
@@ -290,14 +307,33 @@ caos.encode = (m) => {
 		lines.push(`delg "map_tmp_${i}"`)
 	})
 
+	// CA emitters
+	let firstEmitter = true
+	m.rooms.forEach((r) => {
+		if (r.smells.length > 0) {
+			if (firstEmitter) {
+				lines.push('')
+				lines.push('*ROOMIE Add CA emitters')
+				firstEmitter = false
+			}
+			let roomCenter = r.getCenter()
+			lines.push(`new: simp 3 5 ${r.emitterClassifier} "blnk" 2 0 0`)
+			lines.push(`  attr 18`)
+			lines.push(`  mvto ${roomCenter.x} ${roomCenter.y}`)
+			r.smells.forEach((smell) => {
+				lines.push(`  emit ${smell.caIndex} ${smell.amount}`)
+			})
+		}
+	})
+
 	// add favorite place icon
 	if (m.favPlace.enabled) {
 		lines.push('')
 		lines.push('*ROOMIE Add favorite place icon')
 		lines.push(`new: simp 1 3 ${m.favPlace.classifier} "${m.favPlace.sprite}" 1 0 1`)
-		lines.push('attr 272')
-		lines.push(`mvto ${m.favPlace.x + m.x - 2} ${m.favPlace.y + m.y - 1}`)
-		lines.push('tick 10')
+		lines.push('  attr 272')
+		lines.push(`  mvto ${m.favPlace.x + m.x - 2} ${m.favPlace.y + m.y - 1}`)
+		lines.push('  tick 10')
 	}
 
 	if (m.ignoredLines.length > 0) {

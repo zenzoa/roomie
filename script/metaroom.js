@@ -10,7 +10,7 @@ class Metaroom {
 		this.h = h
 
 		this.path = ''
-		this.filename = 'untitled'
+		this.filename = 'untitled.cos'
 
 		this.bg = bg
 		this.bgImage = null

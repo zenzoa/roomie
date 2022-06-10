@@ -263,6 +263,7 @@ class Sketch {
 	}
 	
 	keyPressed(p) {
+		if (document.activeElement.tagName === 'INPUT') { return }
 		if (p.key === 'a') {
 			this.createRoom()
 		} else if (p.key === 'e') {
