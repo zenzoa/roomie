@@ -1,6 +1,5 @@
 /*
 - fix snap-to-edge when it's just edge-to-edge
-- add slope annotation and CA emitter indicator
 - splash screen for when there's no metaroom loaded
 - application icon
 */

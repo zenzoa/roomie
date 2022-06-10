@@ -389,8 +389,12 @@ class Room {
 	}
 
 	removeSmell(index) {
-		this.smells.splice(index, 1)
-		this.parentMetaroom.setModified(true)
+		window.api.showConfirmDialog('Are you sure you want to remove this smell?').then(response => {
+			if (response === 0) {
+				this.smells.splice(index, 1)
+				this.parentMetaroom.setModified(true)
+			}
+		})
 	}
 
 	addLink(otherRoom) {
@@ -468,6 +472,17 @@ class Room {
 		drawEdge('Bottom', this.xL, this.yBL, this.xR, this.yBR)
 		drawEdge('Left', this.xL, this.yTL, this.xL, this.yBL)
 		drawEdge('Right', this.xR, this.yTR, this.xR, this.yBR)
+
+		if (this.smells.length > 0) {
+			let roomCenter = this.getCenter()
+			p.noFill()
+			p.stroke(0, 255, 255)
+			p.strokeWeight(1)
+			p.circle(roomCenter.x, roomCenter.y, 10)
+			p.circle(roomCenter.x, roomCenter.y, 17)
+			p.circle(roomCenter.x, roomCenter.y, 24)
+		}
+
 		if (this === selectedRoom) {
 			let slope = (this.yBR - this.yBL) / (this.xR - this.xL)
 			let displaySlope = Math.abs(Math.floor(slope * 100 * 100)) / 100
