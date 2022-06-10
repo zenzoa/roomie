@@ -468,6 +468,20 @@ class Room {
 		drawEdge('Bottom', this.xL, this.yBL, this.xR, this.yBR)
 		drawEdge('Left', this.xL, this.yTL, this.xL, this.yBL)
 		drawEdge('Right', this.xR, this.yTR, this.xR, this.yBR)
+		if (this === selectedRoom) {
+			let slope = (this.yBR - this.yBL) / (this.xR - this.xL)
+			let displaySlope = Math.abs(Math.floor(slope * 100 * 100)) / 100
+			if (displaySlope !== 0) {
+				let rotation = Math.atan2(this.yBR - this.yBL, this.xR - this.xL)
+				p.push()
+				p.translate(this.xL, this.yBL)
+				p.rotate(rotation)
+				p.fill(255)
+				p.noStroke()
+				p.text('Slope = ' + displaySlope + '%', 5, 15)
+				p.pop()
+			}
+		}
 	}
 
 	drawCorners(p, selectedRoom) {
