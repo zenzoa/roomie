@@ -12,7 +12,7 @@ class NumberInput extends Component {
 					min: min,
 					max: max,
 					step: step,
-					onChange: (e) => { onChange(parseInt(e.target.value)) }
+					onChange: e => onChange(parseInt(e.target.value))
 				})
 			])
 		]
@@ -28,7 +28,7 @@ class FileInput extends Component {
 					h('input', {
 						type: 'text',
 						value: value,
-						onChange: (e) => { onChange(e.target.value) }
+						onChange: e => onChange(e.target.value)
 					}),
 					h('button', {
 						type: 'button',
@@ -47,7 +47,7 @@ class DropdownInput extends Component {
 				label ? h('span', null, label) : null,
 				h('select', {
 					value: value,
-					onChange: (e) => { onChange(parseInt(e.target.value)) }
+					onChange: e => onChange(parseInt(e.target.value))
 				},
 					options.map((o, i) => h('option', { value: i }, o))
 				)
@@ -62,37 +62,37 @@ class MetaroomSettings extends Component {
 			h('h3', null, 'Metaroom Properties'),
 			h(NumberInput, { label: 'X', min: 0, max: window.sketch.mapWidth, isRow: true,
 				value: metaroom.x,
-				onChange: (v) => { metaroom.setX(v) }
+				onChange: v => metaroom.setX(v)
 			}),
 			h(NumberInput, { label: 'Y', min: 0, max: window.sketch.mapHeight, isRow: true,
 				value: metaroom.y,
-				onChange: (v) => { metaroom.setY(v) }
+				onChange: v => metaroom.setY(v)
 			}),
 			h(NumberInput, { label: 'Width', min: 0, max: window.sketch.mapWidth - metaroom.x, isRow: true,
 				value: metaroom.w,
-				onChange: (v) => { metaroom.setWidth(v) }
+				onChange: v => metaroom.setWidth(v)
 			}),
 			h(NumberInput, { label: 'Height', min: 0, max: window.sketch.mapHeight - metaroom.y, isRow: true,
 				value: metaroom.h,
-				onChange: (v) => { metaroom.setHeight(v) }
+				onChange: v => metaroom.setHeight(v)
 			}),
 			h('hr'),
 			h(FileInput, { label: 'Background',
 				value: metaroom.bg,
-				onChange: (v) => { metaroom.bg = v },
-				onClick: () => { metaroom.chooseBackground() }
+				onChange: v => { metaroom.bg = v },
+				onClick: () => metaroom.chooseBackground()
 			}),
 			h(FileInput, { label: 'Music',
 				value: metaroom.music,
-				onChange: (v) => { metaroom.music = v },
-				onClick: () => { metaroom.chooseMusic() }
+				onChange: v => { metaroom.music = v },
+				onClick: () => metaroom.chooseMusic()
 			}),
 			h(DropdownInput, { label: 'Favorite Place Icon', value: (metaroom.favPlace.enabled ? 0 : 1),
 				options: [
 					'Include',
 					'Don\'t Include'
 				],
-				onChange: (v) => { metaroom.favPlace.enabled = (v === 0) }
+				onChange: v => { metaroom.favPlace.enabled = (v === 0) }
 			}),
 		]
 	}
@@ -104,27 +104,27 @@ class RoomSettings extends Component {
 			h('h3', null, 'Room Properties'),
 			h(NumberInput, { label: 'X Left', min: 0, max: metaroom.w, isRow: true,
 				value: room.xL,
-				onChange: (v) => { room.setProperty('xL', v) }
+				onChange: v => room.setProperty('xL', v)
 			}),
 			h(NumberInput, { label: 'X Right', min: 0, max: metaroom.w, isRow: true,
 				value: room.xR,
-				onChange: (v) => { room.setProperty('xR', v) }
+				onChange: v => room.setProperty('xR', v)
 			}),
 			h(NumberInput, { label: 'Y Top Left', min: 0, max: metaroom.h, isRow: true,
 				value: room.yTL,
-				onChange: (v) => { room.setProperty('yTL', v) }
+				onChange: v => room.setProperty('yTL', v)
 			}),
 			h(NumberInput, { label: 'Y Top Right', min: 0, max: metaroom.h, isRow: true,
 				value: room.yTR,
-				onChange: (v) => { room.setProperty('yTR', v) }
+				onChange: v => room.setProperty('yTR', v)
 			}),
 			h(NumberInput, { label: 'Y Bot. Left', min: 0, max: metaroom.h, isRow: true,
 				value: room.yBL,
-				onChange: (v) => { room.setProperty('yBL', v) }
+				onChange: v => room.setProperty('yBL', v)
 			}),
 			h(NumberInput, { label: 'Y Bot. Right', min: 0, max: metaroom.h, isRow: true,
 				value: room.yBR,
-				onChange: (v) => { room.setProperty('yBR', v) }
+				onChange: v => room.setProperty('yBR', v)
 			}),
 			h('hr'),
 			h(DropdownInput, { label: 'Type', value: room.type,
@@ -141,12 +141,12 @@ class RoomSettings extends Component {
 					'9 Salt Water',
 					'10 Ettin Home'
 				],
-				onChange: (v) => { room.setType(v) }
+				onChange: v => room.setType(v)
 			}),
 			h(FileInput, { label: 'Music',
 				value: room.music,
-				onChange: (v) => { room.music = v },
-				onClick: () => { room.chooseMusic() }
+				onChange: v => { room.music = v },
+				onClick: () => room.chooseMusic()
 			}),
 			h('hr'),
 			h(EmitterSettings, { room })
@@ -169,19 +169,19 @@ class EmitterSettings extends Component {
 				h('label', null, [
 					h('button', {
 						type: 'button',
-						onClick: () => { room.addSmell() }
+						onClick: () => room.addSmell()
 					}, 'Add Smell')
 				]),
 				h(NumberInput, { label: 'Smell Emitter Classifier',
 				value: room.emitterClassifier,
-				onChange: (v) => { room.emitterClassifier = v }
+				onChange: v => { room.emitterClassifier = v }
 			})
 			]
 		} else {
 			return h('label', null, [
 				h('button', {
 					type: 'button',
-					onClick: () => { room.addSmell() }
+					onClick: () => room.addSmell()
 				}, 'Add Smell Emitter')
 			])
 		}
@@ -215,18 +215,18 @@ class SmellSettings extends Component {
 						'18 Gadgets',
 						'19 (Toys)'
 					],
-					onChange: (v) => { smell.caIndex = v }
+					onChange: v => { smell.caIndex = v }
 				}),
 				h(NumberInput, {
 					min: 0,
 					max: 1,
 					step: 0.01,
 					value: smell.amount,
-					onChange: (v) => { smell.amount = v }
+					onChange: v => { smell.amount = v }
 				}),
 				h('button', {
 					type: 'button',
-					onClick: () => { deleteSmell() }
+					onClick: () => deleteSmell()
 				}, 'x')
 			])
 		]
@@ -239,7 +239,7 @@ class DoorSettings extends Component {
 			h('h3', null, 'Door Properties'),
 			h(NumberInput, { label: 'Permeability', min: 0, max: 100,
 				value: door.permeability,
-				onChange: (v) => { door.permeability = v }
+				onChange: v => { door.permeability = v }
 			})
 		]
 	}
@@ -251,21 +251,21 @@ class FavPlaceSettings extends Component {
 			h('h3', null, 'Favorite Place Icon'),
 			h(NumberInput, { label: 'X', min: 2, max: metaroom.w - 2, isRow: true,
 				value: favPlace.x,
-				onChange: (v) => { favPlace.setX(v) }
+				onChange: v => favPlace.setX(v)
 			}),
 			h(NumberInput, { label: 'Y', min: 1, max: metaroom.h - 1, isRow: true,
 				value: favPlace.y,
-				onChange: (v) => { favPlace.setY(v) }
+				onChange: v => favPlace.setY(v)
 			}),
 			h('hr'),
 			h(FileInput, { label: 'Sprite',
 				value: favPlace.sprite,
-				onChange: (v) => { favPlace.sprite = v },
-				onClick: () => { favPlace.chooseSprite() }
+				onChange: v => { favPlace.sprite = v },
+				onClick: () => favPlace.chooseSprite()
 			}),
 			h(NumberInput, { label: 'Classifier',
 				value: favPlace.classifier,
-				onChange: (v) => { favPlace.classifier = v }
+				onChange: v => { favPlace.classifier = v }
 			})
 		]
 	}
@@ -303,7 +303,7 @@ class Panel extends Component {
 	}
 }
 
-let updatePanel = (metaroom) => {
+let updatePanel = metaroom => {
 	let container = document.getElementById('main')
 	let node = document.getElementById('panel')
 	render(

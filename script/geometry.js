@@ -8,7 +8,7 @@ geometry.distance = (a, b) => {
 	return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2)
 }
 
-geometry.normalize = (a) => {
+geometry.normalize = a => {
 	let len = geometry.length(a.x, a.y)
 	return {
 		x: a.x / len,
@@ -193,7 +193,7 @@ geometry.lineMidpoint = (x1, y1, x2, y2) => {
 	return midpoint
 }
 
-geometry.quadCenter = (quad) => {
+geometry.quadCenter = quad => {
 	return geometry.lineLineIntersection(
 		quad.tl.x, quad.tl.y, quad.br.x, quad.br.y,
 		quad.tr.x, quad.tr.y, quad.bl.x, quad.bl.y

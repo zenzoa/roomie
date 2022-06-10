@@ -29,7 +29,7 @@ class Sketch {
 		p.createCanvas(p.windowWidth, p.windowHeight)
 		updatePanel(this.metaroom)
 
-		document.body.addEventListener('contextmenu', (event) => {
+		document.body.addEventListener('contextmenu', event => {
 			event.preventDefault()
 			return false
 		}, false)
@@ -114,7 +114,7 @@ class Sketch {
 					newRoom.selectedPart = 'BR'
 					newRoom.startDrag(x2, y2)
 				} else if (this.metaroom.selectedRoom && this.isAddingLink) {
-					this.metaroom.rooms.forEach((r) => {
+					this.metaroom.rooms.forEach(r => {
 						if (r.isPointInside(x2, y2)) {
 							this.metaroom.selectedRoom.addLink(r)
 						}
@@ -321,7 +321,7 @@ class Sketch {
 		}
 
 		if (this.metaroom && this.metaroom.isModified) {
-			window.api.showConfirmDialog('Are you sure you want to create a new metaroom?\nUnsaved changes will be lost.').then((response) => {
+			window.api.showConfirmDialog('Are you sure you want to create a new metaroom?\nUnsaved changes will be lost.').then(response => {
 				if (response === 0) {
 					createIt()
 				}
@@ -336,10 +336,10 @@ class Sketch {
 			window.api.showOpenDialog('', [
 				{ name: 'Scripts', extensions: ['cos'] },
 				{ name: 'All Files', extensions: ['*'] }
-			]).then((result) => {
+			]).then(result => {
 				if (result.filePaths.length > 0) {
 					let filePath = result.filePaths[0]
-					window.api.readFile(filePath, 'utf8').then((data) => {
+					window.api.readFile(filePath, 'utf8').then(data => {
 						try {
 							const tokens = caos.parse(data)
 							const m = caos.decode(tokens)
@@ -361,7 +361,7 @@ class Sketch {
 							window.api.showErrorDialog('Unable to open metaroom. Invalid data.')
 							console.log(error)
 						}
-					}).catch((error) => {
+					}).catch(error => {
 						window.api.showErrorDialog('Unable to open COS file.')
 						console.log(error)
 					})
@@ -370,7 +370,7 @@ class Sketch {
 		}
 
 		if (this.metaroom && this.metaroom.isModified) {
-			window.api.showConfirmDialog('Are you sure you want to open a new metaroom?\nUnsaved changes will be lost.').then((response) => {
+			window.api.showConfirmDialog('Are you sure you want to open a new metaroom?\nUnsaved changes will be lost.').then(response => {
 				if (response === 0) {
 					openIt()
 				}
@@ -383,7 +383,7 @@ class Sketch {
 	saveMetaroom() {
 		if (this.metaroom && this.metaroom.path) {
 			if (this.metaroom.containsCollisions()) {
-				window.api.showConfirmDialog('This metaroom contains overlapping rooms. Save anyway?').then((response) => {
+				window.api.showConfirmDialog('This metaroom contains overlapping rooms. Save anyway?').then(response => {
 					if (response === 0) {
 						this.metaroom.save()
 					}
@@ -404,7 +404,7 @@ class Sketch {
 			window.api.showSaveDialog(defaultPath, defaultName, [
 				{ name: 'Scripts', extensions: ['cos'] },
 				{ name: 'All Files', extensions: ['*'] }
-			]).then((filePath) => {
+			]).then(filePath => {
 				if (filePath) {
 					this.metaroom.filename = filePath.match(/[^\\//]+?$/)[0]
 					this.metaroom.path = filePath.match(/^.*[\\\/]/)[0]
@@ -415,7 +415,7 @@ class Sketch {
 		}
 		if (this.metaroom) {
 			if (this.metaroom.containsCollisions()) {
-				window.api.showConfirmDialog('This metaroom contains overlapping rooms. Save anyway?').then((response) => {
+				window.api.showConfirmDialog('This metaroom contains overlapping rooms. Save anyway?').then(response => {
 					if (response === 0) {
 						openSaveDialog()
 					}
@@ -433,7 +433,7 @@ class Sketch {
 			window.api.showSaveDialog(defaultPath, defaultName, [
 				{ name: 'Images', extensions: ['blk'] },
 				{ name: 'All Files', extensions: ['*'] }
-			]).then((filePath) => {
+			]).then(filePath => {
 				if (filePath) {
 					this.metaroom.saveBgAsBLK(filePath)
 				}
@@ -468,7 +468,7 @@ class Sketch {
 
 	deleteRoom() {
 		if (this.metaroom && this.metaroom.selectedRoom) {
-			window.api.showConfirmDialog('Are you sure you want to delete this room?').then((response) => {
+			window.api.showConfirmDialog('Are you sure you want to delete this room?').then(response => {
 				if (response === 0) {
 					this.metaroom.removeRoom(this.metaroom.selectedRoom)
 				}
@@ -484,7 +484,7 @@ class Sketch {
 
 	removeLinks() {
 		if (this.metaroom && this.metaroom.selectedRoom) {
-			window.api.showConfirmDialog('Are you sure you want to remove all links to/from this room?').then((response) => {
+			window.api.showConfirmDialog('Are you sure you want to remove all links to/from this room?').then(response => {
 				if (response === 0) {
 					this.metaroom.selectedRoom.removeLinks()
 				}
@@ -493,7 +493,7 @@ class Sketch {
 	}
 }
 
-let s = (p) => {
+let s = p => {
 	let sketch = new Sketch()
 
 	p.setup = () => sketch.setup(p)

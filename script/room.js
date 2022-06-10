@@ -317,7 +317,7 @@ class Room {
 	}
 
 	findDoors() {
-		this.parentMetaroom.rooms.forEach((r) => {
+		this.parentMetaroom.rooms.forEach(r => {
 			this.parentMetaroom.addDoor(this, r)
 		})
 	}
@@ -373,7 +373,7 @@ class Room {
 		window.api.showOpenDialog(this.parentMetaroom.path || '', [
 			{ name: 'Music', extensions: ['mng'] },
 			{ name: 'All Files', extensions: ['*'] }
-		]).then((result) => {
+		]).then(result => {
 			if (result.filePaths.length > 0) {
 				let filePath = result.filePaths[0]
 				let fileName = filePath.match(/[^\\//]+?$/)[0]
@@ -412,8 +412,8 @@ class Room {
 	}
 
 	removeLinks() {
-		this.links.forEach((otherRoom) => {
-			otherRoom.links = otherRoom.links.filter((l) => { return l !== this })
+		this.links.forEach(otherRoom => {
+			otherRoom.links = otherRoom.links.filter(l => l !== this)
 		})
 		this.links = []
 	}
@@ -423,7 +423,7 @@ class Room {
 		p.stroke(0, 255, 255)
 		p.strokeWeight(1)
 		let roomCenter = this.getCenter()
-		this.links.forEach((otherRoom) => {
+		this.links.forEach(otherRoom => {
 			let otherCenter = otherRoom.getCenter()
 			p.line(roomCenter.x, roomCenter.y, otherCenter.x, otherCenter.y)
 			p.circle(roomCenter.x, roomCenter.y, selectedRoom === this ? 6 : 2)

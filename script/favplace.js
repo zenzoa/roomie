@@ -33,7 +33,7 @@ class FavPlace {
 		window.api.showOpenDialog(this.path || '', [
 			{ name: 'Sprites', extensions: ['c16'] },
 			{ name: 'All Files', extensions: ['*'] }
-		]).then((result) => {
+		]).then(result => {
 			if (result.filePaths.length > 0) {
 				let filePath = result.filePaths[0]
 				let fileName = filePath.match(/[^\\//]+?$/)[0]

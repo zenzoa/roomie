@@ -1,6 +1,6 @@
 let caos = {}
 
-caos.parse = (text) => {
+caos.parse = text => {
 	text = text + '\n'
 	let tokenType = null
 	let tokenValue = ''
@@ -42,7 +42,7 @@ caos.parse = (text) => {
 	return tokens
 }
 
-caos.decode = (tokens) => {
+caos.decode = tokens => {
 	let variables = []
 	let gameVariables = []
 	let newMetaroom = null
@@ -139,7 +139,7 @@ caos.decode = (tokens) => {
 				let y = decodeNextToken()
 				let trackName = decodeNextToken()
 				if (newMetaroom) {
-					newMetaroom.rooms.forEach((r) => {
+					newMetaroom.rooms.forEach(r => {
 						if (r.isPointInside(x - newMetaroom.x, y - newMetaroom.y)) {
 								r.music = trackName
 						}
@@ -213,7 +213,7 @@ caos.decode = (tokens) => {
 					newMetaroom.favPlace.x = mvtoX - newMetaroom.x + 2
 					newMetaroom.favPlace.y = mvtoY - newMetaroom.y + 1
 				} else if (newMetaroom && target === 'emitter') {
-					newMetaroom.rooms.forEach((r) => {
+					newMetaroom.rooms.forEach(r => {
 						if (r.isPointInside(mvtoX - newMetaroom.x, mvtoY - newMetaroom.y)) {
 							r.emitterClassifier = tempEmitter.classifier
 							tempEmitter.room = r
@@ -271,7 +271,7 @@ caos.decode = (tokens) => {
 	return newMetaroom
 }
 
-caos.encode = (m) => {
+caos.encode = m => {
 	let lines = []
 
 	// set map size
@@ -307,7 +307,7 @@ caos.encode = (m) => {
 
 	// add doors
 	firstDoor = true
-	m.doors.forEach((d) => {
+	m.doors.forEach(d => {
 		if (d.active) {
 			if (firstDoor) {
 				lines.push('')
@@ -321,8 +321,8 @@ caos.encode = (m) => {
 	// CA links
 	let firstLink = true
 	let existingLinks = []
-	m.rooms.forEach((r1) => {
-		r1.links.forEach((r2) => {
+	m.rooms.forEach(r1 => {
+		r1.links.forEach(r2 => {
 			if (firstLink) {
 				lines.push('')
 				lines.push('*ROOMIE Add CA links')
@@ -344,7 +344,7 @@ caos.encode = (m) => {
 
 	// CA emitters
 	let firstEmitter = true
-	m.rooms.forEach((r) => {
+	m.rooms.forEach(r => {
 		if (r.smells.length > 0) {
 			if (firstEmitter) {
 				lines.push('')
@@ -355,7 +355,7 @@ caos.encode = (m) => {
 			lines.push(`new: simp 3 5 ${r.emitterClassifier} "blnk" 2 0 0`)
 			lines.push(`  attr 18`)
 			lines.push(`  mvto ${roomCenter.x} ${roomCenter.y}`)
-			r.smells.forEach((smell) => {
+			r.smells.forEach(smell => {
 				lines.push(`  emit ${smell.caIndex} ${smell.amount}`)
 			})
 		}

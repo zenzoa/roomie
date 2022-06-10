@@ -8,7 +8,7 @@
 const { api } = require('./script/api')
 const { buildMenu } = require('./script/menu')
 
-nw.Window.open('index.html', {}, (mainWindow) => {
+nw.Window.open('index.html', {}, mainWindow => {
 	mainWindow.menu = buildMenu()
 
 	mainWindow.width = 800

@@ -72,10 +72,10 @@ class Metaroom {
 
 	removeRoom(r) {
 		this.setModified(true)
-		this.doors = this.doors.filter((d) => {
+		this.doors = this.doors.filter(d => {
 			return d.r1 !== r && d.r2 !== r
 		})
-		this.rooms = this.rooms.filter((r2) => {
+		this.rooms = this.rooms.filter(r2 => {
 			return r !== r2
 		})
 	}
@@ -104,7 +104,7 @@ class Metaroom {
 
 		if ((p1 && p2 && (p1.x !== p2.x || p1.y !== p2.y)) || init) {
 			let existingDoor = false
-			this.doors.forEach((d) => {
+			this.doors.forEach(d => {
 				if ((d.r1 === r1 && d.r2 === r2) ||(d.r1 === r2 && d.r2 === r1)) {
 					existingDoor = true
 					d.active = true
@@ -122,13 +122,13 @@ class Metaroom {
 					permeability: permeability
 				})
 			}
-			r1.links = r1.links.filter((l) => l !== r2)
-			r2.links = r2.links.filter((l) => l !== r1)
+			r1.links = r1.links.filter(l => l !== r2)
+			r2.links = r2.links.filter(l => l !== r1)
 		}
 	}
 
 	removeDoors(r) {
-		this.doors.forEach((d) => {
+		this.doors.forEach(d => {
 			if (d.r1 === r || d.r2 === r) {
 				d.active = false
 			}
@@ -137,7 +137,7 @@ class Metaroom {
 
 	checkForDoor(r1, r2) {
 		let door = null
-		this.doors.forEach((d) => {
+		this.doors.forEach(d => {
 			if (d.active && ((d.r1 === r1 && d.r2 === r2) || (d.r1 === r2 && d.r2 === r1))) {
 				door = d
 			}
@@ -159,13 +159,13 @@ class Metaroom {
 	}
 
 	checkCollisions() {
-		this.rooms.forEach((r1) => {
+		this.rooms.forEach(r1 => {
 			r1.hasCollisions = false
 			let top1 = [ { x: r1.xL, y: r1.yTL }, { x: r1.xR, y: r1.yTR } ]
 			let bottom1 = [ { x: r1.xL, y: r1.yBL }, { x: r1.xR, y: r1.yBR } ]
 			let left1 = [ { x: r1.xL, y: r1.yTL }, { x: r1.xL, y: r1.yBL } ]
 			let right1 = [ { x: r1.xR, y: r1.yTR }, { x: r1.xR, y: r1.yBR } ]
-			this.rooms.forEach((r2) => {
+			this.rooms.forEach(r2 => {
 				if (r1 !== r2) {
 					let top2 = [ { x: r2.xL, y: r2.yTL }, { x: r2.xR, y: r2.yTR } ]
 					let bottom2 = [ { x: r2.xL, y: r2.yBL }, { x: r2.xR, y: r2.yBR } ]
@@ -217,7 +217,7 @@ class Metaroom {
 		}
 
 		if (!type) {
-			this.doors.forEach((d) => {
+			this.doors.forEach(d => {
 				if (d.active && d.p1 && d.p2) {
 					if (geometry.lineCircleCollision(d.p1.x, d.p1.y, d.p2.x, d.p2.y, x, y, doorSelectDist)) {
 						this.selectedDoor = d
@@ -227,7 +227,7 @@ class Metaroom {
 		}
 
 		if (type === 'corner' || !type) {
-			this.rooms.forEach((r) => {
+			this.rooms.forEach(r => {
 				tempObject = r.selectCorner(x, y)
 				if (tempObject) {
 					this.selectedRoom = tempObject
@@ -237,7 +237,7 @@ class Metaroom {
 		}
 
 		if ((type === 'edge' || !type) && !this.selectedRoom) {
-			this.rooms.forEach((r) => {
+			this.rooms.forEach(r => {
 				tempObject = r.selectEdge(x, y)
 				if (tempObject) {
 					this.selectedRoom = tempObject
@@ -247,7 +247,7 @@ class Metaroom {
 		}
 
 		if ((type === 'room' || !type) && !this.selectedRoom) {
-			this.rooms.forEach((r) => {
+			this.rooms.forEach(r => {
 				tempObject = r.selectRoom(x, y)
 				if (tempObject) {
 					this.selectedRoom = tempObject
@@ -278,7 +278,7 @@ class Metaroom {
 			this.setModified(true)
 			this.selectedRoom.startDrag(x, y)
 		}
-		this.selectedParts.forEach((part) => {
+		this.selectedParts.forEach(part => {
 			if (part.room !== this.selectedRoom) {
 				part.room.startDrag(x, y)
 			}
@@ -293,7 +293,7 @@ class Metaroom {
 		if (this.selectedRoom) {
 			this.selectedRoom.drag(x, y)
 		}
-		this.selectedParts.forEach((part) => {
+		this.selectedParts.forEach(part => {
 			if (part.room !== this.selectedRoom) {
 				part.room.drag(x, y)
 			}
@@ -308,7 +308,7 @@ class Metaroom {
 		if (this.selectedRoom) {
 			this.selectedRoom.endDrag(x, y)
 		}
-		this.selectedParts.forEach((part) => {
+		this.selectedParts.forEach(part => {
 			if (part.room !== this.selectedRoom) {
 				part.room.endDrag(x, y)
 			}
@@ -320,7 +320,7 @@ class Metaroom {
 		window.api.showOpenDialog(this.path || '', [
 			{ name: 'Images', extensions: ['png', 'blk'] },
 			{ name: 'All Files', extensions: ['*'] }
-		]).then((result) => {
+		]).then(result => {
 			if (result.filePaths.length > 0) {
 				let filePath = result.filePaths[0]
 				let fileName = filePath.match(/[^\\//]+?$/)[0]
@@ -352,19 +352,19 @@ class Metaroom {
 	}
 
 	loadBgFromPNG(filePath, onSuccess) {
-		window.api.readFile(filePath, 'binary').then((data) => {
+		window.api.readFile(filePath, 'binary').then(data => {
 			let str = 'data:image/png;base64,' + window.api.dataToString(data)
 			window.p.loadImage(str, onSuccess, () => {
 				window.api.showErrorDialog('Unable to load PNG file.')
 			})
-		}).catch((error) => {
+		}).catch(error => {
 			window.api.showErrorDialog('Unable to load PNG file.')
 			console.log(error)
 		})
 	}
 
 	loadBgFromBLK(filePath, onSuccess) {
-		window.api.readFile(filePath).then((data) => {
+		window.api.readFile(filePath).then(data => {
 			try {
 				let image = blk.toImage(data)
 				onSuccess(image)
@@ -372,7 +372,7 @@ class Metaroom {
 				window.api.showErrorDialog('Unable to load BLK file.')
 				console.log(e)
 			}
-		}).catch((error) => {
+		}).catch(error => {
 			window.api.showErrorDialog('Unable to load PNG file.')
 			console.log(error)
 		})
@@ -387,7 +387,7 @@ class Metaroom {
 	saveBgAsBLK(filepath) {
 		if (this.bgImage && filepath) {
 			let data = blk.fromImage(this.bgImage)
-			window.api.writeFile(filepath, data).catch((error) => {
+			window.api.writeFile(filepath, data).catch(error => {
 				window.api.showErrorDialog('Unable to save BLK file. File not accessible.')
 				console.log(error)
 			})
@@ -398,7 +398,7 @@ class Metaroom {
 		window.api.showOpenDialog(this.path || '', [
 			{ name: 'Music', extensions: ['mng'] },
 			{ name: 'All Files', extensions: ['*'] }
-		]).then((result) => {
+		]).then(result => {
 			if (result.filePaths.length > 0) {
 				let filePath = result.filePaths[0]
 				let fileName = filePath.match(/[^\\//]+?$/)[0]
@@ -413,7 +413,7 @@ class Metaroom {
 		this.setModified(false)
 		let filepath = this.path + this.filename
 		let contents = caos.encode(this)
-		window.api.writeFile(filepath, contents).catch((error) => {
+		window.api.writeFile(filepath, contents).catch(error => {
 			window.api.showErrorDialog('Unable to save metaroom. File not accessible.')
 			console.log(error)
 		})
@@ -424,7 +424,7 @@ class Metaroom {
 	}
 
 	drawDoors(p) {
-		this.doors.forEach((d) => {
+		this.doors.forEach(d => {
 			if (d.active && d.p1 && d.p2) {
 				if (d === this.selectedDoor) {
 					p.strokeWeight(doorSelectedWeight)
@@ -456,17 +456,17 @@ class Metaroom {
 		p.strokeWeight(4)
 		p.rect(0, 0, this.w, this.h)
 
-		this.rooms.forEach((r) => {
+		this.rooms.forEach(r => {
 			r.drawLinks(p, this.selectedRoom)
 		})
-		this.rooms.forEach((r) => {
+		this.rooms.forEach(r => {
 			r.drawRoom(p, this.selectedRoom)
 		})
-		this.rooms.forEach((r) => {
+		this.rooms.forEach(r => {
 			r.drawEdges(p, this.selectedRoom)
 		})
 		this.drawDoors(p)
-		this.rooms.forEach((r) => {
+		this.rooms.forEach(r => {
 			r.drawCorners(p, this.selectedRoom)
 		})
 

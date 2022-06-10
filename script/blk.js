@@ -4,7 +4,7 @@
 
 let blk = {}
 
-blk.toImage = (data) => {
+blk.toImage = data => {
 	let dataView = new DataView(data.buffer)
 
 	// read file header
@@ -26,7 +26,7 @@ blk.toImage = (data) => {
 
 	// read sprite data
 	let sprites = []
-	spriteHeaders.forEach((h) => {
+	spriteHeaders.forEach(h => {
 		let sprite = []
 		let offset = h.offset + 4
 		for (let y = 0; y < h.height; y++) {
@@ -74,7 +74,7 @@ blk.toImage = (data) => {
 	return image
 }
 
-blk.fromImage = (image) => {
+blk.fromImage = image => {
 	image.loadPixels()
 	let blockWidth = Math.ceil(image.width / 128)
 	let blockHeight = Math.ceil(image.height / 128)

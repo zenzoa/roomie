@@ -23,7 +23,7 @@ let buildFileMenu = () => {
 		label: 'New Metaroom',
 		modifiers: isMac ? 'cmd' : 'ctrl',
 		key: 'n',
-		click: () => { nw.Window.get().window.sketch.newMetaroom() }
+		click: () => nw.Window.get().window.sketch.newMetaroom()
 	})
 	fileMenu.append(exports.newMetaroom)
 
@@ -33,7 +33,7 @@ let buildFileMenu = () => {
 		label: 'Open...',
 		modifiers: isMac ? 'cmd' : 'ctrl',
 		key: 'o',
-		click: () => { nw.Window.get().window.sketch.openMetaroom() }
+		click: () => nw.Window.get().window.sketch.openMetaroom()
 	})
 	fileMenu.append(exports.openMetaroom)
 
@@ -44,7 +44,7 @@ let buildFileMenu = () => {
 		modifiers: isMac ? 'cmd' : 'ctrl',
 		key: 's',
 		enabled: false,
-		click: () => { nw.Window.get().window.sketch.saveMetaroom() }
+		click: () => nw.Window.get().window.sketch.saveMetaroom()
 	})
 	fileMenu.append(exports.save)
 
@@ -53,7 +53,7 @@ let buildFileMenu = () => {
 		modifiers: isMac ? 'cmd+shift' : 'ctrl+shift',
 		key: 's',
 		enabled: false,
-		click: () => { nw.Window.get().window.sketch.saveMetaroomAs() }
+		click: () => nw.Window.get().window.sketch.saveMetaroomAs()
 	})
 	fileMenu.append(exports.saveAs)
 
@@ -62,14 +62,14 @@ let buildFileMenu = () => {
 	exports.exportBlk = new nw.MenuItem({
 		label: 'Export Background As BLK...',
 		enabled: false,
-		click: () => { nw.Window.get().window.sketch.exportBgAsBLK() }
+		click: () => nw.Window.get().window.sketch.exportBgAsBLK()
 	})
 	fileMenu.append(exports.exportBlk)
 
 	exports.exportPng = new nw.MenuItem({
 		label: 'Export Background As PNG...',
 		enabled: false,
-		click: () => { nw.Window.get().window.sketch.exportBgAsPNG() }
+		click: () => nw.Window.get().window.sketch.exportBgAsPNG()
 	})
 	fileMenu.append(exports.exportPng)
 
@@ -83,7 +83,7 @@ let buildRoomMenu = () => {
 		label: 'Create',
 		key: 'a',
 		enabled: false,
-		click: () => { nw.Window.get().window.sketch.createRoom() }
+		click: () => nw.Window.get().window.sketch.createRoom()
 	})
 	roomMenu.append(exports.createRoom)
 
@@ -91,7 +91,7 @@ let buildRoomMenu = () => {
 		label: 'Extrude',
 		key: 'e',
 		enabled: false,
-		click: () => { nw.Window.get().window.sketch.extrudeRoom() }
+		click: () => nw.Window.get().window.sketch.extrudeRoom()
 	})
 	roomMenu.append(exports.extrudeRoom)
 
@@ -99,7 +99,7 @@ let buildRoomMenu = () => {
 		label: 'Delete',
 		key: 'Backspace',
 		enabled: false,
-		click: () => { nw.Window.get().window.sketch.deleteRoom() }
+		click: () => nw.Window.get().window.sketch.deleteRoom()
 	})
 	roomMenu.append(exports.deleteRoom)
 
@@ -110,7 +110,7 @@ let buildRoomMenu = () => {
 		modifiers: isMac ? 'cmd' : 'ctrl',
 		key: 'l',
 		enabled: false,
-		click: () => { nw.Window.get().window.sketch.addLink() }
+		click: () => nw.Window.get().window.sketch.addLink()
 	})
 	roomMenu.append(exports.addLink)
 
@@ -119,7 +119,7 @@ let buildRoomMenu = () => {
 		modifiers: isMac ? 'cmd+shift' : 'ctrl+shift',
 		key: 'l',
 		enabled: false,
-		click: () => { nw.Window.get().window.sketch.removeLinks() }
+		click: () => nw.Window.get().window.sketch.removeLinks()
 	})
 	roomMenu.append(exports.removeLinks)
 
@@ -133,7 +133,7 @@ let buildViewMenu = () => {
 		label: '100%',
 		modifiers: isMac ? 'cmd' : 'ctrl',
 		key: '0',
-		click: () => { nw.Window.get().window.sketch.resetZoom() }
+		click: () => nw.Window.get().window.sketch.resetZoom()
 	})
 	viewMenu.append(exports.resetZoom)
 
@@ -141,7 +141,7 @@ let buildViewMenu = () => {
 		label: 'Zoom In',
 		modifiers: isMac ? 'cmd' : 'ctrl',
 		key: '=',
-		click: () => { nw.Window.get().window.sketch.zoomIn() }
+		click: () => nw.Window.get().window.sketch.zoomIn()
 	})
 	viewMenu.append(exports.zoomIn)
 
@@ -149,7 +149,7 @@ let buildViewMenu = () => {
 		label: 'Zoom Out',
 		modifiers: isMac ? 'cmd' : 'ctrl',
 		key: '-',
-		click: () => { nw.Window.get().window.sketch.zoomOut() }
+		click: () => nw.Window.get().window.sketch.zoomOut()
 	})
 	viewMenu.append(exports.zoomOut)
 
