@@ -87,8 +87,6 @@ let buildRoomMenu = () => {
 	})
 	roomMenu.append(exports.createRoom)
 
-	roomMenu.append(new nw.MenuItem({ type: 'separator' }))
-
 	exports.extrudeRoom = new nw.MenuItem({
 		label: 'Extrude',
 		key: 'e',
@@ -97,8 +95,6 @@ let buildRoomMenu = () => {
 	})
 	roomMenu.append(exports.extrudeRoom)
 
-	roomMenu.append(new nw.MenuItem({ type: 'separator' }))
-
 	exports.deleteRoom = new nw.MenuItem({
 		label: 'Delete',
 		key: 'Backspace',
@@ -106,6 +102,26 @@ let buildRoomMenu = () => {
 		click: () => { nw.Window.get().window.sketch.deleteRoom() }
 	})
 	roomMenu.append(exports.deleteRoom)
+
+	roomMenu.append(new nw.MenuItem({ type: 'separator' }))
+
+	exports.addLink = new nw.MenuItem({
+		label: 'Add CA Link',
+		modifiers: isMac ? 'cmd' : 'ctrl',
+		key: 'l',
+		enabled: false,
+		click: () => { nw.Window.get().window.sketch.addLink() }
+	})
+	roomMenu.append(exports.addLink)
+
+	exports.removeLinks = new nw.MenuItem({
+		label: 'Remove CA Links',
+		modifiers: isMac ? 'cmd+shift' : 'ctrl+shift',
+		key: 'l',
+		enabled: false,
+		click: () => { nw.Window.get().window.sketch.removeLinks() }
+	})
+	roomMenu.append(exports.removeLinks)
 
 	return roomMenu
 }

@@ -1,6 +1,9 @@
 /*
-- CA links (link vertical rooms)
 - fix snap-to-edge when it's just edge-to-edge
+- fix adding doors between rooms only connected at one corner
+- add slope annotation and CA emitter indicator
+- splash screen for when there's no metaroom loaded
+- application icon
 */
 
 const { api } = require('./script/api')
@@ -16,11 +19,11 @@ nw.Window.open('index.html', {}, (mainWindow) => {
 	mainWindow.window.api = api
 
 	if (process.versions['nw-flavor'] === 'sdk') {
-		chrome.developerPrivate.openDevTools({
-			renderViewId: -1,
-			renderProcessId: -1,
-			extensionId: chrome.runtime.id
-		})
+		// chrome.developerPrivate.openDevTools({
+		// 	renderViewId: -1,
+		// 	renderProcessId: -1,
+		// 	extensionId: chrome.runtime.id
+		// })
 		mainWindow.showDevTools()
 	}
 })

@@ -13,6 +13,7 @@ class Sketch {
 
 		this.isCreatingRoom = false
 		this.isExtrudingRoom = false
+		this.isAddingLink = false
 
 		this.xStart = 0
 		this.yStart = 0
@@ -56,7 +57,22 @@ class Sketch {
 			p.push()
 			p.scale(this.scale)
 			p.translate(this.xOffset, this.yOffset)
+
 			this.metaroom.draw(p)
+
+			if (this.metaroom.selectedRoom && this.isAddingLink) {
+				let x = p.mouseX
+				let y = p.mouseY
+				let x2 = x / this.scale - this.xOffset
+				let y2 = y / this.scale - this.yOffset
+				p.fill(0, 255, 255)
+				p.stroke(0, 255, 255)
+				p.strokeWeight(1)
+				let roomCenter = this.metaroom.selectedRoom.getCenter()
+				p.line(roomCenter.x, roomCenter.y, x2, y2)
+				p.circle(roomCenter.x, roomCenter.y, 6)
+			}
+
 			p.pop()
 		}
 	}
@@ -86,9 +102,6 @@ class Sketch {
 		this.xLast = x
 		this.yLast = y
 
-		window.api.roomSelect(false)
-		window.api.edgeSelect(false)
-
 		if ((p.keyIsDown(32)) || p.mouseButton === p.CENTER) {
 			this.isPanning = true
 
@@ -100,15 +113,15 @@ class Sketch {
 					this.metaroom.selectedRoom = newRoom
 					newRoom.selectedPart = 'BR'
 					newRoom.startDrag(x2, y2)
+				} else if (this.metaroom.selectedRoom && this.isAddingLink) {
+					this.metaroom.rooms.forEach((r) => {
+						if (r.isPointInside(x2, y2)) {
+							this.metaroom.selectedRoom.addLink(r)
+						}
+					})
+					this.isAddingLink = false
 				} else {
 					this.metaroom.selectObject(x2, y2)
-					if (this.metaroom.selectedRoom) {
-						if (this.metaroom.selectedRoom.selectedPart === 'Room') {
-							window.api.roomSelect(true)
-						} else if (['Top', 'Bottom', 'Left', 'Right'].includes(this.metaroom.selectedRoom.selectedPart)) {
-							window.api.edgeSelect(true)
-						}
-					}
 				}
 				if (!this.metaroom.somethingSelected()) {
 					this.isPanning = true
@@ -119,6 +132,10 @@ class Sketch {
 			this.metaroom && this.metaroom.selectObject(x2, y2, 'edge')
 			this.isExtrudingRoom = true
 		}
+
+		window.api.roomSelect(this.metaroom && this.metaroom.selectedRoom)
+		window.api.edgeSelect(this.metaroom && this.metaroom.selectedRoom && ['Top', 'Bottom', 'Left', 'Right'].includes(this.metaroom.selectedRoom.selectedPart))
+
 		updatePanel(this.metaroom)
 	}
 
@@ -272,6 +289,7 @@ class Sketch {
 			this.deleteRoom()
 		} else if (p.keyCode === p.ESCAPE) {
 			this.isCreatingRoom = false
+			this.isAddingLink = false
 		}
 	}
 
@@ -453,6 +471,22 @@ class Sketch {
 			window.api.showConfirmDialog('Are you sure you want to delete this room?').then((response) => {
 				if (response === 0) {
 					this.metaroom.removeRoom(this.metaroom.selectedRoom)
+				}
+			})
+		}
+	}
+
+	addLink() {
+		if (this.metaroom && this.metaroom.selectedRoom) {
+			this.isAddingLink = true
+		}
+	}
+
+	removeLinks() {
+		if (this.metaroom && this.metaroom.selectedRoom) {
+			window.api.showConfirmDialog('Are you sure you want to remove all links to/from this room?').then((response) => {
+				if (response === 0) {
+					this.metaroom.selectedRoom.removeLinks()
 				}
 			})
 		}

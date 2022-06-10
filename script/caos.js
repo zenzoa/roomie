@@ -157,9 +157,22 @@ caos.decode = (tokens) => {
 						newMetaroom.addDoor(r1, r2, permeability, true)
 					}
 				}
+
+			} else if (token.value === 'link') {
+				let roomId1 = decodeNextToken()
+				let roomId2 = decodeNextToken()
+				if (newMetaroom) {
+					r1 = newMetaroom.rooms[roomId1]
+					r2 = newMetaroom.rooms[roomId2]
+					if (r1 && r2) {
+						r1.addLink(r2)
+					}
+				}
+
 			} else if (token.value === 'mapd') {
 				let mapWidth = decodeNextToken()
 				let mapHeight = decodeNextToken()
+
 			} else if (token.value === 'new:') {
 				let type = tokens.shift()
 				if (type.value === 'simp') {
@@ -186,11 +199,13 @@ caos.decode = (tokens) => {
 				} else {
 					ignoreLine(token, 'new: ' + type.value)
 				}
+
 			} else if (token.value === 'attr') {
 				let attrValue = decodeNextToken()
 				if (target !== 'favPlace') {
 					ignoredLines.push(`attr ${attrValue}`)
 				}
+
 			} else if (token.value === 'mvto') {
 				let mvtoX = decodeNextToken()
 				let mvtoY = decodeNextToken()
@@ -207,6 +222,7 @@ caos.decode = (tokens) => {
 				} else {
 					ignoredLines.push(`mvto ${mvtoX} ${mvtoY}`)
 				}
+
 			} else if (token.value === 'emit') {
 				let caIndex = decodeNextToken()
 				let amount = decodeNextToken()
@@ -215,16 +231,19 @@ caos.decode = (tokens) => {
 				} else {
 					ignoredLines.push(`emit ${caIndex} ${amount}`)
 				}
+
 			} else if (token.value === 'tick') {
 				let tickValue = decodeNextToken()
 				if (target !== 'favPlace') {
 					ignoredLines.push(`tick ${tickValue}`)
 				}
+
 			} else if (token.value === 'delg') {
 				let variableToDelete = decodeNextToken()
 				if (!Object.keys(gameVariables).includes(variableToDelete)) {
 					ignoredLines.push(`delg "${variableToDelete}"`)
 				}
+
 			} else {
 				ignoreLine(token, token.value)
 			}
@@ -286,19 +305,35 @@ caos.encode = (m) => {
 		lines.push(`    setv game "map_tmp_${i}" va00`)
 	})
 
-	
 	// add doors
-	if (m.doors.length > 0) {
-		lines.push('')
-		lines.push('*ROOMIE Add doors between rooms')
-		m.doors.forEach((d) => {
-			if (d.active) {
-				lines.push(`door game "map_tmp_${d.r1.index}" game "map_tmp_${d.r2.index}" ${d.permeability}`)
+	firstDoor = true
+	m.doors.forEach((d) => {
+		if (d.active) {
+			if (firstDoor) {
+				lines.push('')
+				lines.push('*ROOMIE Add doors between rooms')
+				firstDoor = false
+			}
+			lines.push(`door game "map_tmp_${d.r1.index}" game "map_tmp_${d.r2.index}" ${d.permeability}`)
+		}
+	})
+
+	// CA links
+	let firstLink = true
+	let existingLinks = []
+	m.rooms.forEach((r1) => {
+		r1.links.forEach((r2) => {
+			if (firstLink) {
+				lines.push('')
+				lines.push('*ROOMIE Add CA links')
+				firstLink = false
+			}
+			if (!existingLinks.includes(r1.index + '<->' + r2.index) && !existingLinks.includes(r2.index + '<->' + r1.index)) {
+				lines.push(`link game "map_tmp_${r1.index}" game "map_tmp_${r2.index}"`)
+				existingLinks.push(r1.index + '<->' + r2.index)
 			}
 		})
-	}
-
-	// TODO: CA links
+	})
 	
 	// remove temp variables
 	lines.push('')

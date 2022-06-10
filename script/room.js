@@ -16,6 +16,8 @@ class Room {
 		this.emitterClassifier = 1000
 		this.smells = []
 
+		this.links = []
+
 		this.xL = xL
 		this.xR = xR
 		this.yTL = yTL
@@ -389,6 +391,44 @@ class Room {
 	removeSmell(index) {
 		this.smells.splice(index, 1)
 		this.parentMetaroom.setModified(true)
+	}
+
+	addLink(otherRoom) {
+		let roomsAreConnected = false
+		this.parentMetaroom.doors.forEach((d) => {
+			if (!d.active) { return }
+			if ((d.r1 === this && d.r2 === otherRoom) || d.r1 === otherRoom && d.r2 === this) {
+				roomsAreConnected = true
+			}
+		})
+		if (!roomsAreConnected) {
+			if (!this.links.includes(otherRoom)) {
+				this.links.push(otherRoom)
+			}
+			if (!otherRoom.links.includes(this)) {
+				otherRoom.links.push(this)
+			}
+		}
+	}
+
+	removeLinks() {
+		this.links.forEach((otherRoom) => {
+			otherRoom.links = otherRoom.links.filter((l) => { return l !== this })
+		})
+		this.links = []
+	}
+
+	drawLinks(p, selectedRoom) {
+		p.fill(0, 255, 255)
+		p.stroke(0, 255, 255)
+		p.strokeWeight(1)
+		let roomCenter = this.getCenter()
+		this.links.forEach((otherRoom) => {
+			let otherCenter = otherRoom.getCenter()
+			p.line(roomCenter.x, roomCenter.y, otherCenter.x, otherCenter.y)
+			p.circle(roomCenter.x, roomCenter.y, selectedRoom === this ? 6 : 2)
+			p.circle(otherCenter.x, otherCenter.y, 2)
+		})
 	}
 
 	drawRoom(p, selectedRoom) {

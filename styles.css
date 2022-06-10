@@ -92,8 +92,9 @@ label + label {
 	width: 100%;
 }
 
-.line + .input[type="number"] {
+.line + input[type="number"] {
 	width: 90px;
+	flex-shrink: 0;
 }
 
 div + label > button {

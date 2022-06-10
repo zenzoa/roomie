@@ -122,6 +122,8 @@ class Metaroom {
 					permeability: permeability
 				})
 			}
+			r1.links = r1.links.filter((l) => l !== r2)
+			r2.links = r2.links.filter((l) => l !== r1)
 		}
 	}
 
@@ -454,6 +456,9 @@ class Metaroom {
 		p.strokeWeight(4)
 		p.rect(0, 0, this.w, this.h)
 
+		this.rooms.forEach((r) => {
+			r.drawLinks(p, this.selectedRoom)
+		})
 		this.rooms.forEach((r) => {
 			r.drawRoom(p, this.selectedRoom)
 		})

@@ -81,6 +81,8 @@ exports.api = {
 
 	'roomSelect': (value) => {
 		menu.deleteRoom.enabled = value
+		menu.addLink.enabled = value
+		menu.removeLinks.enabled = value
 	},
 
 	'edgeSelect': (value) => {
