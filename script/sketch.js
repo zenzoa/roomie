@@ -274,7 +274,7 @@ class Sketch {
 	}
 
 	zoomOut() {
-		if (this.scale > 0.5) {
+		if (this.scale > 0.2) {
 			this.scale = this.scale - 0.1
 		}
 	}
@@ -290,6 +290,14 @@ class Sketch {
 		} else if (p.keyCode === p.ESCAPE) {
 			this.isCreatingRoom = false
 			this.isAddingLink = false
+		} else if (p.keyCode === p.UP_ARROW) {
+			this.yOffset += 100
+		} else if (p.keyCode === p.DOWN_ARROW) {
+			this.yOffset -= 100
+		} else if (p.keyCode === p.LEFT_ARROW) {
+			this.xOffset += 100
+		} else if (p.keyCode === p.RIGHT_ARROW) {
+			this.xOffset -= 100
 		}
 	}
 
