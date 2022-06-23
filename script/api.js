@@ -97,5 +97,17 @@ exports.api = {
 	'dataToString': data => {
 		let buffer = new Buffer(data, 'binary')
 		return buffer.toString('base64')
+	},
+
+	'updateRecentFiles': (recentFiles, onOpen) => {
+		menu.recentFiles = new nw.Menu()
+		recentFiles.forEach(filePath => {
+			menu.recentFiles.append(new nw.MenuItem({
+				label: filePath,
+				click: () => onOpen(filePath)
+			}))
+		})
+		menu.openRecent.enabled = true
+		menu.openRecent.submenu = menu.recentFiles
 	}
 }

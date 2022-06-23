@@ -22,6 +22,8 @@ class Sketch {
 
 		this.mapWidth = 200000
 		this.mapHeight = 200000
+
+		this.recentFiles = []
 	}
 
 	setup(p) {
@@ -339,6 +341,37 @@ class Sketch {
 		}
 	}
 
+	openFromFilePath(filePath) {
+		window.api.readFile(filePath, 'utf8').then(data => {
+			try {
+				const tokens = caos.parse(data)
+				const m = caos.decode(tokens)
+				this.metaroom = m
+
+				window.api.metaroomOpen(true)
+				window.api.bgImageOpen(false)
+
+				this.metaroom.filename = filePath.match(/[^\\//]+?$/)[0]
+				this.metaroom.path = filePath.match(/^.*[\\\/]/)[0]
+				if (this.metaroom.bg !== '') {
+					this.metaroom.loadBackground()
+				}
+
+				this.updateTitle()
+				updatePanel(this.metaroom)
+
+				this.addRecentFile(filePath)
+
+			} catch (error) {
+				window.api.showErrorDialog('Unable to open metaroom. Invalid data.')
+				console.log(error)
+			}
+		}).catch(error => {
+			window.api.showErrorDialog('Unable to open COS file.')
+			console.log(error)
+		})
+	}
+
 	openMetaroom() {
 		let openIt = () => {
 			window.api.showOpenDialog('', [
@@ -347,32 +380,7 @@ class Sketch {
 			]).then(result => {
 				if (result.filePaths.length > 0) {
 					let filePath = result.filePaths[0]
-					window.api.readFile(filePath, 'utf8').then(data => {
-						try {
-							const tokens = caos.parse(data)
-							const m = caos.decode(tokens)
-							this.metaroom = m
-
-							window.api.metaroomOpen(true)
-							window.api.bgImageOpen(false)
-
-							this.metaroom.filename = filePath.match(/[^\\//]+?$/)[0]
-							this.metaroom.path = filePath.match(/^.*[\\\/]/)[0]
-							if (this.metaroom.bg !== '') {
-								this.metaroom.loadBackground()
-							}
-
-							this.updateTitle()
-							updatePanel(this.metaroom)
-
-						} catch (error) {
-							window.api.showErrorDialog('Unable to open metaroom. Invalid data.')
-							console.log(error)
-						}
-					}).catch(error => {
-						window.api.showErrorDialog('Unable to open COS file.')
-						console.log(error)
-					})
+					this.openFromFilePath(filePath)
 				}
 			})
 		}
@@ -418,6 +426,7 @@ class Sketch {
 					this.metaroom.path = filePath.match(/^.*[\\\/]/)[0]
 					this.metaroom.save()
 					this.updateTitle()
+					this.addRecentFile(filePath)
 				}
 			})
 		}
@@ -498,6 +507,15 @@ class Sketch {
 				}
 			})
 		}
+	}
+
+	addRecentFile(filePath) {
+		this.recentFiles = this.recentFiles.filter(f => f !== filePath)
+		this.recentFiles.unshift(filePath)
+		if (this.recentFiles.length > 10) {
+			this.recentFiles = this.recentFiles.slice(0, 10)
+		}
+		window.api.updateRecentFiles(this.recentFiles, f => openFromFilePath(f))
 	}
 }
 

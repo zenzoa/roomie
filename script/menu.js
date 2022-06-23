@@ -2,6 +2,7 @@ const isMac = process.platform === 'darwin'
 
 exports.newMetaroom = null
 exports.openMetaroom = null
+exports.openRecent = null
 exports.save = null
 exports.saveAs = null
 
@@ -36,6 +37,14 @@ let buildFileMenu = () => {
 		click: () => nw.Window.get().window.sketch.openMetaroom()
 	})
 	fileMenu.append(exports.openMetaroom)
+
+	exports.recentFiles = new nw.Menu()
+	exports.openRecent = new nw.MenuItem({
+		label: 'Open Recent',
+		enabled: false,
+		submenu: exports.recentFiles
+	})
+	fileMenu.append(exports.openRecent)
 
 	fileMenu.append(new nw.MenuItem({ type: 'separator' }))
 
