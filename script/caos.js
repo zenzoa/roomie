@@ -267,6 +267,7 @@ caos.decode = tokens => {
 
 	if (newMetaroom) {
 		newMetaroom.ignoredLines = ignoredLines
+		newMetaroom.isModified = false
 	}
 	return newMetaroom
 }

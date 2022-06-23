@@ -329,6 +329,7 @@ class Metaroom {
 					this.path = filePath.match(/^.*[\\\/]/)[0]
 				}
 				this.loadBackground()
+				this.setModified(true)
 			}
 		})
 	}
@@ -338,7 +339,6 @@ class Metaroom {
 		this.bgImage = image
 		this.w = image.width
 		this.h = image.height
-		this.setModified(true)
 	}
 
 	loadBackground() {
