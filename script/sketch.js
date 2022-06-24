@@ -341,58 +341,64 @@ class Sketch {
 		}
 	}
 
-	openFromFilePath(filePath) {
-		window.api.readFile(filePath, 'utf8').then(data => {
-			try {
-				const tokens = caos.parse(data)
-				const m = caos.decode(tokens)
-				this.metaroom = m
-
-				window.api.metaroomOpen(true)
-				window.api.bgImageOpen(false)
-
-				this.metaroom.filename = filePath.match(/[^\\//]+?$/)[0]
-				this.metaroom.path = filePath.match(/^.*[\\\/]/)[0]
-				if (this.metaroom.bg !== '') {
-					this.metaroom.loadBackground()
-				}
-
-				this.updateTitle()
-				updatePanel(this.metaroom)
-
-				this.addRecentFile(filePath)
-
-			} catch (error) {
-				window.api.showErrorDialog('Unable to open metaroom. Invalid data.')
-				console.log(error)
-			}
-		}).catch(error => {
-			window.api.showErrorDialog('Unable to open COS file.')
-			console.log(error)
-		})
-	}
-
-	openMetaroom() {
-		let openIt = () => {
+	openMetaroom(givenFilePath) {
+		let openDialog = (onSuccess) => {
 			window.api.showOpenDialog('', [
 				{ name: 'Scripts', extensions: ['cos'] },
 				{ name: 'All Files', extensions: ['*'] }
 			]).then(result => {
 				if (result.filePaths.length > 0) {
 					let filePath = result.filePaths[0]
-					this.openFromFilePath(filePath)
+					onSuccess(filePath)
 				}
+			})
+		}
+
+		let loadFromFile = (filePath) => {
+			window.api.readFile(filePath, 'utf8').then(data => {
+				try {
+					const tokens = caos.parse(data)
+					const m = caos.decode(tokens)
+					this.metaroom = m
+	
+					window.api.metaroomOpen(true)
+					window.api.bgImageOpen(false)
+	
+					this.metaroom.filename = filePath.match(/[^\\//]+?$/)[0]
+					this.metaroom.path = filePath.match(/^.*[\\\/]/)[0]
+					if (this.metaroom.bg !== '') {
+						this.metaroom.loadBackground()
+					}
+	
+					this.updateTitle()
+					updatePanel(this.metaroom)
+	
+					this.addRecentFile(filePath)
+	
+				} catch (error) {
+					window.api.showErrorDialog('Unable to open metaroom. Invalid data.')
+					console.log(error)
+				}
+			}).catch(error => {
+				window.api.showErrorDialog('Unable to open COS file.')
+				console.log(error)
 			})
 		}
 
 		if (this.metaroom && this.metaroom.isModified) {
 			window.api.showConfirmDialog('Are you sure you want to open a new metaroom?\nUnsaved changes will be lost.').then(response => {
 				if (response === 0) {
-					openIt()
+					if (givenFilePath) {
+						loadFromFile(givenFilePath)
+					} else {
+						openDialog(f => loadFromFile(f))
+					}
 				}
 			})
+		} else if (givenFilePath) {
+			loadFromFile(givenFilePath)
 		} else {
-			openIt()
+			openDialog(f => loadFromFile(f))
 		}
 	}
 
@@ -515,7 +521,7 @@ class Sketch {
 		if (this.recentFiles.length > 10) {
 			this.recentFiles = this.recentFiles.slice(0, 10)
 		}
-		window.api.updateRecentFiles(this.recentFiles, f => openFromFilePath(f))
+		window.api.updateRecentFiles(this.recentFiles, f => this.openMetaroom(f))
 	}
 }
 
