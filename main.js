@@ -1,8 +1,3 @@
-/*
-- fix snap-to-edge when it's just edge-to-edge
-- splash screen for when there's no metaroom loaded
-*/
-
 const { api } = require('./script/api')
 const { buildMenu } = require('./script/menu')
 
