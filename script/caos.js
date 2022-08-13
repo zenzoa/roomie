@@ -173,6 +173,11 @@ caos.decode = tokens => {
 				let mapWidth = decodeNextToken()
 				let mapHeight = decodeNextToken()
 
+			} else if (token.value === 'cmra' || token.value === 'cmrp') {
+				let x = decodeNextToken()
+				let y = decodeNextToken()
+				let pan = decodeNextToken()
+
 			} else if (token.value === 'new:') {
 				let type = tokens.shift()
 				if (type.value === 'simp') {
@@ -370,6 +375,15 @@ caos.encode = m => {
 		lines.push('  attr 272')
 		lines.push(`  mvto ${m.favPlace.x + m.x - 2} ${m.favPlace.y + m.y - 1}`)
 		lines.push('  tick 10')
+	}
+
+	// add camera command
+	lines.push('')
+	lines.push('*ROOMIE Add camera command')
+	if (m.favPlace.enabled) {
+		lines.push(`cmrp ${m.favPlace.x + m.x} ${m.favPlace.y + m.y} 0`)
+	} else {
+		lines.push(`cmra ${m.x} ${m.y} 0`)
 	}
 
 	if (m.ignoredLines.length > 0) {
