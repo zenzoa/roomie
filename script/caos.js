@@ -193,7 +193,8 @@ caos.decode = tokens => {
 						newMetaroom.favPlace.sprite = sprite
 						newMetaroom.favPlace.enabled = true
 						target = 'favPlace'
-					} else if (newMetaroom && family === 3 && genus === 5 && sprite === 'blnk') {
+					} else if ((newMetaroom && family === 3 && genus === 5 && sprite === 'blnk')
+						|| (newMetaroom && family === 1 && genus === 1 && sprite === 'blnk')) {
 						target = 'emitter'
 						tempEmitter = {
 							classifier: species
@@ -358,7 +359,7 @@ caos.encode = m => {
 				firstEmitter = false
 			}
 			let roomCenter = r.getCenter()
-			lines.push(`new: simp 3 5 ${r.emitterClassifier} "blnk" 2 0 0`)
+			lines.push(`new: simp 1 1 ${r.emitterClassifier} "blnk" 2 0 0`)
 			lines.push(`  attr 18`)
 			lines.push(`  mvto ${roomCenter.x + m.x} ${roomCenter.y + m.y}`)
 			r.smells.forEach(smell => {
