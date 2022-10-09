@@ -4,6 +4,7 @@ caos.parse = text => {
 	text = text + '\n'
 	let tokenType = null
 	let tokenValue = ''
+	let whitespace = ''
 	let tokens = []
 	for (let i = 0; i < text.length; i++) {
 		let c = text[i]
@@ -19,6 +20,10 @@ caos.parse = text => {
 			} else if (c.match(/\S/g)) {
 				tokenType = 'command'
 				tokenValue = c
+			} else if (c == ' ') {
+				whitespace += ' '
+			} else if (c == '\t') {
+				whitespace += '\t'
 			}
 		} else {
 			if (tokenType === 'number' && (c.match(/\d/g) || c === '.')) {
@@ -30,19 +35,24 @@ caos.parse = text => {
 			} else {
 				tokens.push({
 					type: tokenType,
-					value: tokenValue
+					value: tokenValue,
+					whitespace: whitespace
 				})
 				if (c === '\n' || c === '\r') {
 					tokens.push({ type: 'newline' })
 				}
 				tokenType = null
+				whitespace = ''
 			}
 		}
 	}
 	return tokens
 }
 
-caos.decode = tokens => {
+caos.decode = (tokens, inRoomieCode = false) => {
+	tokens = tokens.slice()
+	let reachedRoomieCode = inRoomieCode
+
 	let variables = []
 	let gameVariables = []
 	let newMetaroom = null
@@ -50,7 +60,9 @@ caos.decode = tokens => {
 	let target = null
 	let tempEmitter = null
 
+	let ignoredLinesPre = []
 	let ignoredLines = []
+	let lastTokenType = null
 
 	const ignoreLine = (token, lineSoFar) => {
 		let ignoredLine = lineSoFar
@@ -64,15 +76,34 @@ caos.decode = tokens => {
 			nextToken = tokens.shift()
 		}
 		if (ignoredLine && token.value !== '*ROOMIE') {
-			ignoredLines.push(ignoredLine)
+			if (token.whitespace) {
+				ignoredLine = token.whitespace + ignoredLine
+			}
+			if (reachedRoomieCode) {
+				ignoredLines.push(ignoredLine)
+			} else {
+				ignoredLinesPre.push(ignoredLine)
+			}
 		}
 	}
 
 	const decodeNextToken = () => {
 		let token = tokens.shift()
+
 		if (token.type === 'command') {
 
-			if (token.value === 'setv') {
+			if (!inRoomieCode) {
+				if (token.value === '***ROOMIE_START***') {
+					inRoomieCode = true
+					reachedRoomieCode = true
+				} else {
+					ignoreLine(token, token.value)
+				}
+
+			} else if (token.value === '***ROOMIE_END***') {
+				inRoomieCode = false
+
+			} else if (token.value === 'setv') {
 				let variable = tokens.shift().value
 				if (variable === 'game') {
 					let gameVariable = decodeNextToken()
@@ -260,11 +291,14 @@ caos.decode = tokens => {
 		} else if (token.type === 'string') {
 			return token.value
 
-		} else if (token.type === 'newline') {
-			if (ignoredLines.length > 0 && ignoredLines[ignoredLines.length - 1] !== '') {
+		} else if (token.type === 'newline'
+			&& lastTokenType === 'newline'
+			&& ignoredLines.length > 0
+			&& ignoredLines[ignoredLines.length - 1] !== '') {
 				ignoredLines.push('')
-			}
 		}
+
+		lastTokenType = token.type
 	}
 
 	while (tokens.length > 0) {
@@ -272,6 +306,7 @@ caos.decode = tokens => {
 	}
 
 	if (newMetaroom) {
+		newMetaroom.ignoredLinesPre = ignoredLinesPre
 		newMetaroom.ignoredLines = ignoredLines
 		newMetaroom.isModified = false
 	}
@@ -280,6 +315,14 @@ caos.decode = tokens => {
 
 caos.encode = m => {
 	let lines = []
+
+	if (m.ignoredLinesPre.length > 0) {
+		lines = lines.concat(m.ignoredLinesPre)
+		lines.push('')
+	}
+
+	lines.push('***ROOMIE START***')
+	lines.push('')
 
 	// set map size
 	lines.push('*ROOMIE Expand map size')
@@ -386,6 +429,9 @@ caos.encode = m => {
 	} else {
 		lines.push(`cmra ${m.x} ${m.y} 0`)
 	}
+
+	lines.push('')
+	lines.push('***ROOMIE END***')
 
 	if (m.ignoredLines.length > 0) {
 		lines.push('')

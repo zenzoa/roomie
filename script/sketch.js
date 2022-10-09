@@ -362,7 +362,7 @@ class Sketch {
 			window.api.readFile(filePath, 'utf8').then(data => {
 				try {
 					const tokens = caos.parse(data)
-					const m = caos.decode(tokens)
+					const m = caos.decode(tokens) || caos.decode(tokens, true)
 					this.metaroom = m
 
 					window.api.metaroomOpen(true)
