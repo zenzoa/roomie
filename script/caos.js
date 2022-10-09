@@ -340,7 +340,7 @@ caos.encode = m => {
 			}
 		})
 	})
-	
+
 	// remove temp variables
 	lines.push('')
 	lines.push('*ROOMIE Delete temporary variables')
@@ -360,7 +360,7 @@ caos.encode = m => {
 			let roomCenter = r.getCenter()
 			lines.push(`new: simp 3 5 ${r.emitterClassifier} "blnk" 2 0 0`)
 			lines.push(`  attr 18`)
-			lines.push(`  mvto ${roomCenter.x} ${roomCenter.y}`)
+			lines.push(`  mvto ${roomCenter.x + m.x} ${roomCenter.y + m.y}`)
 			r.smells.forEach(smell => {
 				lines.push(`  emit ${smell.caIndex} ${smell.amount}`)
 			})
