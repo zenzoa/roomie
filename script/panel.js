@@ -12,7 +12,13 @@ class NumberInput extends Component {
 					min: min,
 					max: max,
 					step: step,
-					onChange: e => onChange(parseInt(e.target.value))
+					onChange: e => {
+						let val = e.target.value
+						if (!step) {
+							val = parseInt(e.target.value)
+						}
+						onChange(val)
+					}
 				})
 			])
 		]

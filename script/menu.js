@@ -106,7 +106,7 @@ let buildRoomMenu = () => {
 
 	exports.deleteRoom = new nw.MenuItem({
 		label: 'Delete',
-		key: 'Backspace',
+		key: 'Delete',
 		enabled: false,
 		click: () => nw.Window.get().window.sketch.deleteRoom()
 	})

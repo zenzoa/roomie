@@ -84,6 +84,10 @@ class Sketch {
 	}
 
 	mousePressed(p) {
+		if (document.activeElement.tagName === 'INPUT') {
+			document.activeElement.dispatchEvent(new Event('change'))
+		}
+
 		let x = p.mouseX
 		let y = p.mouseY
 
@@ -280,14 +284,14 @@ class Sketch {
 			this.scale = this.scale - 0.1
 		}
 	}
-	
+
 	keyPressed(p) {
 		if (document.activeElement.tagName === 'INPUT') { return }
 		if (p.key === 'a') {
 			this.createRoom()
 		} else if (p.key === 'e') {
 			this.extrudeRoom()
-		} else if (p.keyCode === p.BACKSPACE || p.keyCode === p.DELETE) {
+		} else if (p.keyCode === p.DELETE) {
 			this.deleteRoom()
 		} else if (p.keyCode === p.ESCAPE) {
 			this.isCreatingRoom = false
@@ -360,21 +364,21 @@ class Sketch {
 					const tokens = caos.parse(data)
 					const m = caos.decode(tokens)
 					this.metaroom = m
-	
+
 					window.api.metaroomOpen(true)
 					window.api.bgImageOpen(false)
-	
+
 					this.metaroom.filename = filePath.match(/[^\\//]+?$/)[0]
 					this.metaroom.path = filePath.match(/^.*[\\\/]/)[0]
 					if (this.metaroom.bg !== '') {
 						this.metaroom.loadBackground()
 					}
-	
+
 					this.updateTitle()
 					updatePanel(this.metaroom)
-	
+
 					this.addRecentFile(filePath)
-	
+
 				} catch (error) {
 					window.api.showErrorDialog('Unable to open metaroom. Invalid data.')
 					console.log(error)
