@@ -197,6 +197,22 @@ class Room {
 		})
 	}
 
+	snapToSlope() {
+		if (this.selectedPart === 'TL') {
+			let slope = Math.abs((this.yTR - this.yTL) / (this.xR - this.xL))
+			if (slope < 0.05) this.yTL = this.yTR
+		} else if (this.selectedPart === 'TR') {
+			let slope = Math.abs((this.yTR - this.yTL) / (this.xR - this.xL))
+			if (slope < 0.05) this.yTR = this.yTL
+		} else if (this.selectedPart === 'BR') {
+			let slope = Math.abs((this.yBR - this.yBL) / (this.xR - this.xL))
+			if (slope < 0.05) this.yBR = this.yBL
+		} else if (this.selectedPart === 'BL') {
+			let slope = Math.abs((this.yBR - this.yBL) / (this.xR - this.xL))
+			if (slope < 0.05) this.yBL = this.yBR
+		}
+	}
+
 	checkConstraints() {
 		if (this.xL < 0) {
 			this.xL = 0
@@ -246,7 +262,7 @@ class Room {
 		this.yTRStart = this.yTR
 		this.yBLStart = this.yBL
 		this.yBRStart = this.yBR
-		
+
 		this.removeDoors()
 	}
 
@@ -305,8 +321,12 @@ class Room {
 			dragCorner()
 		}
 
-		this.snapToCorners()
-		this.snapToEdges()
+		if (!window.p.keyIsDown(window.p.CONTROL)) {
+			this.snapToSlope()
+			this.snapToCorners()
+			this.snapToEdges()
+		}
+
 		this.checkConstraints()
 		this.updatePositions()
 	}

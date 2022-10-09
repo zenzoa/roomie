@@ -144,7 +144,7 @@ geometry.circleCircleCollision = (c1x, c1y, c1r, c2x, c2y, c2r) => {
 }
 
 geometry.pointOnLine = (x, y, ax, ay, bx, by) =>{
-	return geometry.lineCircleCollision(ax, ay, bx, by, x, y, 1)
+	return geometry.lineCircleCollision(ax, ay, bx, by, x, y, 0.01)
 }
 
 geometry.lineCircleCollision = (x1, y1, x2, y2, cx, cy, cr) => {
