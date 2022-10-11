@@ -239,7 +239,7 @@ caos.decode = (tokens, inRoomieCode = false) => {
 
 			} else if (token.value === 'attr') {
 				let attrValue = decodeNextToken()
-				if (target !== 'favPlace') {
+				if (target !== 'favPlace' && target !== 'emitter') {
 					ignoredLines.push(`attr ${attrValue}`)
 				}
 
@@ -321,7 +321,7 @@ caos.encode = m => {
 		lines.push('')
 	}
 
-	lines.push('***ROOMIE START***')
+	lines.push('***ROOMIE_START***')
 	lines.push('')
 
 	// set map size
@@ -379,7 +379,7 @@ caos.encode = m => {
 				firstLink = false
 			}
 			if (!existingLinks.includes(r1.index + '<->' + r2.index) && !existingLinks.includes(r2.index + '<->' + r1.index)) {
-				lines.push(`link game "map_tmp_${r1.index}" game "map_tmp_${r2.index}"`)
+				lines.push(`link game "map_tmp_${r1.index}" game "map_tmp_${r2.index}" 100`)
 				existingLinks.push(r1.index + '<->' + r2.index)
 			}
 		})
@@ -431,7 +431,7 @@ caos.encode = m => {
 	}
 
 	lines.push('')
-	lines.push('***ROOMIE END***')
+	lines.push('***ROOMIE_END***')
 
 	if (m.ignoredLines.length > 0) {
 		lines.push('')
