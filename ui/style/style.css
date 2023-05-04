@@ -1,0 +1,344 @@
+:root {
+	--toolbar-height: 48px;
+	--sidebar-width: 348px;
+}
+
+* {
+	box-sizing: border-box;
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+html, body {
+	padding: 0;
+	margin: 0;
+	position: relative;
+	height: 100%;
+	overflow: hidden;
+	background-color: black;
+	font-family: "Lato", "Segoe UI", sans-serif;
+	font-size: 14px;
+}
+
+main {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+}
+
+main > canvas {
+	display: block;
+}
+
+.hidden {
+	display: none !important;
+}
+
+h1, h2, h3, h4 {
+	padding: 0;
+	margin: 0;
+	font: inherit;
+}
+
+#menubar {
+	z-index: 101;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: var(--toolbar-height);
+	padding: 0 12px;
+	display: flex;
+	align-items: center;
+	background-color: #292929;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	color: white;
+}
+
+#menubar img {
+	margin-top: 2px;
+	filter: invert(100%);
+}
+
+#menubar > * + * {
+	margin-left: 6px;
+}
+
+#menubar > span {
+	height: 24px;
+	border-left: 1px solid #444;
+	margin-left: 24px;
+	margin-right: 12px;
+}
+
+.sidebar {
+	z-index: 100;
+	position: absolute;
+	top: var(--toolbar-height);
+	bottom: 0;
+	right: 0;
+	padding: 18px 24px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	background-color: #303030;
+	color: white;
+	width: var(--sidebar-width);
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+.sidebar > label {
+	display: flex;
+	align-items: center;
+	position: relative;
+	border-radius: 1px;
+}
+
+.sidebar > label > span {
+	flex-basis: 120px;
+	padding-right: 12px;
+}
+
+.sidebar > label > span + * {
+	flex-grow: 1;
+}
+
+.sidebar > hr {
+	margin: 24px 0;
+	border: none;
+	border-bottom: 1px solid #444;
+}
+
+.sidebar > * + * {
+	margin-top: 12px;
+}
+
+.sidebar > .resize-handle {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	width: 12px;
+	cursor: ew-resize;
+}
+.sidebar > .resize-handle + * {
+	margin-top: 0;
+}
+
+input, button, textarea, select {
+	appearance: none;
+	display: block;
+	width: auto;
+	height: auto;
+	min-width: 0;
+	padding: 0;
+	margin: 0;
+	border: none;
+	outline: none;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	user-select: auto;
+	-webkit-user-select: auto;
+}
+
+button, select {
+	cursor: pointer;
+}
+
+input, textarea {
+	cursor: text;
+}
+
+#menubar button {
+	width: 36px;
+	height: 36px;
+	border-radius: 1px;
+	padding-top: -1px;
+	font-size: 20px;
+	line-height: 20px;
+}
+
+#menubar button.on {
+	background: #464646;
+}
+
+#menubar button:focus {
+	outline: 1px solid #939393;
+	outline-offset: 1px;
+}
+
+#menubar button:hover {
+	background: #595959;
+}
+
+#menubar button.on:hover {
+	background: #636363;
+}
+
+.sidebar button,
+.sidebar input,
+.sidebar select {
+	height: 28px;
+	padding: 0 8px;
+	border-radius: 1px;
+}
+
+.sidebar button,
+.sidebar select {
+	position: relative;
+	background: #464646;
+	box-shadow: 2px 2px 0 0 #222;
+}
+
+.sidebar button:focus,
+.sidebar select:focus {
+	outline: 1px solid #939393;
+	outline-offset: 1px;
+}
+
+.sidebar button:hover,
+.sidebar select:hover {
+	background: #595959;
+}
+
+.sidebar button:active,
+.sidebar select:active {
+	top: 1px;
+	left: 1px;
+	box-shadow: 2px 2px 0 0 #444 inset;
+}
+
+.sidebar button {
+	display: flex;
+	align-items: center;
+}
+
+.sidebar button > span {
+	flex-grow: 1;
+	text-align: left;
+}
+
+.sidebar button > img {
+	filter: invert(100%);
+}
+
+.sidebar button.icon-button {
+	padding: 2px;
+}
+
+.sidebar button.float-right {
+	float: right;
+	margin-top: -6px;
+}
+
+.sidebar select {
+	padding-right: 28px;
+}
+
+.sidebar .dropdown-arrow {
+	position: absolute;
+	top: 1px;
+	right: 4px;
+	pointer-events: none;
+	cursor: pointer;
+}
+
+.sidebar .dropdown-arrow > img {
+	filter: invert(100%);
+}
+
+.sidebar select:active + .dropdown-arrow {
+	top: 2px;
+	right: 3px;
+}
+
+.sidebar input {
+	background: #595959;
+	box-shadow: 2px 2px 0 0 #494949 inset;
+}
+
+.sidebar input:focus {
+	outline: 1px solid #939393;
+	outline-offset: 1px;
+}
+
+.sidebar input:disabled {
+	background: #434343;
+}
+
+.sidebar h2 {
+	margin-bottom: 20px;
+	font-size: large;
+	font-weight: bold;
+	text-align: center;
+}
+
+.sidebar h2::before {
+	content: '';
+	position: relative;
+	top: 12px;
+	display: block;
+	border-bottom: 1px solid #666;
+}
+
+.sidebar h2 > span {
+	position: relative;
+	padding: 0 12px;
+	background: #303030;
+}
+
+.sidebar h3 {
+	font-weight: bold;
+}
+
+.sidebar #smell-list > * + * {
+	margin-top: 8px;
+}
+
+.sidebar .smell {
+	display: flex;
+	align-items: center;
+}
+
+.sidebar .smell > label {
+	flex-grow: 1;
+	position: relative;
+}
+
+.sidebar .smell > button {
+	flex-shrink: 0;
+}
+
+.sidebar .smell > * + * {
+	margin-left: 4px;
+}
+
+#shortcut-guide {
+	z-index: 100;
+	position: absolute;
+	left: 12px;
+	bottom: 12px;
+	padding: 12px 18px 14px;
+	border: 1px solid rgba(255,255,255,0.2);
+	border-radius: 16px;
+	background-color: rgba(0, 0, 0, 0.8);
+	color: #ddd;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	cursor: default;
+}
+
+#shortcut-guide > span {
+	display: inline-block;
+	cursor: default;
+}
+
+#shortcut-guide > span + span {
+	margin-left: 18px;
+}
+
+#shortcut-guide > .shortcut-header {
+	width: 64px;
+	font-weight: bold;
+}

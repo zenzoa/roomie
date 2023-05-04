@@ -1,0 +1,157 @@
+const Tauri = window.__TAURI__
+
+let metaroom = null
+let undoStack = []
+let redoStack = []
+let isModified = false
+
+let bgImage = null
+let faviconImage = null
+
+const WORLD_WIDTH = 200000
+const WORLD_HEIGHT = 200000
+
+const MIN_GAP = 10
+const SNAP_DIST = 8
+const SELECT_DIST = 8
+
+let config = {
+	guide_enabled: true,
+	bg_opacity: 128
+}
+
+function setup() {
+	createCanvas(window.innerWidth, window.innerHeight)
+	UI.disableContextMenu()
+	UI.setupResizeHandles()
+	strokeJoin(ROUND)
+
+	metaroom = new Metaroom({})
+	UI.reset()
+	loadConfig()
+}
+
+function draw() {
+	clear()
+	scale(UI.zoomLevel)
+	translate(UI.xOffset, UI.yOffset)
+
+	if (bgImage) {
+		push()
+		scale(2)
+		tint(255, config.bg_opacity)
+		image(bgImage, 0, 0)
+		pop()
+	}
+
+	stroke(255)
+	strokeWeight(1)
+	noFill()
+	rect(0, 0, metaroom.w, metaroom.h)
+
+	const unselectedRooms = metaroom.rooms.filter(r => !UI.selectedRooms.includes(r) && !r.hasCollision)
+	const collidingRooms = metaroom.rooms.filter(r => !UI.selectedRooms.includes(r) && r.hasCollision)
+
+	for (const room of unselectedRooms) {
+		Room.draw(room)
+	}
+
+	if (UI.isDrawingRoom) {
+		UI.drawNewRoom()
+	} else if (UI.isDrawingLink) {
+		UI.drawNewLink()
+	} else if (UI.isExtrudingRoom) {
+		UI.drawExtrudedRoom()
+	}
+
+	stroke(200, 50, 50)
+	for (const room of collidingRooms) {
+		Room.draw(room)
+	}
+
+	stroke(255)
+	strokeWeight(2)
+	for (const room of UI.selectedRooms) {
+		Room.draw(room, true)
+	}
+
+	for (const door of metaroom.doors) {
+		Door.draw(door)
+	}
+
+	fill(255)
+	noStroke()
+	for (const room of UI.selectedRooms) {
+		Room.drawCorners(room)
+	}
+
+	fill(255)
+	stroke(255)
+	strokeWeight(1)
+	for (const link of metaroom.links) {
+		Link.draw(link)
+	}
+
+	noFill()
+	stroke(255)
+	strokeWeight(1)
+	for (const room of metaroom.rooms) {
+		Room.drawSmells(room)
+	}
+
+	if (metaroom.hasFavicon) {
+		Favicon.draw()
+	}
+
+	if (UI.isSelecting) {
+		UI.drawSelection()
+	}
+
+	if (document.activeElement.tagName !== 'INPUT') {
+		if (keyIsDown(LEFT_ARROW)) {
+			UI.xOffset += (keyIsDown(SHIFT) ? 100 : 10) / UI.zoomLevel
+		}
+		if (keyIsDown(RIGHT_ARROW)) {
+			UI.xOffset -= (keyIsDown(SHIFT) ? 100 : 10) / UI.zoomLevel
+		}
+		if (keyIsDown(UP_ARROW)) {
+			UI.yOffset += (keyIsDown(SHIFT) ? 100 : 10) / UI.zoomLevel
+		}
+		if (keyIsDown(DOWN_ARROW)) {
+			UI.yOffset -= (keyIsDown(SHIFT) ? 100 : 10) / UI.zoomLevel
+		}
+	}
+}
+
+function windowResized() {
+	resizeCanvas(windowWidth, windowHeight);
+}
+
+function loadConfig() {
+	Tauri.fs.readTextFile('roomie.conf', { dir: Tauri.fs.BaseDirectory.AppConfig })
+	.then((contents) => {
+		try {
+			const newConfig = JSON.parse(contents)
+			for (const key in newConfig) {
+				if (config[key] !== null) {
+					config[key] = newConfig[key]
+				}
+			}
+			UI.updateGuide()
+		} catch (err) {
+			console.error(err)
+		}
+	})
+}
+
+function saveConfig() {
+	const path = 'roomie.conf'
+	const dir = Tauri.fs.BaseDirectory.AppConfig
+	const contents = JSON.stringify(config)
+	Tauri.fs.exists(path, { dir })
+	.then(() => Tauri.fs.writeTextFile({ path, contents }, { dir }))
+	.catch((_) => {
+		Tauri.fs.createDir('', { dir, recursive: true })
+		.then(() => Tauri.fs.writeTextFile({ path, contents }, { dir }))
+	})
+}
