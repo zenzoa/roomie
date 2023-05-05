@@ -319,7 +319,7 @@ const Caos = {
 	encode: (m) => {
 		let lines = []
 
-		if (m.ignoredLinesPre.length > 0) {
+		if (m.ignoredLinesPre && m.ignoredLinesPre.length > 0) {
 			lines = lines.concat(m.ignoredLinesPre)
 			lines.push('')
 		}
@@ -428,7 +428,7 @@ const Caos = {
 		lines.push('')
 		lines.push('***ROOMIE_END***')
 
-		if (m.ignoredLines.length > 0) {
+		if (m.ignoredLines && m.ignoredLines.length > 0) {
 			lines.push('')
 			lines = lines.concat(m.ignoredLines)
 		}

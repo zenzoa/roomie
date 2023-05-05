@@ -29,6 +29,7 @@ function setup() {
 	metaroom = new Metaroom({})
 	UI.reset()
 	loadConfig()
+	UI.updateGuide()
 
 	// titlebar event listeners
 	document.getElementById('new-file-button').addEventListener('click', newFile)
@@ -185,7 +186,6 @@ function loadConfig() {
 					config[key] = newConfig[key]
 				}
 			}
-			UI.updateGuide()
 		} catch (why) {
 			console.error(why)
 		}
