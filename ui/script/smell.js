@@ -8,7 +8,7 @@ class Smell {
 	static sidebarEntry(smell, index) {
 		return `<div class="smell">
 			<label>
-				<select id="smell-ca-${index}" onchange="changeSmellCA(${index})">
+				<select id="smell-ca-${index}">
 					<option value="0"  ${smell.ca === 0 ?  'selected' : ''}>0 (Critters/bugs)</option>
 					<option value="1"  ${smell.ca === 1 ?  'selected' : ''}>1 Light</option>
 					<option value="2"  ${smell.ca === 2 ?  'selected' : ''}>2 Heat</option>
@@ -34,8 +34,8 @@ class Smell {
 					<img src="library/mono-icons/svg/chevron-down.svg">
 				</div>
 			</label>
-			<input id="smell-amount-${index}" type="number" step="0.01" value="${smell.amount}" onchange="changeSmellAmount(${index})">
-			<button class="icon-button" onclick="removeSmell(${index})">
+			<input id="smell-amount-${index}" type="number" step="0.01" value="${smell.amount}">
+			<button id="remove-smell-${index}" class="icon-button">
 				<img src="library/mono-icons/svg/delete.svg" alt="Remove Smell" title="Remove Smell">
 			</button>
 		</div>`
@@ -52,43 +52,50 @@ function addSmell() {
 	}
 }
 
-function removeSmell(index) {
-	if (UI.selectedRooms.length === 1) {
-		const room = UI.selectedRooms[0]
-		saveState()
-		room.smells = room.smells.filter((s, i) => i !== index)
-		UI.updateSidebar()
-	}
-}
-
-function changeSmellCA(index) {
-	if (UI.selectedRooms.length === 1) {
-		const room = UI.selectedRooms[0]
-		const smell = room.smells[index]
-		if (smell) {
-			const input = document.getElementById('smell-ca-' + index)
-			const ca = parseInt(input.value)
-			if (!isNaN(ca) && ca >= 0 && ca <= 19) {
-				saveState()
-				smell.ca = ca
-			}
+function removeSmell(event) {
+	if (event && event.currentTarget && UI.selectedRooms.length === 1) {
+		const index = parseInt(event.currentTarget.id.replace('remove-smell-', ''))
+		if (!isNaN(index)) {
+			const room = UI.selectedRooms[0]
+			saveState()
+			room.smells = room.smells.filter((s, i) => i !== index)
 			UI.updateSidebar()
 		}
 	}
 }
 
-function changeSmellAmount(index) {
-	if (UI.selectedRooms.length === 1) {
-		const room = UI.selectedRooms[0]
-		const smell = room.smells[index]
-		if (smell) {
-			const input = document.getElementById('smell-amount-' + index)
-			const amount = parseFloat(input.value)
-			if (!isNaN(amount) && amount >= 0 && amount <= 1) {
-				saveState()
-				smell.amount = amount
+function changeSmellCA(event) {
+	if (event && event.currentTarget && UI.selectedRooms.length === 1) {
+		const index = parseInt(event.currentTarget.id.replace('smell-ca-', ''))
+		if (!isNaN(index)) {
+			const room = UI.selectedRooms[0]
+			const smell = room.smells[index]
+			if (smell) {
+				const ca = parseInt(event.currentTarget.value)
+				if (!isNaN(ca) && ca >= 0 && ca <= 19) {
+					saveState()
+					smell.ca = ca
+				}
+				UI.updateSidebar()
 			}
-			UI.updateSidebar()
+		}
+	}
+}
+
+function changeSmellAmount(event) {
+	if (event && event.currentTarget && UI.selectedRooms.length === 1) {
+		const index = parseInt(event.currentTarget.id.replace('smell-amount-', ''))
+		if (!isNaN(index)) {
+			const room = UI.selectedRooms[0]
+			const smell = room.smells[index]
+			if (smell) {
+				const amount = parseFloat(event.currentTarget.value)
+				if (!isNaN(amount) && amount >= 0 && amount <= 1) {
+					saveState()
+					smell.amount = amount
+				}
+				UI.updateSidebar()
+			}
 		}
 	}
 }

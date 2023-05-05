@@ -131,7 +131,9 @@ function changeFaviconSprite() {
 			Favicon.importSprite()
 			UI.updateSidebar()
 		})
+		.catch((why) => console.error(why))
 	})
+	.catch((why) => console.error(why))
 }
 
 function changeFaviconClassifier() {

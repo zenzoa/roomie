@@ -37,11 +37,19 @@ class Room {
 		document.getElementById('room-bottom-slope').value = bottomSlopeDisplay + '%'
 
 		let smellListContents = ''
-		for (const i in room.smells) {
+		room.smells.forEach((_, i) => {
 			smellListContents += Smell.sidebarEntry(room.smells[i], i)
-		}
+		})
 		const smellList = document.getElementById('smell-list')
 		smellList.innerHTML = smellListContents
+		room.smells.forEach((_, i) => {
+			document.getElementById('smell-ca-' + i).removeEventListener('change', changeSmellCA)
+			document.getElementById('smell-ca-' + i).addEventListener('change', changeSmellCA)
+			document.getElementById('smell-amount-' + i).removeEventListener('change', changeSmellAmount)
+			document.getElementById('smell-amount-' + i).addEventListener('change', changeSmellAmount)
+			document.getElementById('remove-smell-' + i).removeEventListener('click', removeSmell)
+			document.getElementById('remove-smell-' + i).addEventListener('click', removeSmell)
+		})
 
 		document.getElementById('room-emitter-classifier').value = room.emitterClassifier
 	}
@@ -546,7 +554,9 @@ function changeRoomMusic() {
 				room.music = basename.replace(/\.mng$/i, '')
 				UI.updateSidebar()
 			})
+			.catch((why) => console.error(why))
 		})
+		.catch((why) => console.error(why))
 	}
 }
 

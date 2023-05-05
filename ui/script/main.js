@@ -29,6 +29,54 @@ function setup() {
 	metaroom = new Metaroom({})
 	UI.reset()
 	loadConfig()
+
+	// titlebar event listeners
+	document.getElementById('new-file-button').addEventListener('click', newFile)
+	document.getElementById('open-file-button').addEventListener('click', openFile)
+	document.getElementById('save-file-button').addEventListener('click', saveFile)
+	document.getElementById('save-as-file-button').addEventListener('click', saveAsFile)
+	document.getElementById('undo-button').addEventListener('click', undo)
+	document.getElementById('redo-button').addEventListener('click', redo)
+	document.getElementById('zoom-in-button').addEventListener('click', zoomIn)
+	document.getElementById('zoom-out-button').addEventListener('click', zoomOut)
+	document.getElementById('zoom-reset-button').addEventListener('click', zoomReset)
+	document.getElementById('new-room-button').addEventListener('click', newRoom)
+	document.getElementById('new-link-button').addEventListener('click', newLink)
+	document.getElementById('delete-selection-button').addEventListener('click', deleteSelection)
+	document.getElementById('guide-button').addEventListener('click', toggleGuide)
+
+	// metaroom event listeners
+	document.getElementById('metaroom-background').addEventListener('click', changeMetaroomBackground)
+	document.getElementById('metaroom-music').addEventListener('click', changeMetaroomMusic)
+	document.getElementById('metaroom-x').addEventListener('change', changeMetaroomX)
+	document.getElementById('metaroom-y').addEventListener('change', changeMetaroomY)
+	document.getElementById('metaroom-w').addEventListener('change', changeMetaroomW)
+	document.getElementById('metaroom-h').addEventListener('change', changeMetaroomH)
+
+	// favicon event listeners
+	document.getElementById('favicon-add').addEventListener('click', enableFavicon)
+	document.getElementById('favicon-remove').addEventListener('click', disableFavicon)
+	document.getElementById('favicon-x').addEventListener('change', changeFaviconX)
+	document.getElementById('favicon-y').addEventListener('change', changeFaviconY)
+	document.getElementById('favicon-sprite').addEventListener('click', changeFaviconSprite)
+	document.getElementById('favicon-classifier').addEventListener('change', changeFaviconClassifier)
+
+	// room event listeners
+	document.getElementById('room-type').addEventListener('change', changeRoomType)
+	document.getElementById('room-music').addEventListener('click', changeRoomMusic)
+	document.getElementById('room-x-left').addEventListener('change', changeRoomXL)
+	document.getElementById('room-x-right').addEventListener('change', changeRoomXR)
+	document.getElementById('room-y-top-left').addEventListener('change', changeRoomYTL)
+	document.getElementById('room-y-top-right').addEventListener('change', changeRoomYTR)
+	document.getElementById('room-y-bottom-left').addEventListener('change', changeRoomYBL)
+	document.getElementById('room-y-bottom-right').addEventListener('change', changeRoomYBR)
+
+	// smell event listeners
+	document.getElementById('add-smell').addEventListener('click', addSmell)
+	document.getElementById('room-emitter-classifier').addEventListener('change', changeEmitterClassifier)
+
+	// door event listeners
+	document.getElementById('door-permeability').addEventListener('change', changeDoorPermeability)
 }
 
 function draw() {
@@ -138,10 +186,11 @@ function loadConfig() {
 				}
 			}
 			UI.updateGuide()
-		} catch (err) {
-			console.error(err)
+		} catch (why) {
+			console.error(why)
 		}
 	})
+	.catch((why) => console.error(why))
 }
 
 function saveConfig() {
@@ -149,9 +198,17 @@ function saveConfig() {
 	const dir = Tauri.fs.BaseDirectory.AppConfig
 	const contents = JSON.stringify(config)
 	Tauri.fs.exists(path, { dir })
-	.then(() => Tauri.fs.writeTextFile({ path, contents }, { dir }))
+	.then(() => {
+		Tauri.fs.writeTextFile({ path, contents }, { dir })
+		.then(() => {})
+		.catch((why) => console.error(why))
+	})
 	.catch((_) => {
 		Tauri.fs.createDir('', { dir, recursive: true })
-		.then(() => Tauri.fs.writeTextFile({ path, contents }, { dir }))
+		.then(() => {
+			Tauri.fs.writeTextFile({ path, contents }, { dir })
+			.then(() => {})
+			.catch((why) => console.error(why))
+		})
 	})
 }

@@ -34,6 +34,7 @@ function openFile() {
 							Metaroom.importBgImage(metaroom)
 							Favicon.importSprite()
 						})
+						.catch((why) => console.error(why))
 						UI.reset()
 					} else {
 						Tauri.dialog.message(
@@ -42,8 +43,10 @@ function openFile() {
 						)
 					}
 				})
+				.catch((why) => console.error(why))
 			}
 		})
+		.catch((why) => console.error(why))
 	}
 	if (isModified) {
 		Tauri.dialog.ask(
@@ -106,6 +109,7 @@ function saveAsFile() {
 				.then((dir) => {
 					metaroom.dir = dir
 				})
+				.catch((why) => console.error(why))
 				isModified = false
 				UI.updateTitle()
 			})
@@ -114,6 +118,7 @@ function saveAsFile() {
 			})
 		}
 	})
+	.catch((why) => console.error(why))
 }
 
 function saveState() {
@@ -145,7 +150,8 @@ function redo() {
 	}
 }
 
-function zoomIn(amt = 1.1) {
+function zoomIn(amt) {
+	amt = isNaN(amt) ? 1.1 : amt
 	const mx = mouseX / UI.zoomLevel - UI.xOffset
 	const my = mouseY / UI.zoomLevel - UI.yOffset
 	UI.zoomLevel *= amt
@@ -153,7 +159,8 @@ function zoomIn(amt = 1.1) {
 	UI.yOffset = mouseY / UI.zoomLevel - my
 }
 
-function zoomOut(amt = 0.9) {
+function zoomOut(amt) {
+	amt = isNaN(amt) ? 0.9 : amt
 	const mx = mouseX / UI.zoomLevel - UI.xOffset
 	const my = mouseY / UI.zoomLevel - UI.yOffset
 	UI.zoomLevel *= amt

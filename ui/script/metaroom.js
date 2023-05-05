@@ -146,7 +146,9 @@ function changeMetaroomBackground() {
 			}
 			Metaroom.importBgImage(metaroom, true)
 		})
+		.catch((why) => console.error(why))
 	})
+	.catch((why) => console.error(why))
 }
 
 function changeMetaroomMusic() {
@@ -161,7 +163,9 @@ function changeMetaroomMusic() {
 			}
 			UI.updateSidebar()
 		})
+		.catch((why) => console.error(why))
 	})
+	.catch((why) => console.error(why))
 }
 
 function changeMetaroomX() {
@@ -192,6 +196,7 @@ function changeMetaroomW() {
 		metaroom.w = Math.max(0, Math.min(w, WORLD_WIDTH - metaroom.x))
 	}
 	UI.updateSidebar()
+	Room.checkCollisions()
 }
 
 function changeMetaroomH() {
@@ -202,4 +207,5 @@ function changeMetaroomH() {
 		metaroom.h = Math.max(0, Math.min(h, WORLD_HEIGHT - metaroom.y))
 	}
 	UI.updateSidebar()
+	Room.checkCollisions()
 }

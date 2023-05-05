@@ -9,55 +9,55 @@
 	<body>
 
 		<div id="menubar">
-			<button onclick="newFile()">
+			<button id="new-file-button">
 				<img src="library/mono-icons/svg/document-empty.svg" alt="New" title="New (ctrl-n)">
 			</button>
-			<button onclick="openFile()">
+			<button id="open-file-button">
 				<img src="library/mono-icons/svg/folder.svg" alt="Open" title="Open (ctrl-o)">
 			</button>
-			<button onclick="saveFile()">
+			<button id="save-file-button">
 				<img src="library/mono-icons/svg/save.svg" alt="Save" title="Save (ctrl-s)">
 			</button>
-			<button onclick="saveAsFile()">
+			<button id="save-as-file-button">
 				<img src="library/mono-icons/svg/document-add.svg" alt="Save As" title="Save As (ctrl-shift-s)">
 			</button>
 
 			<span></span>
 
-			<button onclick="undo()">
+			<button id="undo-button">
 				<img src="library/mono-icons/svg/undo.svg" alt="Undo" title="Undo (ctrl-z)">
 			</button>
-			<button onclick="redo()">
+			<button id="redo-button">
 				<img src="library/mono-icons/svg/refresh.svg" alt="Redo" title="Redo (ctrl-shift-z)">
 			</button>
 
 			<span></span>
 
-			<button onclick="zoomIn()">
+			<button id="zoom-in-button">
 				<img src="library/mono-icons/svg/zoom-in.svg" alt="Zoom In" title="Zoom In (=)">
 			</button>
-			<button onclick="zoomOut()">
+			<button id="zoom-out-button">
 				<img src="library/mono-icons/svg/zoom-out.svg" alt="Zoom Out" title="Zoom Out (-)">
 			</button>
-			<button onclick="zoomReset()">
+			<button id="zoom-reset-button">
 				<img src="library/mono-icons/svg/expand.svg" alt="Reset Zoom" title="Reset Zoom (0)">
 			</button>
 
 			<span></span>
 
-			<button onclick="newRoom()">
+			<button id="new-room-button">
 				<img src="library/mono-icons/svg/add.svg" alt="New Room" title="New Room (r)">
 			</button>
-			<button onclick="newLink()">
+			<button id="new-link-button">
 				<img src="library/mono-icons/svg/link-alt.svg" alt="New Link" title="New Link (l)">
 			</button>
-			<button onclick="deleteSelection()">
+			<button id="delete-selection-button">
 				<img src="library/mono-icons/svg/delete.svg" alt="Delete" title="Delete (del)">
 			</button>
 
 			<span></span>
 
-			<button id="guide-button" class="on" onclick="toggleGuide()">
+			<button id="guide-button" class="on">
 				<img src="library/mono-icons/svg/circle-help.svg" alt="Toggle Guide" title="Toggle Guide">
 			</button>
 
@@ -68,14 +68,14 @@
 			<h2><span>Metaroom Properties</span></h2>
 			<label>
 				<span>Background</span>
-				<button class="file-button" id="metaroom-background" onclick="changeMetaroomBackground()">
+				<button id="metaroom-background" class="file-button">
 					<span id="metaroom-background-value">&mdash;</span>
 					<img src="library/mono-icons/svg/folder.svg">
 				</button>
 			</label>
 			<label>
 				<span>Music</span>
-				<button class="file-button" id="metaroom-music" onclick="changeMetaroomMusic()">
+				<button id="metaroom-music" class="file-button">
 					<span id="metaroom-music-value">&mdash;</span>
 					<img src="library/mono-icons/svg/folder.svg">
 				</button>
@@ -83,46 +83,46 @@
 			<hr>
 			<label>
 				<span>X</span>
-				<input id="metaroom-x" type="number" onchange="changeMetaroomX()">
+				<input id="metaroom-x" type="number">
 			</label>
 			<label>
 				<span>Y</span>
-				<input id="metaroom-y" type="number" onchange="changeMetaroomY()">
+				<input id="metaroom-y" type="number">
 			</label>
 			<label>
 				<span>Width</span>
-				<input id="metaroom-w" type="number" onchange="changeMetaroomW()">
+				<input id="metaroom-w" type="number">
 			</label>
 			<label>
 				<span>Height</span>
-				<input id="metaroom-h" type="number" onchange="changeMetaroomH()">
+				<input id="metaroom-h" type="number">
 			</label>
 			<hr>
-			<button class="float-right icon-button" id="favicon-add" onclick="enableFavicon()">
+			<button id="favicon-add" class="float-right icon-button">
 				<img src="library/mono-icons/svg/add.svg" alt="Add Favorite Place Icon" title="Add Favorite Place Icon">
 			</button>
-			<button class="float-right icon-button hidden" id="favicon-remove" onclick="disableFavicon()">
+			<button id="favicon-remove" class="float-right icon-button hidden">
 				<img src="library/mono-icons/svg/delete.svg" alt="Remove Favorite Place Icon" title="Remove Favorite Place Icon">
 			</button>
 			<h3>Favorite Place Icon</h3>
 			<label id="favicon-x-label" class="hidden">
 				<span>X</span>
-				<input id="favicon-x" type="number" onchange="changeFaviconX()">
+				<input id="favicon-x" type="number">
 			</label>
 			<label id="favicon-y-label" class="hidden">
 				<span>Y</span>
-				<input id="favicon-y" type="number" onchange="changeFaviconY()">
+				<input id="favicon-y" type="number">
 			</label>
 			<label id="favicon-sprite-label" class="hidden">
 				<span>Sprite</span>
-				<button class="file-button" id="favicon-sprite" onclick="changeFaviconSprite()">
+				<button id="favicon-sprite" class="file-button">
 					<span id="favicon-sprite-value">&mdash;</span>
 					<img src="library/mono-icons/svg/folder.svg">
 				</button>
 			</label>
 			<label id="favicon-classifier-label" class="hidden">
 				<span>Classifier</span>
-				<input id="favicon-classifier" type="number" onchange="changeFaviconClassifier()">
+				<input id="favicon-classifier" type="number">
 			</label>
 		</div>
 
@@ -131,7 +131,7 @@
 			<h2><span>Room Properties</span></h2>
 			<label>
 				<span>Type</span>
-				<select id="room-type" onchange="changeRoomType()">
+				<select id="room-type">
 					<option value="0">0 - Atmosphere</option>
 					<option value="1">1 - Wooden Walkway</option>
 					<option value="2">2 - Concrete Walkway</option>
@@ -150,7 +150,7 @@
 			</label>
 			<label>
 				<span>Music</span>
-				<button class="file-button" id="room-music" onclick="changeRoomMusic()">
+				<button id="room-music" class="file-button">
 					<span id="room-music-value">&mdash;</span>
 					<img src="library/mono-icons/svg/folder.svg">
 				</button>
@@ -158,20 +158,20 @@
 			<hr>
 			<label>
 				<span>X Left</span>
-				<input id="room-x-left" type="number" onchange="changeRoomXL()">
+				<input id="room-x-left" type="number">
 			</label>
 			<label>
 				<span>X Right</span>
-				<input id="room-x-right" type="number" onchange="changeRoomXR()">
+				<input id="room-x-right" type="number">
 			</label>
 			<br>
 			<label>
 				<span>Y Top Left</span>
-				<input id="room-y-top-left" type="number" onchange="changeRoomYTL()">
+				<input id="room-y-top-left" type="number">
 			</label>
 			<label>
 				<span>Y Top Right</span>
-				<input id="room-y-top-right" type="number" onchange="changeRoomYTR()">
+				<input id="room-y-top-right" type="number">
 			</label>
 			<label>
 				<span>Top Slope</span>
@@ -180,25 +180,25 @@
 			<br>
 			<label>
 				<span>Y Bottom Left</span>
-				<input id="room-y-bottom-left" type="number" onchange="changeRoomYBL()">
+				<input id="room-y-bottom-left" type="number">
 			</label>
 			<label>
 				<span>Y Bottom Right</span>
-				<input id="room-y-bottom-right" type="number" onchange="changeRoomYBR()">
+				<input id="room-y-bottom-right" type="number">
 			</label>
 			<label>
 				<span>Bottom Slope</span>
 				<input id="room-bottom-slope" disabled>
 			</label>
 			<hr>
-			<button class="float-right icon-button" onclick="addSmell()">
+			<button id="add-smell" class="float-right icon-button">
 				<img src="library/mono-icons/svg/add.svg" alt="Add Smell" title="Add Smell">
 			</button>
 			<h3>Smell Emitter</h3>
 			<div id="smell-list"></div>
 			<label>
 				<span>Emitter classifier</span>
-				<input id="room-emitter-classifier" type="number" onchange="changeEmitterClassifier()">
+				<input id="room-emitter-classifier" type="number">
 			</label>
 		</div>
 
@@ -207,7 +207,7 @@
 			<h2><span>Door Properties</span></h2>
 			<label>
 				<span>Permeability</span>
-				<input id="door-permeability" type="number" onchange="changeDoorPermeability()">
+				<input id="door-permeability" type="number">
 			</label>
 		</div>
 

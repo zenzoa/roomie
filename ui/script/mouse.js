@@ -1,5 +1,6 @@
 function mousePressed() {
-	if (UI.isResizingSidebar ||
+	if (UI.isPanning ||
+		UI.isResizingSidebar ||
 		mouseX > window.innerWidth - UI.sidebarWidth ||
 		mouseY < UI.toolbarHeight) {
 			return
@@ -125,7 +126,10 @@ function mouseDragged() {
 	const mx = mouseX / UI.zoomLevel - UI.xOffset
 	const my = mouseY / UI.zoomLevel - UI.yOffset
 
-	if (UI.isSelecting) {
+	if (UI.isPanning) {
+		UI.movePan(mouseX / UI.zoomLevel, mouseY / UI.zoomLevel)
+
+	} else if (UI.isSelecting) {
 		UI.moveSelection(mx, my)
 
 	} else if (UI.isDrawingRoom) {
@@ -143,7 +147,8 @@ function mouseDragged() {
 }
 
 function mouseMoved() {
-	if (UI.isResizingSidebar ||
+	if (UI.isPanning ||
+		UI.isResizingSidebar ||
 		mouseX > window.innerWidth - UI.sidebarWidth ||
 		mouseY < UI.toolbarHeight) {
 			return
@@ -152,10 +157,7 @@ function mouseMoved() {
 	const mx = mouseX / UI.zoomLevel - UI.xOffset
 	const my = mouseY / UI.zoomLevel - UI.yOffset
 
-	if (UI.isPanning) {
-		UI.movePan(mouseX / UI.zoomLevel, mouseY / UI.zoomLevel)
-
-	} else if (UI.isDrawingRoom) {
+	if (UI.isDrawingRoom) {
 		UI.moveNewRoom(mx, my)
 
 	} else if (UI.isDrawingLink) {
@@ -170,7 +172,8 @@ function mouseMoved() {
 }
 
 function mouseReleased() {
-	if (UI.isResizingSidebar ||
+	if (UI.isPanning ||
+		UI.isResizingSidebar ||
 		mouseX > window.innerWidth - UI.sidebarWidth ||
 		mouseY < UI.toolbarHeight) {
 			return
@@ -180,10 +183,6 @@ function mouseReleased() {
 	const my = mouseY / UI.zoomLevel - UI.yOffset
 
 	cursor('auto')
-
-	if (UI.isPanning) {
-		UI.endPan(mx, my)
-	}
 
 	if (UI.isSelecting) {
 		UI.endSelection(mx, my)
@@ -215,7 +214,8 @@ function mouseReleased() {
 }
 
 function mouseWheel(event) {
-	if (UI.isResizingSidebar ||
+	if (UI.isPanning ||
+		UI.isResizingSidebar ||
 		mouseX > window.innerWidth - UI.sidebarWidth ||
 		mouseY < UI.toolbarHeight) {
 			return
