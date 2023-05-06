@@ -1,9 +1,11 @@
 function mousePressed() {
-	if (UI.isPanning ||
-		UI.isResizingSidebar ||
+	if (UI.isResizingSidebar ||
 		mouseX > window.innerWidth - UI.sidebarWidth ||
 		mouseY < UI.toolbarHeight) {
 			return
+	} else if (UI.isPanning) {
+		UI.startPan(mouseX / UI.zoomLevel, mouseY / UI.zoomLevel)
+		return
 	}
 
 	const mx = mouseX / UI.zoomLevel - UI.xOffset
@@ -121,10 +123,8 @@ function mouseDragged() {
 	if (UI.isResizingSidebar) {
 		cursor('ew-resize')
 		return false
-	} else if (UI.isPanning ||
-		mouseX > window.innerWidth - UI.sidebarWidth ||
-		mouseY < UI.toolbarHeight) {
-			return
+	} else if (mouseX > window.innerWidth - UI.sidebarWidth || mouseY < UI.toolbarHeight) {
+		return
 	}
 
 	const mx = mouseX / UI.zoomLevel - UI.xOffset
