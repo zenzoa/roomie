@@ -141,12 +141,12 @@ class Room {
 	}
 
 	static endMove(room) {
-		room.xL = room.xL_temp
-		room.yTL = room.yTL_temp
-		room.yBL = room.yBL_temp
-		room.xR = room.xR_temp
-		room.yTR = room.yTR_temp
-		room.yBR = room.yBR_temp
+		room.xL = Math.floor(room.xL_temp)
+		room.yTL = Math.floor(room.yTL_temp)
+		room.yBL = Math.floor(room.yBL_temp)
+		room.xR = Math.floor(room.xR_temp)
+		room.yTR = Math.floor(room.yTR_temp)
+		room.yBR = Math.floor(room.yBR_temp)
 
 		delete room.xL_temp
 		delete room.yTL_temp
@@ -231,13 +231,13 @@ class Room {
 					room[yProps[0] + '_temp'] = Math.floor(snapCorner.y)
 				} else {
 					if (yProps[0] === 'yTL' && Math.abs(room['yTL_temp'] - room['yTR_temp']) < SNAP_DIST) {
-						room['yTL_temp'] = room['yTR_temp']
+						room['yTL_temp'] = Math.floor(room['yTR_temp'])
 					} else if (yProps[0] === 'yTR' && Math.abs(room['yTL_temp'] - room['yTR_temp']) < SNAP_DIST) {
-						room['yTR_temp'] = room['yTL_temp']
+						room['yTR_temp'] = Math.floor(room['yTL_temp'])
 					} else if (yProps[0] === 'yBL' && Math.abs(room['yBL_temp'] - room['yBR_temp']) < SNAP_DIST) {
-						room['yBL_temp'] = room['yBR_temp']
+						room['yBL_temp'] = Math.floor(room['yBR_temp'])
 					} else if (yProps[0] === 'yBR' && Math.abs(room['yBL_temp'] - room['yBR_temp']) < SNAP_DIST) {
-						room['yBR_temp'] = room['yBL_temp']
+						room['yBR_temp'] = Math.floor(room['yBL_temp'])
 					}
 				}
 
@@ -403,26 +403,26 @@ class Room {
 		const gap = UI.snapEnabled ? MIN_GAP : 1
 		if ((part === 'top-left-corner' || part === 'bottom-left-corner' || part == 'left-side') &&
 			room.xL_temp > room.xR_temp - gap) {
-				room.xL_temp = room.xR_temp - gap
+				room.xL_temp = Math.floor(room.xR_temp - gap)
 		} else if ((part === 'top-right-corner' || part === 'bottom-right-corner' || part === 'right-side') &&
 			room.xR_temp < room.xL_temp + gap) {
-				room.xR_temp = room.xL_temp + gap
+				room.xR_temp = Math.floor(room.xL_temp + gap)
 		}
 
 		if ((part === 'top-left-corner' || part === 'top-side') &&
 			room.yTL_temp > room.yBL_temp - gap) {
-				room.yTL_temp = room.yBL_temp - gap
+				room.yTL_temp = Math.floor(room.yBL_temp - gap)
 		} else if ((part === 'bottom-left-corner' || part === 'bottom-side') &&
 			room.yBL_temp < room.yTL_temp + gap) {
-				room.yBL_temp = room.yTL_temp + gap
+				room.yBL_temp = Math.floor(room.yTL_temp + gap)
 		}
 
 		if ((part === 'top-right-corner' || part === 'top-side') &&
 			room.yTR_temp > room.yBR_temp - gap) {
-				room.yTR_temp = room.yBR_temp - gap
+				room.yTR_temp = Math.floor(room.yBR_temp - gap)
 		} else if ((part === 'bottom-right-corner' || part === 'bottom-side') &&
 			room.yBR_temp < room.yTR_temp + gap) {
-				room.yBR_temp = room.yTR_temp + gap
+				room.yBR_temp = Math.floor(room.yTR_temp + gap)
 		}
 	}
 
@@ -568,7 +568,7 @@ function changeRoomXL() {
 		if (!isNaN(xL) && xL >= 0) {
 			const gap = UI.snapEnabled ? MIN_GAP : 1
 			saveState()
-			room.xL = Math.min(xL, room.xR - gap)
+			room.xL = Math.floor(Math.min(xL, room.xR - gap))
 		}
 		UI.updateSidebar()
 	}
@@ -582,7 +582,7 @@ function changeRoomYTL() {
 		if (!isNaN(yTL) && yTL >= 0) {
 			const gap = UI.snapEnabled ? MIN_GAP : 1
 			saveState()
-			room.yTL = Math.min(yTL, room.yBL - gap)
+			room.yTL = Math.floor(Math.min(yTL, room.yBL - gap))
 		}
 		UI.updateSidebar()
 	}
@@ -596,7 +596,7 @@ function changeRoomYBL() {
 		if (!isNaN(yBL) && yBL >= 0) {
 			const gap = UI.snapEnabled ? MIN_GAP : 1
 			saveState()
-			room.yBL = Math.max(yBL, room.yTL + gap)
+			room.yBL = Math.floor(Math.max(yBL, room.yTL + gap))
 		}
 		UI.updateSidebar()
 	}
@@ -610,7 +610,7 @@ function changeRoomXR() {
 		if (!isNaN(xR) && xR >= 0) {
 			const gap = UI.snapEnabled ? MIN_GAP : 1
 			saveState()
-			room.xR = Math.max(xR, room.xL + gap)
+			room.xR = Math.floor(Math.max(xR, room.xL + gap))
 		}
 		UI.updateSidebar()
 	}
@@ -624,7 +624,7 @@ function changeRoomYTR() {
 		if (!isNaN(yTR) && yTR >= 0) {
 			const gap = UI.snapEnabled ? MIN_GAP : 1
 			saveState()
-			room.yTR = Math.min(yTR, room.yBR - gap)
+			room.yTR = Math.floor(Math.min(yTR, room.yBR - gap))
 		}
 		UI.updateSidebar()
 	}
@@ -638,7 +638,7 @@ function changeRoomYBR() {
 		if (!isNaN(yBR) && yBR >= 0) {
 			const gap = UI.snapEnabled ? MIN_GAP : 1
 			saveState()
-			room.yBR = Math.max(yBR, room.yTR + gap)
+			room.yBR = Math.floor(Math.max(yBR, room.yTR + gap))
 		}
 		UI.updateSidebar()
 	}
