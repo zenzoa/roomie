@@ -252,8 +252,8 @@ const Caos = {
 					const mvtoX = decodeNextToken()
 					const mvtoY = decodeNextToken()
 					if (newMetaroom && target === 'favicon') {
-						newMetaroom.favicon.x = mvtoX - newMetaroom.x + 2
-						newMetaroom.favicon.y = mvtoY - newMetaroom.y + 1
+						newMetaroom.favicon.x = mvtoX - newMetaroom.x
+						newMetaroom.favicon.y = mvtoY - newMetaroom.y
 					} else if (newMetaroom && target === 'emitter') {
 						const room = Metaroom.roomAt(newMetaroom, mvtoX - newMetaroom.x, mvtoY - newMetaroom.y)
 						if (room) {
