@@ -8,7 +8,7 @@
 	},
 	"package": {
 		"productName": "Roomie",
-		"version": "1.4.0"
+		"version": "1.5.0"
 	},
 	"tauri": {
 		"allowlist": {
@@ -67,7 +67,7 @@
 			}
 		},
 		"security": {
-			"csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost"
+			"csp": "default-src 'self' asset: https://asset.localhost"
 		},
 		"updater": {
 			"active": false
