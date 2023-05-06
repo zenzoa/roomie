@@ -29,7 +29,7 @@ class Door {
 					strokeWeight(3)
 				}
 			} else {
-				if (door === UI.selectedDoor) {
+				if (UI.selectedDoors.includes(door)) {
 					strokeWeight(10)
 				} else {
 					strokeWeight(2)
@@ -53,13 +53,16 @@ class Door {
 }
 
 function changeDoorPermeability() {
-	if (UI.selectedDoor) {
+	if (UI.selectedDoors.length > 0) {
 		const input = document.getElementById('door-permeability')
-		const permeability = parseInt(input.value)
+		let permeability = parseInt(input.value)
+		permeability = Math.min(100, Math.max(0, permeability))
 		if (!isNaN(permeability)) {
 			saveState()
-			UI.selectedDoor.permeability = Math.min(100, Math.max(0, permeability))
+			UI.selectedDoors.forEach(d => {
+				d.permeability = permeability
+			})
 		}
-		input.value = UI.selectedDoor.permeability
+		input.value = permeability
 	}
 }

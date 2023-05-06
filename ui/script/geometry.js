@@ -19,7 +19,7 @@ const Geometry = {
 
 	intersect(poly1, poly2) {
 		const poly = PolyBool.intersect(poly1, poly2)
-		return poly.regions.length >= 1
+		return poly.regions.length > 0
 	},
 
 	pointInCircle(px, py, cx, cy, cr) {

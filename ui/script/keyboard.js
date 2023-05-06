@@ -118,7 +118,6 @@ function keyReleased() {
 	}
 
 	UI.snapEnabled = true
-	UI.selectedDoor = null
 
 	Metaroom.updateDoors(metaroom)
 }

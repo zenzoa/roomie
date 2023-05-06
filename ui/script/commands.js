@@ -127,7 +127,7 @@ function saveState() {
 }
 
 function undo() {
-	if (undoStack.length >= 1) {
+	if (undoStack.length > 0) {
 		redoStack.push(JSON.stringify(metaroom))
 		metaroom = JSON.parse(undoStack.pop())
 		isModified = true
@@ -139,7 +139,7 @@ function undo() {
 }
 
 function redo() {
-	if (redoStack.length >= 1) {
+	if (redoStack.length > 0) {
 		undoStack.push(JSON.stringify(metaroom))
 		metaroom = JSON.parse(redoStack.pop())
 		isModified = true
@@ -218,8 +218,10 @@ function deleteSelection() {
 		metaroom.links = metaroom.links.filter(l => l !== UI.selectedLink)
 		UI.selectedLink = null
 
-	} else if (UI.selectedDoor) {
-		UI.selectedDoor.permeability = 0
+	} else if (UI.selectedDoors.length > 0) {
+		UI.selectedDoors.forEach(d => {
+			d.permeability = 0
+		})
 
 	} else {
 		for (const selectedRoom of UI.selectedRooms) {

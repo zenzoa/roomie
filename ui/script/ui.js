@@ -12,7 +12,7 @@ const UI = {
 	isSelecting: false,
 	selection: { x: 0, y: 0, w: 0, h: 0 },
 	selectedRooms: [],
-	selectedDoor: null,
+	selectedDoors: [],
 	selectedLink: null,
 	selectedFavicon: false,
 
@@ -97,6 +97,7 @@ const UI = {
 			if (!keyIsDown(SHIFT)) this.clearSelection()
 			const room = Metaroom.roomAt(metaroom, mx, my)
 			if (room) {
+				this.selectedDoors = []
 				this.selectedRooms.push(room)
 			}
 		}
@@ -114,6 +115,7 @@ const UI = {
 		const w = Math.max(Math.abs(this.selection.w), 1)
 		const h = Math.max(Math.abs(this.selection.h), 1)
 		if (w > 2 && h > 2) {
+			this.selectedDoors = []
 			for (const room of metaroom.rooms) {
 				if (Geometry.intersect(Geometry.quadPolygon(room), Geometry.rectPolygon({ x, y, w, h }))) {
 						if (!this.selectedRooms.includes(room)) {
@@ -130,6 +132,9 @@ const UI = {
 
 	clearSelection() {
 		this.selectedRooms = []
+		this.selectedDoors = []
+		this.selectedLink = null
+		this.selectedFavicon = false
 	},
 
 	drawSelection() {
@@ -141,6 +146,19 @@ const UI = {
 		strokeWeight(1)
 		fill(255, 255, 255, 26)
 		rect(x, y, w, h)
+	},
+
+	selectDoor(door) {
+		this.selectedRooms = []
+		if (keyIsDown(SHIFT)) {
+			if (this.selectedDoors.includes(door)) {
+				this.selectedDoors = this.selectedDoors.filter(d => d !== door)
+			} else {
+				this.selectedDoors.push(door)
+			}
+		} else {
+			this.selectedDoors = [door]
+		}
 	},
 
 	/* =========== */
@@ -269,7 +287,7 @@ const UI = {
 
 		let dy = 0
 		let extrudeDirection = 'left'
-		if (this.selectedRooms.length >= 1) {
+		if (this.selectedRooms.length > 0) {
 			const sourceRoom = this.selectedRooms[this.selectedRooms.length - 1]
 			if (mx < sourceRoom.xL) {
 				extrudeDirection = 'left'
@@ -364,7 +382,7 @@ const UI = {
 		this.startDragPoint.x = mx
 		this.startDragPoint.y = my
 		this.isDragging = true
-		if (this.dragParts.length >= 1) {
+		if (this.dragParts.length > 0) {
 			for (const part of this.dragParts) {
 				Room.startMove(part.room)
 			}
@@ -386,7 +404,7 @@ const UI = {
 					dx = 0
 				}
 			}
-			if (this.dragParts.length >= 1) {
+			if (this.dragParts.length > 0) {
 				for (const part of this.dragParts) {
 					Room.movePart(part.room, part.part, dx, dy)
 				}
@@ -417,7 +435,7 @@ const UI = {
 			saveState()
 		}
 
-		if (this.dragParts.length >= 1) {
+		if (this.dragParts.length > 0) {
 			for (const part of this.dragParts) {
 				Room.endMove(part.room)
 			}
@@ -472,8 +490,8 @@ const UI = {
 			sidebar.className = 'sidebar hidden'
 		})
 
-		if (this.selectedDoor) {
-			Door.updateSidebar(this.selectedDoor)
+		if (this.selectedDoors.length > 0) {
+			Door.updateSidebar(this.selectedDoors[this.selectedDoors.length - 1])
 			document.getElementById('door-props').className = 'sidebar'
 		} else if (this.selectedRooms.length === 1) {
 			Room.updateSidebar(this.selectedRooms[0])

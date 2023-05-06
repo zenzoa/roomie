@@ -112,7 +112,7 @@ class Room {
 	}
 
 	static drawSmells(room) {
-		if (room.smells.length >= 1) {
+		if (room.smells.length > 0) {
 			const { x, y } = Room.getCenter(room)
 			circle(x, y, 10)
 			circle(x, y, 17)
@@ -222,7 +222,7 @@ class Room {
 			}
 		}
 
-		if (UI.snapEnabled > 0 && (xProps.length >= 1 || yProps.length >= 1)) {
+		if (UI.snapEnabled > 0 && (xProps.length > 0 || yProps.length > 0)) {
 
 			if (isCorner) {
 				const snapCorner = this.getSnapCorner(room, room[xProps[0] + '_temp'], room[yProps[0] + '_temp'])

@@ -12,7 +12,6 @@ function mousePressed() {
 	UI.startDragPoint.x = mx
 	UI.startDragPoint.y = my
 
-	UI.selectedDoor = null
 	UI.selectedLink = null
 	UI.selectedFavicon = false
 
@@ -91,17 +90,17 @@ function mousePressed() {
 			}
 		}
 
-		if (UI.dragParts.length >= 1) {
+		if (UI.dragParts.length > 0) {
 			UI.startDrag(mx, my)
-			if (!keyIsDown(CONTROL)) {
-				UI.selectedDoor = Metaroom.doorAt(metaroom, mx, my)
+			const clickedDoor = Metaroom.doorAt(metaroom, mx, my)
+			if (clickedDoor && !keyIsDown(CONTROL)) {
+				UI.selectDoor(clickedDoor)
 			}
 
 		} else {
 			const clickedDoor = Metaroom.doorAt(metaroom, mx, my)
 			if (clickedDoor && !keyIsDown(CONTROL)) {
-				UI.selectedDoor = clickedDoor
-				UI.selectedRooms = []
+				UI.selectDoor(clickedDoor)
 
 			} else {
 				const clickedRoom = Metaroom.roomAt(metaroom, mx, my)
@@ -218,8 +217,8 @@ function mouseReleased() {
 	const dx = mx - UI.startDragPoint.x
 	const dy = my - UI.startDragPoint.y
 	if (dx !== 0 || dy !== 0) {
-		UI.selectedDoor = null
-	} else if (UI.selectedDoor) {
+		UI.selectedDoors = []
+	} else if (UI.selectedDoors.length > 0) {
 		UI.selectedRooms = []
 	}
 
