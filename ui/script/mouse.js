@@ -38,11 +38,11 @@ function mousePressed() {
 	} else if (UI.isDragging) {
 		UI.endDrag(mx, my)
 
-	} else if (Favicon.mouseOn(mx, my)) {
+	} else if (Favicon.mouseOn(mx, my) && !keyIsDown(CONTROL)) {
 		UI.clearSelection()
 		UI.selectedFavicon = true
 
-	} else if (Metaroom.linkAt(metaroom, mx, my)) {
+	} else if (Metaroom.linkAt(metaroom, mx, my) && !keyIsDown(CONTROL)) {
 		UI.clearSelection()
 		UI.selectedLink = Metaroom.linkAt(metaroom, mx, my)
 
@@ -93,11 +93,13 @@ function mousePressed() {
 
 		if (UI.dragParts.length >= 1) {
 			UI.startDrag(mx, my)
-			UI.selectedDoor = Metaroom.doorAt(metaroom, mx, my)
+			if (!keyIsDown(CONTROL)) {
+				UI.selectedDoor = Metaroom.doorAt(metaroom, mx, my)
+			}
 
 		} else {
 			const clickedDoor = Metaroom.doorAt(metaroom, mx, my)
-			if (clickedDoor) {
+			if (clickedDoor && !keyIsDown(CONTROL)) {
 				UI.selectedDoor = clickedDoor
 				UI.selectedRooms = []
 
