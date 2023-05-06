@@ -242,6 +242,9 @@ function mouseWheel(event) {
 			zoomOut(0.98)
 		}
 	} else {
-		UI.yOffset -= event.delta
+		UI.xOffset -= event.deltaX
+		UI.yOffset -= event.deltaY
 	}
+
+	return false
 }
