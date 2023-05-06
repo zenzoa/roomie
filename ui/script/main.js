@@ -15,8 +15,12 @@ const MIN_GAP = 10
 const SNAP_DIST = 8
 const SELECT_DIST = 8
 
+let mouseXEl = null
+let mouseYEl = null
+
 let config = {
 	guide_enabled: true,
+	mouse_pos_enabled: true,
 	bg_opacity: 128
 }
 
@@ -30,6 +34,7 @@ function setup() {
 	UI.reset()
 	loadConfig()
 	UI.updateGuide()
+	UI.updateMousePos()
 
 	// titlebar event listeners
 	document.getElementById('new-file-button').addEventListener('click', newFile)
@@ -78,6 +83,10 @@ function setup() {
 
 	// door event listeners
 	document.getElementById('door-permeability').addEventListener('change', changeDoorPermeability)
+
+	// mouse pos elements
+	mouseXEl = document.getElementById('mouse-pos-x')
+	mouseYEl = document.getElementById('mouse-pos-y')
 }
 
 function draw() {

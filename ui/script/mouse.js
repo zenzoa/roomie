@@ -119,7 +119,10 @@ function mousePressed() {
 }
 
 function mouseDragged() {
-	if (UI.isResizingSidebar ||
+	if (UI.isResizingSidebar) {
+		cursor('ew-resize')
+		return false
+	} else if (UI.isPanning ||
 		mouseX > window.innerWidth - UI.sidebarWidth ||
 		mouseY < UI.toolbarHeight) {
 			return
@@ -127,6 +130,11 @@ function mouseDragged() {
 
 	const mx = mouseX / UI.zoomLevel - UI.xOffset
 	const my = mouseY / UI.zoomLevel - UI.yOffset
+
+	if (config.mouse_pos_enabled && mouseXEl && mouseYEl) {
+		mouseXEl.innerText = Math.floor(mx) + metaroom.x
+		mouseYEl.innerText = Math.floor(my) + metaroom.y
+	}
 
 	if (UI.isPanning) {
 		UI.movePan(mouseX / UI.zoomLevel, mouseY / UI.zoomLevel)
@@ -158,6 +166,11 @@ function mouseMoved() {
 
 	const mx = mouseX / UI.zoomLevel - UI.xOffset
 	const my = mouseY / UI.zoomLevel - UI.yOffset
+
+	if (config.mouse_pos_enabled && mouseXEl && mouseYEl) {
+		mouseXEl.innerText = Math.floor(mx) + metaroom.x
+		mouseYEl.innerText = Math.floor(my) + metaroom.y
+	}
 
 	if (UI.isDrawingRoom) {
 		UI.moveNewRoom(mx, my)

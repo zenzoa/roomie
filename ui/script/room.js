@@ -74,7 +74,7 @@ class Room {
 
 		if (UI.roomColorEnabled) {
 			const alpha = 80
-			if (room.type === 0) 		fill('#ffffff40')	// Atmosphere
+			if (room.type === 0) 		fill('#ffffff40')		// Atmosphere
 			else if (room.type === 1)	fill('#f7cf91' + alpha)	// Wooden Walkway
 			else if (room.type === 2)	fill('#c3a79c' + alpha)	// Concrete Walkway
 			else if (room.type === 3)	fill('#3e3b66' + alpha)	// Indoor Concrete

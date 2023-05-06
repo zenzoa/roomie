@@ -342,3 +342,18 @@ input, textarea {
 	width: 64px;
 	font-weight: bold;
 }
+
+#mouse-pos {
+	z-index: 100;
+	position: absolute;
+	right: calc(var(--sidebar-width) + 12px);
+	bottom: 12px;
+	padding: 6px;
+	width: 120px;
+	border: 1px solid rgba(255,255,255,0.2);
+	border-radius: 100px;
+	background-color: rgba(0, 0, 0, 0.8);
+	color: #ddd;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	text-align: center;
+}

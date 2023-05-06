@@ -504,11 +504,18 @@ const UI = {
 		if (config.guide_enabled) {
 			guide.className = ''
 			guideButton.className = 'on'
-			config.guide_enabled = true
 		} else {
 			guide.className = 'hidden'
 			guideButton.className = 'off'
-			config.guide_enabled = false
+		}
+	},
+
+	updateMousePos() {
+		const mousePos = document.getElementById('mouse-pos')
+		if (config.mouse_pos_enabled) {
+			mousePos.className = ''
+		} else {
+			mousePos.className = 'hidden'
 		}
 	}
 

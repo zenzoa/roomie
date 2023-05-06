@@ -241,3 +241,9 @@ function toggleGuide() {
 	UI.updateGuide()
 	saveConfig()
 }
+
+function toggleMousePos() {
+	config.mouse_pos_enabled = !config.mouse_pos_enabled
+	UI.updateMousePos()
+	saveConfig()
+}

@@ -91,6 +91,14 @@ function keyPressed() {
 		UI.roomColorEnabled = !UI.roomColorEnabled
 		return false
 
+	} else if (key === 'p' && keyIsDown(CONTROL)) {
+		toggleMousePos()
+		return false
+
+	} else if (key === 'g' && keyIsDown(CONTROL)) {
+		toggleGuide()
+		return false
+
 	} else if (keyCode === DELETE || keyCode === BACKSPACE) {
 		deleteSelection()
 		return false
