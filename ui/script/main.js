@@ -53,7 +53,9 @@ function setup() {
 
 	// metaroom event listeners
 	document.getElementById('metaroom-background').addEventListener('click', changeMetaroomBackground)
+	document.getElementById('metaroom-background-remove').addEventListener('click', removeMetaroomBackground)
 	document.getElementById('metaroom-music').addEventListener('click', changeMetaroomMusic)
+	document.getElementById('metaroom-music-remove').addEventListener('click', removeMetaroomMusic)
 	document.getElementById('metaroom-x').addEventListener('change', changeMetaroomX)
 	document.getElementById('metaroom-y').addEventListener('change', changeMetaroomY)
 	document.getElementById('metaroom-w').addEventListener('change', changeMetaroomW)
@@ -70,6 +72,7 @@ function setup() {
 	// room event listeners
 	document.getElementById('room-type').addEventListener('change', changeRoomType)
 	document.getElementById('room-music').addEventListener('click', changeRoomMusic)
+	document.getElementById('room-music-remove').addEventListener('click', removeRoomMusic)
 	document.getElementById('room-x-left').addEventListener('change', changeRoomXL)
 	document.getElementById('room-x-right').addEventListener('change', changeRoomXR)
 	document.getElementById('room-y-top-left').addEventListener('change', changeRoomYTL)
@@ -80,6 +83,7 @@ function setup() {
 	// multi-room event listeners
 	document.getElementById('multi-room-type').addEventListener('change', changeRoomType)
 	document.getElementById('multi-room-music').addEventListener('click', changeRoomMusic)
+	document.getElementById('multi-room-music-remove').addEventListener('click', removeRoomMusic)
 
 	// smell event listeners
 	document.getElementById('add-smell').addEventListener('click', addSmell)
@@ -98,7 +102,7 @@ function draw() {
 	scale(UI.zoomLevel)
 	translate(UI.xOffset, UI.yOffset)
 
-	if (bgImage) {
+	if (bgImage && metaroom.background) {
 		push()
 		scale(2)
 		tint(255, config.bg_opacity)

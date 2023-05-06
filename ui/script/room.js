@@ -585,6 +585,12 @@ function changeRoomMusic() {
 	}
 }
 
+function removeRoomMusic() {
+	saveState()
+	UI.selectedRooms.forEach(r => r.music = '')
+	UI.updateSidebar()
+}
+
 function changeRoomXL() {
 	if (UI.selectedRooms.length === 1) {
 		const room = UI.selectedRooms[0]

@@ -151,6 +151,12 @@ function changeMetaroomBackground() {
 	.catch((why) => console.error(why))
 }
 
+function removeMetaroomBackground() {
+	saveState()
+	metaroom.background = ''
+	UI.updateSidebar()
+}
+
 function changeMetaroomMusic() {
 	Tauri.dialog.open({ filters: [{ name: 'Creatures Music File', extensions: ['mng'] }] })
 	.then((filePath) => {
@@ -166,6 +172,12 @@ function changeMetaroomMusic() {
 		.catch((why) => console.error(why))
 	})
 	.catch((why) => console.error(why))
+}
+
+function removeMetaroomMusic() {
+	saveState()
+	metaroom.music = ''
+	UI.updateSidebar()
 }
 
 function changeMetaroomX() {

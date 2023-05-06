@@ -88,20 +88,28 @@ h1, h2, h3, h4 {
 	overflow-y: auto;
 }
 
-.sidebar > label {
+.sidebar > label,
+.sidebar > .row {
 	display: flex;
 	align-items: center;
 	position: relative;
 	border-radius: 1px;
 }
 
-.sidebar > label > span {
+.sidebar > label > span,
+.sidebar > .row > span {
 	flex-basis: 120px;
 	padding-right: 12px;
 }
 
-.sidebar > label > span + * {
+.sidebar > label > span + *,
+.sidebar > .row > span + * {
 	flex-grow: 1;
+}
+
+.sidebar > label > .icon-button,
+.sidebar > .row > .icon-button {
+	margin-left: 4px;
 }
 
 .sidebar > hr {
@@ -226,6 +234,16 @@ input, textarea {
 
 .sidebar button.icon-button {
 	padding: 2px;
+}
+
+.sidebar button.simple {
+	background: none;
+	border: none;
+	box-shadow: none;
+}
+
+.sidebar button.simple:hover {
+	background: #464646;
 }
 
 .sidebar button.float-right {
