@@ -424,9 +424,9 @@ const UI = {
 		const dy = my - this.startDragPoint.y
 		if (dx === 0 && dy === 0) {
 			let clickedRoom = Metaroom.roomAt(metaroom, mx, my)
-			if (clickedRoom && this.selectedRooms.includes(clickedRoom) && (keyIsDown(SHIFT) || keyIsDown(CONTROL))) {
+			if (clickedRoom && this.selectedRooms.includes(clickedRoom) && (keyIsDown(SHIFT) || keyIsDown(CONTROL) || META_KEY_PRESSED)) {
 				this.selectedRooms = this.selectedRooms.filter(r => r !== clickedRoom)
-				if (keyIsDown(CONTROL)) {
+				if (keyIsDown(CONTROL) || META_KEY_PRESSED) {
 					this.selectedRooms.push(clickedRoom)
 				}
 			} else if (clickedRoom) {

@@ -37,11 +37,11 @@ function mousePressed() {
 	} else if (UI.isDragging) {
 		UI.endDrag(mx, my)
 
-	} else if (Favicon.mouseOn(mx, my) && !keyIsDown(CONTROL)) {
+	} else if (Favicon.mouseOn(mx, my) && !keyIsDown(CONTROL) && !META_KEY_PRESSED) {
 		UI.clearSelection()
 		UI.selectedFavicon = true
 
-	} else if (Metaroom.linkAt(metaroom, mx, my) && !keyIsDown(CONTROL)) {
+	} else if (Metaroom.linkAt(metaroom, mx, my) && !keyIsDown(CONTROL) && !META_KEY_PRESSED) {
 		UI.clearSelection()
 		UI.selectedLink = Metaroom.linkAt(metaroom, mx, my)
 
@@ -93,13 +93,13 @@ function mousePressed() {
 		if (UI.dragParts.length > 0) {
 			UI.startDrag(mx, my)
 			const clickedDoor = Metaroom.doorAt(metaroom, mx, my)
-			if (clickedDoor && !keyIsDown(CONTROL)) {
+			if (clickedDoor && !keyIsDown(CONTROL) && !META_KEY_PRESSED) {
 				UI.selectDoor(clickedDoor)
 			}
 
 		} else {
 			const clickedDoor = Metaroom.doorAt(metaroom, mx, my)
-			if (clickedDoor && !keyIsDown(CONTROL)) {
+			if (clickedDoor && !keyIsDown(CONTROL) && !META_KEY_PRESSED) {
 				UI.selectDoor(clickedDoor)
 
 			} else {
@@ -235,11 +235,13 @@ function mouseWheel(event) {
 			return
 	}
 
-	if (keyIsDown(CONTROL)) {
+	if (keyIsDown(CONTROL) || META_KEY_PRESSED) {
 		if (event.delta > 0) {
 			zoomIn(1.02)
 		} else {
 			zoomOut(0.98)
 		}
+	} else {
+		UI.yOffset -= event.delta
 	}
 }

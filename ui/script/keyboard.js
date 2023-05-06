@@ -1,4 +1,10 @@
-function keyPressed() {
+let META_KEY_PRESSED = false
+
+function keyPressed(event) {
+	if (event.key === 'Meta') {
+		META_KEY_PRESSED = true
+	}
+
 	if (document.activeElement.tagName === 'INPUT') return
 
 	const mx = mouseX / UI.zoomLevel - UI.xOffset
@@ -7,6 +13,8 @@ function keyPressed() {
 	UI.isStartDrawingRoom = false
 	UI.isStartDrawingLink = false
 	cursor('auto')
+
+	const ctrlCmd = keyIsDown(CONTROL) || META_KEY_PRESSED
 
 	if (key === ' ') {
 		UI.startPan(mouseX / UI.zoomLevel, mouseY / UI.zoomLevel)
@@ -33,27 +41,27 @@ function keyPressed() {
 		}
 		return false
 
-	} else if (key === 'z' && keyIsDown(CONTROL)) {
+	} else if (key === 'z' && ctrlCmd) {
 		undo()
 		return false
 
-	} else if (key === 'Z' && keyIsDown(CONTROL)) {
+	} else if (key === 'Z' && ctrlCmd) {
 		redo()
 		return false
 
-	} else if (key === 'n' && keyIsDown(CONTROL)) {
+	} else if (key === 'n' && ctrlCmd) {
 		newFile()
 		return false
 
-	} else if (key === 'o' && keyIsDown(CONTROL)) {
+	} else if (key === 'o' && ctrlCmd) {
 		openFile()
 		return false
 
-	} else if (key === 's' && keyIsDown(CONTROL)) {
+	} else if (key === 's' && ctrlCmd) {
 		saveFile()
 		return false
 
-	} else if (key === 'S' && keyIsDown(CONTROL)) {
+	} else if (key === 'S' && ctrlCmd) {
 		saveAsFile()
 		return false
 
@@ -77,25 +85,25 @@ function keyPressed() {
 		duplicateSelection()
 		return false
 
-	} else if (key === '[' && keyIsDown(CONTROL)) {
+	} else if (key === '[' && ctrlCmd) {
 		config.bg_opacity = Math.max(0, config.bg_opacity - 16)
 		saveConfig()
 		return false
 
-	} else if (key === ']' && keyIsDown(CONTROL)) {
+	} else if (key === ']' && ctrlCmd) {
 		config.bg_opacity = Math.min(255, config.bg_opacity + 16)
 		saveConfig()
 		return false
 
-	} else if (key === 't' && keyIsDown(CONTROL)) {
+	} else if (key === 't' && ctrlCmd) {
 		UI.roomColorEnabled = !UI.roomColorEnabled
 		return false
 
-	} else if (key === 'p' && keyIsDown(CONTROL)) {
+	} else if (key === 'p' && ctrlCmd) {
 		toggleMousePos()
 		return false
 
-	} else if (key === 'g' && keyIsDown(CONTROL)) {
+	} else if (key === 'g' && ctrlCmd) {
 		toggleGuide()
 		return false
 
@@ -103,13 +111,15 @@ function keyPressed() {
 		deleteSelection()
 		return false
 
-	} else if (keyCode === CONTROL) {
+	} else if (keyCode === CONTROL || META_KEY_PRESSED) {
 		UI.snapEnabled = false
 		return false
 	}
 }
 
-function keyReleased() {
+function keyReleased(event) {
+	META_KEY_PRESSED = false
+
 	if (document.activeElement.tagName === 'INPUT') return
 
 	if (UI.isPanning) {
