@@ -40,3 +40,4 @@ jobs:
           releaseDraft: true
           prerelease: false
           projectPath: './src-tauri'
+          args: --debug
