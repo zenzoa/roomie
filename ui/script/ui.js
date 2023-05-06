@@ -55,6 +55,7 @@ const UI = {
 		undoStack = []
 		redoStack = []
 		bgImage = null
+		faviconImage = null
 		this.clearSelection()
 		this.updateSidebar()
 		this.updateTitle()
@@ -496,6 +497,9 @@ const UI = {
 		} else if (this.selectedRooms.length === 1) {
 			Room.updateSidebar(this.selectedRooms[0])
 			document.getElementById('room-props').className = 'sidebar'
+		} else if (this.selectedRooms.length > 0) {
+			Room.updateMultiSidebar(this.selectedRooms)
+			document.getElementById('multi-room-props').className = 'sidebar'
 		} else {
 			Metaroom.updateSidebar(metaroom)
 			document.getElementById('metaroom-props').className = 'sidebar'

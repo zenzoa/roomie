@@ -77,6 +77,10 @@ function setup() {
 	document.getElementById('room-y-bottom-left').addEventListener('change', changeRoomYBL)
 	document.getElementById('room-y-bottom-right').addEventListener('change', changeRoomYBR)
 
+	// multi-room event listeners
+	document.getElementById('multi-room-type').addEventListener('change', changeRoomType)
+	document.getElementById('multi-room-music').addEventListener('click', changeRoomMusic)
+
 	// smell event listeners
 	document.getElementById('add-smell').addEventListener('click', addSmell)
 	document.getElementById('room-emitter-classifier').addEventListener('change', changeEmitterClassifier)

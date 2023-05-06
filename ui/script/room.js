@@ -54,6 +54,31 @@ class Room {
 		document.getElementById('room-emitter-classifier').value = room.emitterClassifier
 	}
 
+	static updateMultiSidebar(rooms) {
+		let allSameType = true
+		let lastType = rooms[0].type
+		let allSameMusic = true
+		let lastMusic = rooms[0].music
+		rooms.forEach(room => {
+			if (room.type !== lastType) {
+				allSameType = false
+			}
+			if (room.music !== lastMusic) {
+				allSameMusic = false
+			}
+			lastType = room.type
+			lastMusic = room.music
+		})
+		if (!allSameType) {
+			lastType = -1
+		}
+		if (!allSameMusic) {
+			lastMusic = "[multiple]"
+		}
+		document.getElementById('multi-room-type').value = lastType
+		document.getElementById('multi-room-music-value').innerText = lastMusic || '—'
+	}
+
 	static clone(room) {
 		let newRoom = new Room(room)
 		newRoom.type = room.type
@@ -531,27 +556,27 @@ class Room {
 }
 
 function changeRoomType() {
-	if (UI.selectedRooms.length === 1) {
-		const room = UI.selectedRooms[0]
-		const input = document.getElementById('room-type')
+	if (UI.selectedRooms.length > 0) {
+		const id = UI.selectedRooms.length === 1 ? 'room-type' : 'multi-room-type'
+		const input = document.getElementById(id)
 		const type = parseInt(input.value)
 		if (!isNaN(type) && type >= 0) {
 			saveState()
-			room.type = type
+			UI.selectedRooms.forEach(r => r.type = type)
+			UI.updateSidebar()
 		}
-		UI.updateSidebar()
 	}
 }
 
 function changeRoomMusic() {
-	if (UI.selectedRooms.length === 1) {
-		const room = UI.selectedRooms[0]
+	if (UI.selectedRooms.length > 0) {
 		Tauri.dialog.open({ filters: [{ name: 'Creatures Music File', extensions: ['mng'] }] })
 		.then((filePath) => {
 			Tauri.path.basename(filePath)
 			.then((basename) => {
 				saveState()
-				room.music = basename.replace(/\.mng$/i, '')
+				const music = basename.replace(/\.mng$/i, '')
+				UI.selectedRooms.forEach(r => r.music = music)
 				UI.updateSidebar()
 			})
 			.catch((why) => console.error(why))
