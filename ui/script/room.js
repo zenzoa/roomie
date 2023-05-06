@@ -36,6 +36,23 @@ class Room {
 		const bottomSlopeDisplay = -Math.floor(bottomSlope * 100 * 100) / 100
 		document.getElementById('room-bottom-slope').value = bottomSlopeDisplay + '%'
 
+		const width = room.xR - room.xL
+		document.getElementById('room-width').value = width
+
+		const leftHeight = room.yBL - room.yTL
+		const rightHeight = room.yBR - room.yTR
+		if (leftHeight === rightHeight) {
+			document.getElementById('room-height').value = leftHeight
+		} else {
+			document.getElementById('room-height').value = `${leftHeight}  |  ${rightHeight}`
+		}
+
+		if (width < 150 || leftHeight < 170 || rightHeight < 170) {
+			document.getElementById('room-too-small').className = ''
+		} else {
+			document.getElementById('room-too-small').className = 'hidden'
+		}
+
 		let smellListContents = ''
 		room.smells.forEach((_, i) => {
 			smellListContents += Smell.sidebarEntry(room.smells[i], i)

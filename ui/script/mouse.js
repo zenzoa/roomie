@@ -186,6 +186,10 @@ function mouseMoved() {
 }
 
 function mouseReleased() {
+	if (!UI.isPanning) {
+		cursor('auto')
+	}
+
 	if (UI.isPanning ||
 		UI.isResizingSidebar ||
 		mouseX > window.innerWidth - UI.sidebarWidth ||
@@ -195,8 +199,6 @@ function mouseReleased() {
 
 	const mx = mouseX / UI.zoomLevel - UI.xOffset
 	const my = mouseY / UI.zoomLevel - UI.yOffset
-
-	cursor('auto')
 
 	if (UI.isSelecting) {
 		UI.endSelection(mx, my)

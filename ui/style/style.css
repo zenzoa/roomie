@@ -333,6 +333,23 @@ input, textarea {
 	margin-left: 4px;
 }
 
+#room-too-small {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 6px 12px;
+	border-radius: 100px;
+	background-color: rgba(255, 119, 0, 0.26);
+	font-size: small;
+}
+
+#room-too-small img {
+	width: 16px;
+	height: 16px;
+	filter: invert(100%);
+	margin-right: 6px;
+}
+
 #shortcut-guide {
 	z-index: 100;
 	position: absolute;
