@@ -433,6 +433,6 @@ const Caos = {
 			lines = lines.concat(m.ignoredLines)
 		}
 
-		return lines.join('\n')
+		return lines.join('\r')
 	}
 }
