@@ -30,7 +30,8 @@
 				"assetScope": ["**/*.png"]
 			},
 			"window": {
-				"setTitle": true
+				"setTitle": true,
+				"close": true
 			}
 		},
 		"bundle": {

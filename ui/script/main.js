@@ -95,6 +95,23 @@ function setup() {
 	// mouse pos elements
 	mouseXEl = document.getElementById('mouse-pos-x')
 	mouseYEl = document.getElementById('mouse-pos-y')
+
+	// close requested listener
+	Tauri.window.appWindow.listen("tauri://close-requested", (event) => {
+		if (isModified) {
+			Tauri.dialog.ask(
+				'You have unmodified changes to the current metaroom. Are you sure you want to discard the changes?',
+				{ title: 'Discard changes?', type: 'warning' }
+			)
+			.then((confirmed) => {
+				if (confirmed) {
+					Tauri.window.appWindow.close()
+				}
+			})
+		} else {
+			Tauri.window.appWindow.close()
+		}
+	})
 }
 
 function draw() {
