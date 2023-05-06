@@ -535,7 +535,7 @@ function changeRoomType() {
 		const room = UI.selectedRooms[0]
 		const input = document.getElementById('room-type')
 		const type = parseInt(input.value)
-		if (!isNaN(type) && type >= 0 && type <= 10) {
+		if (!isNaN(type) && type >= 0) {
 			saveState()
 			room.type = type
 		}
