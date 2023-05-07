@@ -385,7 +385,7 @@ const UI = {
 				extrudedRoom.yBR = extrudedRoom.yBR_temp
 			}
 
-			if (extrudedRoom) {
+			if (extrudedRoom && !Room.collides(extrudedRoom)) {
 				this.extrudedRooms.push(extrudedRoom)
 			}
 		}

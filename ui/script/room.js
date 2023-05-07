@@ -496,20 +496,24 @@ class Room {
 
 	static checkCollisions() {
 		for (const room of metaroom.rooms) {
-			room.hasCollision = false
-			const roomPoly = Geometry.quadPolygon(room)
-			for (const r of metaroom.rooms) {
-				if (r !== room && Geometry.intersect(roomPoly, Geometry.quadPolygon(r))) {
-					room.hasCollision = true
-				}
-			}
-			if (!Geometry.pointInRect(room.xL, room.yTL, { x: 0, y: 0, w: metaroom.w, h: metaroom.h }) ||
-				!Geometry.pointInRect(room.xL, room.yBL, { x: 0, y: 0, w: metaroom.w, h: metaroom.h }) ||
-				!Geometry.pointInRect(room.xR, room.yBR, { x: 0, y: 0, w: metaroom.w, h: metaroom.h }) ||
-				!Geometry.pointInRect(room.xR, room.yTR, { x: 0, y: 0, w: metaroom.w, h: metaroom.h })) {
-					room.hasCollision = true
+			room.hasCollision = this.collides(room)
+		}
+	}
+
+	static collides(room) {
+		const roomPoly = Geometry.quadPolygon(room)
+		for (const r of metaroom.rooms) {
+			if (r !== room && Geometry.intersect(roomPoly, Geometry.quadPolygon(r))) {
+				return true
 			}
 		}
+		if (!Geometry.pointInRect(room.xL, room.yTL, { x: 0, y: 0, w: metaroom.w, h: metaroom.h }) ||
+			!Geometry.pointInRect(room.xL, room.yBL, { x: 0, y: 0, w: metaroom.w, h: metaroom.h }) ||
+			!Geometry.pointInRect(room.xR, room.yBR, { x: 0, y: 0, w: metaroom.w, h: metaroom.h }) ||
+			!Geometry.pointInRect(room.xR, room.yTR, { x: 0, y: 0, w: metaroom.w, h: metaroom.h })) {
+				return true
+		}
+		return false
 	}
 
 	static sideOverlap(r1, r2) {
