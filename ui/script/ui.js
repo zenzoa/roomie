@@ -4,8 +4,6 @@ const UI = {
 	xOffset: 20,
 	yOffset: 68,
 
-	mouseDownStartPoint: { x: 0, y: 0 },
-
 	isPanning: false,
 	lastPan: { x: 0, y: 0},
 
@@ -18,11 +16,12 @@ const UI = {
 
 	isStartDrawingRoom: false,
 	isDrawingRoom: false,
-	newRoom: { x: 0, y: 0, w: 0, h: 0 },
+	startRoomPoint: { x: 0, y: 0 },
 
 	isStartDrawingLink: false,
 	isDrawingLink: false,
-	newLink: { x1: 0, y1: 0, x2: 0, y2: 0, room1Id: 0, room2Id: 0 },
+	linkStartingRoom: null,
+	newLink: { x1: 0, y1: 0, x2: 0, y2: 0 },
 
 	isExtrudingRoom: false,
 	extrudedRooms: [],
@@ -193,6 +192,7 @@ const UI = {
 	startNewRoom(mx, my) {
 		if (this.inBounds(mx, my)) {
 			this.isDrawingRoom = true
+			this.startRoomPoint = { x: mx, y: my }
 			this.newRoom = new Room({
 				xL: Math.floor(mx),
 				yTL: Math.floor(my),
@@ -206,9 +206,25 @@ const UI = {
 	},
 
 	moveNewRoom(mx, my) {
-		this.newRoom.xR = Math.floor(mx)
-		this.newRoom.yBL = Math.floor(my)
-		this.newRoom.yBR = Math.floor(my)
+		if (mx > this.startRoomPoint.x) {
+			this.newRoom.xL = Math.floor(this.startRoomPoint.x)
+			this.newRoom.xR = Math.floor(mx)
+		} else {
+			this.newRoom.xL = Math.floor(mx)
+			this.newRoom.xR = Math.floor(this.startRoomPoint.x)
+		}
+
+		if (my > this.startRoomPoint.y) {
+			this.newRoom.yTL = Math.floor(this.startRoomPoint.y)
+			this.newRoom.yTR = Math.floor(this.startRoomPoint.y)
+			this.newRoom.yBL = Math.floor(my)
+			this.newRoom.yBR = Math.floor(my)
+		} else {
+			this.newRoom.yTL = Math.floor(my)
+			this.newRoom.yTR = Math.floor(my)
+			this.newRoom.yBL = Math.floor(this.startRoomPoint.y)
+			this.newRoom.yBR = Math.floor(this.startRoomPoint.y)
+		}
 
 		Room.move(this.newRoom, 0, 0)
 		Room.endMove(this.newRoom)
@@ -241,18 +257,19 @@ const UI = {
 	startNewLink(mx, my) {
 		const room = Metaroom.roomAt(metaroom, mx, my)
 		if (room) {
+			this.linkStartingRoom = room
 			const center = Room.getCenter(room)
 			newLink.x1 = center.x
 			newLink.y1 = center.y
-			newLink.room1Id = metaroom.rooms.findIndex(r => r === room)
 			this.isDrawingLink = true
 			cursor('crosshair')
+			this.moveNewLink(mx, my)
 		}
 	},
 
 	moveNewLink(mx, my) {
 		const room = Metaroom.roomAt(metaroom, mx, my)
-		if (room) {
+		if (room && room !== this.linkStartingRoom) {
 			const center = Room.getCenter(room)
 			newLink.x2 = center.x
 			newLink.y2 = center.y
@@ -264,8 +281,8 @@ const UI = {
 
 	endNewLink(mx, my) {
 		const room = Metaroom.roomAt(metaroom, mx, my)
-		if (room) {
-			const room1Id = newLink.room1Id
+		if (room && this.linkStartingRoom && room !== this.linkStartingRoom) {
+			const room1Id = metaroom.rooms.findIndex(r => r === this.linkStartingRoom)
 			const room2Id = metaroom.rooms.findIndex(r => r === room)
 			const existingLink = metaroom.links.find(l =>
 				(l.room1Id === room1Id && l.room2Id === room2Id) ||
