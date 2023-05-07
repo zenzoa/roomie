@@ -40,6 +40,9 @@ function setup() {
 	UI.updateGuide()
 	UI.updateMousePos()
 
+	// fix mouse wheel on macos
+	document.getElementById('defaultCanvas0').addEventListener('wheel', mouseScroll)
+
 	// titlebar event listeners
 	document.getElementById('new-file-button').addEventListener('click', newFile)
 	document.getElementById('open-file-button').addEventListener('click', openFile)

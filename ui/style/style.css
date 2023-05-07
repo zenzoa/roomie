@@ -368,6 +368,7 @@ input, textarea {
 	position: absolute;
 	left: 12px;
 	bottom: 12px;
+	max-width: calc(100vw - var(--sidebar-width) - 24px);
 	padding: 12px 18px 14px;
 	border: 1px solid rgba(255,255,255,0.2);
 	border-radius: 16px;

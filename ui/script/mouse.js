@@ -252,7 +252,7 @@ function mouseReleased() {
 	Metaroom.updateDoors(metaroom)
 }
 
-function mouseWheel(event) {
+function mouseScroll(event) {
 	if (UI.isPanning ||
 		UI.isResizingSidebar ||
 		mouseX > window.innerWidth - UI.sidebarWidth ||
@@ -261,7 +261,7 @@ function mouseWheel(event) {
 	}
 
 	if (keyIsDown(CONTROL) || META_KEY_PRESSED) {
-		if (event.delta > 0) {
+		if (event.deltaY > 0) {
 			zoomIn(1.02)
 		} else {
 			zoomOut(0.98)
