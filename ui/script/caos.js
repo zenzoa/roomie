@@ -419,10 +419,11 @@ const Caos = {
 		})
 
 		// add overlays
-		if (m.overlays.length > 0) {
+		const overlays = m.overlays.filter(o => o.sprite)
+		if (overlays.length > 0) {
 			lines.push('')
 			lines.push('*ROOMIE Add overlays')
-			m.overlays.forEach(o => {
+			overlays.forEach(o => {
 				lines.push(`new: simp 1 1 ${o.classifier} "${o.sprite}" 1 0 ${o.plane}`)
 				lines.push(`  mvto ${o.x + m.x} ${o.y + m.y}`)
 			})
