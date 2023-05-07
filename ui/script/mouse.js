@@ -33,11 +33,32 @@ function mousePressed() {
 	} else if (UI.isDrawingLink) {
 		UI.endNewLink(mx, my)
 
+	} else if (UI.isStartDrawingOverlay) {
+		UI.endNewOverlay(mx, my)
+
 	} else if (UI.isExtrudingRoom) {
 		UI.endExtrudeRoom(mx, my)
 
 	} else if (UI.isDragging) {
 		UI.endDrag(mx, my)
+
+	} else if (UI.overlayMode) {
+		const clickedOverlay = Metaroom.overlayAt(metaroom, mx, my)
+		if (clickedOverlay) {
+			if (UI.selectedOverlays.includes(clickedOverlay)) {
+				UI.startDrag(mx, my)
+			} else if (!UI.selectedOverlays.includes(clickedOverlay)) {
+				if (keyIsDown(SHIFT)) {
+					UI.selectedOverlays.push(clickedOverlay)
+				} else {
+					UI.clearSelection()
+					UI.selectedOverlays = [clickedOverlay]
+					UI.startDrag(mx, my)
+				}
+			}
+		} else {
+			UI.startSelection(mx, my)
+		}
 
 	} else if (Favicon.mouseOn(mx, my) && !keyIsDown(CONTROL) && !META_KEY_PRESSED) {
 		UI.clearSelection()
@@ -94,14 +115,12 @@ function mousePressed() {
 
 		if (UI.dragParts.length > 0) {
 			UI.startDrag(mx, my)
-			const clickedDoor = Metaroom.doorAt(metaroom, mx, my)
-			if (clickedDoor && !keyIsDown(CONTROL) && !META_KEY_PRESSED) {
-				UI.selectDoor(clickedDoor)
-			}
 
 		} else {
 			const clickedDoor = Metaroom.doorAt(metaroom, mx, my)
-			if (clickedDoor && !keyIsDown(CONTROL) && !META_KEY_PRESSED) {
+			const alreadySelectingRooms = keyIsDown(SHIFT) && UI.selectedRooms.length > 0
+
+			if (clickedDoor && !keyIsDown(CONTROL) && !META_KEY_PRESSED && !alreadySelectingRooms) {
 				UI.selectDoor(clickedDoor)
 
 			} else {
@@ -117,6 +136,7 @@ function mousePressed() {
 
 	UI.isStartDrawingRoom = false
 	UI.isStartDrawingLink = false
+	UI.isStartDrawingOverlay = false
 }
 
 function mouseDragged() {

@@ -31,6 +31,10 @@ const UI = {
 	startDragPoint: { x: 0, y: 0 },
 	dragParts: [],
 
+	isStartDrawingOverlay: false,
+	overlayMode: false,
+	selectedOverlays: [],
+
 	snapEnabled: true,
 	roomColorEnabled: true,
 
@@ -96,10 +100,14 @@ const UI = {
 			this.selection.h = 0
 
 			if (!keyIsDown(SHIFT)) this.clearSelection()
-			const room = Metaroom.roomAt(metaroom, mx, my)
-			if (room) {
-				this.selectedDoors = []
-				this.selectedRooms.push(room)
+
+			if (!UI.overlayMode) {
+				const room = Metaroom.roomAt(metaroom, mx, my)
+				const alreadySelectingDoors = keyIsDown(SHIFT) && this.selectedDoors.length > 0
+				if (room && !alreadySelectingDoors) {
+					this.selectedDoors = []
+					this.selectedRooms.push(room)
+				}
 			}
 		}
 	},
@@ -116,16 +124,31 @@ const UI = {
 		const w = Math.max(Math.abs(this.selection.w), 1)
 		const h = Math.max(Math.abs(this.selection.h), 1)
 		if (w > 2 && h > 2) {
-			this.selectedDoors = []
-			for (const room of metaroom.rooms) {
-				if (Geometry.intersect(Geometry.quadPolygon(room), Geometry.rectPolygon({ x, y, w, h }))) {
-						if (!this.selectedRooms.includes(room)) {
-							// add room to selection
-							this.selectedRooms.push(room)
+			if (this.overlayMode) {
+				for (const overlay of metaroom.overlays) {
+					if (Geometry.intersect(Geometry.rectPolygon(overlay), Geometry.rectPolygon({ x, y, w, h }))) {
+						if (!this.selectedOverlays.includes(overlay)) {
+							// add overlay to selection
+							this.selectedOverlays.push(overlay)
 						} else if (keyIsDown(SHIFT)) {
-							// remove room from selection
-							this.selectedRooms = this.selectedRooms.filter(r => r !== room)
+							// remove overlay from selection
+							this.selectedOverlays = this.selectedOverlays.filter(o => o !== overlay)
 						}
+					}
+				}
+
+			} else {
+				this.selectedDoors = []
+				for (const room of metaroom.rooms) {
+					if (Geometry.intersect(Geometry.quadPolygon(room), Geometry.rectPolygon({ x, y, w, h }))) {
+							if (!this.selectedRooms.includes(room)) {
+								// add room to selection
+								this.selectedRooms.push(room)
+							} else if (keyIsDown(SHIFT)) {
+								// remove room from selection
+								this.selectedRooms = this.selectedRooms.filter(r => r !== room)
+							}
+					}
 				}
 			}
 		}
@@ -136,6 +159,7 @@ const UI = {
 		this.selectedDoors = []
 		this.selectedLink = null
 		this.selectedFavicon = false
+		this.selectedOverlays = []
 	},
 
 	drawSelection() {
@@ -283,23 +307,27 @@ const UI = {
 	},
 
 	moveExtrudeRoom(mx, my) {
-
 		this.extrudedRooms = []
 
 		let dy = 0
+		mx = Math.floor(mx)
+		my = Math.floor(my)
+
 		let extrudeDirection = 'left'
 		if (this.selectedRooms.length > 0) {
 			const sourceRoom = this.selectedRooms[this.selectedRooms.length - 1]
 			if (mx < sourceRoom.xL) {
 				extrudeDirection = 'left'
 				const midLeft = sourceRoom.yTL + (sourceRoom.yBL - sourceRoom.yTL) / 2
-				dx = mx - sourceRoom.xL
-				dy = Math.floor(my - midLeft)
+				if (!keyIsDown(SHIFT)) {
+					dy = Math.floor(my - midLeft)
+				}
 			} else if (mx > sourceRoom.xR) {
 				extrudeDirection = 'right'
 				const midRight = sourceRoom.yTR + (sourceRoom.yBR - sourceRoom.yTR) / 2
-				dx = mx - sourceRoom.xR
-				dy = Math.floor(my - midRight)
+				if (!keyIsDown(SHIFT)) {
+					dy = Math.floor(my - midRight)
+				}
 			} else if (my < sourceRoom.yTL || my < sourceRoom.yTR) {
 				extrudeDirection = 'up'
 			} else {
@@ -383,7 +411,11 @@ const UI = {
 		this.startDragPoint.x = mx
 		this.startDragPoint.y = my
 		this.isDragging = true
-		if (this.dragParts.length > 0) {
+		if (this.overlayMode) {
+			for (const overlay of this.selectedOverlays) {
+				Overlay.startMove(overlay)
+			}
+		} else if (this.dragParts.length > 0) {
 			for (const part of this.dragParts) {
 				Room.startMove(part.room)
 			}
@@ -405,7 +437,11 @@ const UI = {
 					dx = 0
 				}
 			}
-			if (this.dragParts.length > 0) {
+			if (this.overlayMode) {
+				for (const overlay of this.selectedOverlays) {
+					Overlay.move(overlay, dx, dy)
+				}
+			} else if (this.dragParts.length > 0) {
 				for (const part of this.dragParts) {
 					Room.movePart(part.room, part.part, dx, dy)
 				}
@@ -422,21 +458,50 @@ const UI = {
 
 		const dx = mx - this.startDragPoint.x
 		const dy = my - this.startDragPoint.y
+
 		if (dx === 0 && dy === 0) {
-			let clickedRoom = Metaroom.roomAt(metaroom, mx, my)
-			if (clickedRoom && this.selectedRooms.includes(clickedRoom) && (keyIsDown(SHIFT) || keyIsDown(CONTROL) || META_KEY_PRESSED)) {
-				this.selectedRooms = this.selectedRooms.filter(r => r !== clickedRoom)
-				if (keyIsDown(CONTROL) || META_KEY_PRESSED) {
-					this.selectedRooms.push(clickedRoom)
+			if (this.overlayMode) {
+				const clickedOverlay = Metaroom.overlayAt(metaroom, mx, my)
+				if (clickedOverlay) {
+					if (this.selectedOverlays.includes(clickedOverlay) && keyIsDown(SHIFT)) {
+						this.selectedOverlays = this.selectedOverlays.filter(o => o !== clickedOverlay)
+					} else {
+						this.selectedOverlays = [clickedOverlay]
+					}
 				}
-			} else if (clickedRoom) {
-				this.selectedRooms = [clickedRoom]
+
+			} else {
+				const clickedDoor = Metaroom.doorAt(metaroom, mx, my)
+				const clickedRoom = Metaroom.roomAt(metaroom, mx, my)
+				const alreadySelectingRooms = keyIsDown(SHIFT) && this.selectedRooms.length > 0
+				const alreadySelectingDoors = keyIsDown(SHIFT) && this.selectedDoors.length > 0
+
+				if (clickedDoor && !alreadySelectingRooms) {
+					if (this.selectedDoors.includes(clickedDoor) && keyIsDown(SHIFT)) {
+						this.selectedDoors = this.selectedDoors.filter(r => r !== clickedDoor)
+					} else {
+						this.selectedDoors = [clickedDoor]
+					}
+
+				} else if (clickedRoom && !alreadySelectingDoors) {
+					if (this.selectedRooms.includes(clickedRoom) && keyIsDown(SHIFT)) {
+						this.selectedRooms = this.selectedRooms.filter(r => r !== clickedRoom)
+					} else {
+						this.selectedRooms = [clickedRoom]
+					}
+				}
+
 			}
+
 		} else {
 			saveState()
 		}
 
-		if (this.dragParts.length > 0) {
+		if (this.overlayMode) {
+			for (const overlay of this.selectedOverlays) {
+				Overlay.endMove(overlay)
+			}
+		} else if (this.dragParts.length > 0) {
 			for (const part of this.dragParts) {
 				Room.endMove(part.room)
 			}
@@ -447,9 +512,50 @@ const UI = {
 		}
 	},
 
+	/* ============== */
+	/*  OVERLAY MODE  */
+	/* ============== */
+
+	enableOverlayMode() {
+		this.overlayMode = true
+		document.getElementById('overlay-mode-indicator').className = ''
+		this.clearSelection()
+		this.updateSidebar()
+	},
+
+	disableOverlayMode() {
+		this.overlayMode = false
+		document.getElementById('overlay-mode-indicator').className = 'hidden'
+		this.clearSelection()
+		this.updateSidebar()
+	},
+
+	endNewOverlay(mx, my) {
+		if (this.inBounds(mx, my)) {
+			saveState()
+			metaroom.overlays.push(new Overlay({ x: mx, y: my }))
+			this.selectedOverlays = [metaroom.overlays[metaroom.overlays.length - 1]]
+		}
+	},
+
 	/* ====== */
 	/*  MISC  */
 	/* ====== */
+
+	nudge() {
+		if (keyIsDown(LEFT_ARROW)) {
+			this.xOffset += (keyIsDown(SHIFT) ? 100 : 10) / this.zoomLevel
+		}
+		if (keyIsDown(RIGHT_ARROW)) {
+			this.xOffset -= (keyIsDown(SHIFT) ? 100 : 10) / this.zoomLevel
+		}
+		if (keyIsDown(UP_ARROW)) {
+			this.yOffset += (keyIsDown(SHIFT) ? 100 : 10) / this.zoomLevel
+		}
+		if (keyIsDown(DOWN_ARROW)) {
+			this.yOffset -= (keyIsDown(SHIFT) ? 100 : 10) / this.zoomLevel
+		}
+	},
 
 	disableContextMenu() {
 		document.body.addEventListener('contextmenu', event => {
@@ -500,6 +606,9 @@ const UI = {
 		} else if (this.selectedRooms.length > 0) {
 			Room.updateMultiSidebar(this.selectedRooms)
 			document.getElementById('multi-room-props').className = 'sidebar'
+		} else if (this.selectedOverlays.length > 0) {
+			Overlay.updateSidebar(this.selectedOverlays)
+			document.getElementById('overlay-props').className = 'sidebar'
 		} else {
 			Metaroom.updateSidebar(metaroom)
 			document.getElementById('metaroom-props').className = 'sidebar'
@@ -534,10 +643,13 @@ const UI = {
 
 	updateMousePos() {
 		const mousePos = document.getElementById('mouse-pos')
+		const mousePosButton = document.getElementById('mouse-pos-button')
 		if (config.mouse_pos_enabled) {
 			mousePos.className = ''
+			mousePosButton.className = 'on'
 		} else {
 			mousePos.className = 'hidden'
+			mousePosButton.className = 'off'
 		}
 	}
 

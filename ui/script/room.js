@@ -115,18 +115,18 @@ class Room {
 		}
 
 		if (UI.roomColorEnabled) {
-			const alpha = 80
-			if (room.type === 0) 		fill('#ffffff40')		// Atmosphere
-			else if (room.type === 1)	fill('#f7cf91' + alpha)	// Wooden Walkway
-			else if (room.type === 2)	fill('#c3a79c' + alpha)	// Concrete Walkway
-			else if (room.type === 3)	fill('#3e3b66' + alpha)	// Indoor Concrete
-			else if (room.type === 4)	fill('#4a5786' + alpha)	// Outdoor Concrete
-			else if (room.type === 5)	fill('#a94b54' + alpha)	// Normal Soil
-			else if (room.type === 6)	fill('#7a3b4f' + alpha)	// Boggy Soil
-			else if (room.type === 7)	fill('#d8725e' + alpha)	// Drained Soil
-			else if (room.type === 8)	fill('#6fb0b7' + alpha)	// Fresh Water
-			else if (room.type === 9)	fill('#64b082' + alpha)	// Salt Water
-			else if (room.type === 10)	fill('#e76d46' + alpha)	// Ettin Home
+			const alpha = UI.overlayMode ? 40 : 80
+			if (room.type === 0) 		fill('#ffffff' + alpha / 2)	// Atmosphere
+			else if (room.type === 1)	fill('#f7cf91' + alpha)		// Wooden Walkway
+			else if (room.type === 2)	fill('#c3a79c' + alpha)		// Concrete Walkway
+			else if (room.type === 3)	fill('#3e3b66' + alpha)		// Indoor Concrete
+			else if (room.type === 4)	fill('#4a5786' + alpha)		// Outdoor Concrete
+			else if (room.type === 5)	fill('#a94b54' + alpha)		// Normal Soil
+			else if (room.type === 6)	fill('#7a3b4f' + alpha)		// Boggy Soil
+			else if (room.type === 7)	fill('#d8725e' + alpha)		// Drained Soil
+			else if (room.type === 8)	fill('#6fb0b7' + alpha)		// Fresh Water
+			else if (room.type === 9)	fill('#64b082' + alpha)		// Salt Water
+			else if (room.type === 10)	fill('#e76d46' + alpha)		// Ettin Home
 		}
 
 		quad(xL, yTL, xL, yBL, xR, yBR, xR, yTR)
@@ -160,6 +160,32 @@ class Room {
 			circle(x, y, 17)
 			circle(x, y, 24)
 		}
+	}
+
+	static nudge(room) {
+		saveState()
+		const d = keyIsDown(SHIFT) ? 10 : 1
+		if (keyIsDown(LEFT_ARROW)){
+			room.xL -= d
+			room.xR -= d
+		}
+		if (keyIsDown(RIGHT_ARROW)) {
+			room.xL += d
+			room.xR += d
+		}
+		if (keyIsDown(UP_ARROW)) {
+			room.yTL -= d
+			room.yBL -= d
+			room.yTR -= d
+			room.yBR -= d
+		}
+		if (keyIsDown(DOWN_ARROW)) {
+			room.yTL += d
+			room.yBL += d
+			room.yTR += d
+			room.yBR += d
+		}
+		UI.updateSidebar()
 	}
 
 	static getTempPositions(room, isSelected) {

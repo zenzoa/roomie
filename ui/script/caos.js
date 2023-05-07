@@ -58,6 +58,7 @@ const Caos = {
 
 		let target = null
 		let tempEmitter = null
+		let tempOverlay = null
 
 		let ignoredLinesPre = []
 		let ignoredLines = []
@@ -235,6 +236,13 @@ const Caos = {
 							tempEmitter = {
 								classifier: species
 							}
+						} else if (newMetaroom && family === 1 && genus === 1) {
+							target = 'overlay'
+							tempOverlay = {
+								sprite: sprite,
+								classifier: species,
+								plane: plane
+							}
 						} else {
 							ignoredLines.push(`new: simp ${family} ${genus} ${species} "${sprite}" ${imageCount} ${firstImage} ${plane}`)
 						}
@@ -260,6 +268,10 @@ const Caos = {
 							room.emitterClassifier = tempEmitter.classifier
 							tempEmitter.room = room
 						}
+					} else if (newMetaroom && target === 'overlay') {
+						tempOverlay.x = mvtoX
+						tempOverlay.y = mvtoY
+						newMetaroom.overlays.push(new Overlay(tempOverlay))
 					} else {
 						ignoredLines.push(`mvto ${mvtoX} ${mvtoY}`)
 					}
@@ -405,6 +417,16 @@ const Caos = {
 				})
 			}
 		})
+
+		// add overlays
+		if (m.overlays.length > 0) {
+			lines.push('')
+			lines.push('*ROOMIE Add overlays')
+			m.overlays.forEach(o => {
+				lines.push(`new: simp 1 1 ${o.classifier} "${o.sprite}" 1 0 ${o.plane}`)
+				lines.push(`  mvto ${o.x + m.x} ${o.y + m.y}`)
+			})
+		}
 
 		// add favorite place icon
 		if (m.hasFavicon) {

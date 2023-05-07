@@ -7,6 +7,7 @@ let isModified = false
 
 let bgImage = null
 let faviconImage = null
+let overlayImages = {}
 
 const WORLD_WIDTH = 200000
 const WORLD_HEIGHT = 200000
@@ -17,6 +18,9 @@ const SELECT_DIST = 8
 
 let mouseXEl = null
 let mouseYEl = null
+
+const NUDGE_REPEAT_DELAY = 10
+let nudgeRepeatCounter = 0
 
 let config = {
 	guide_enabled: true,
@@ -48,8 +52,10 @@ function setup() {
 	document.getElementById('zoom-reset-button').addEventListener('click', zoomReset)
 	document.getElementById('new-room-button').addEventListener('click', newRoom)
 	document.getElementById('new-link-button').addEventListener('click', newLink)
+	document.getElementById('new-overlay-button').addEventListener('click', newOverlay)
 	document.getElementById('delete-selection-button').addEventListener('click', deleteSelection)
 	document.getElementById('guide-button').addEventListener('click', toggleGuide)
+	document.getElementById('mouse-pos-button').addEventListener('click', toggleMousePos)
 
 	// metaroom event listeners
 	document.getElementById('metaroom-background').addEventListener('click', changeMetaroomBackground)
@@ -92,6 +98,13 @@ function setup() {
 	// door event listeners
 	document.getElementById('door-permeability').addEventListener('change', changeDoorPermeability)
 
+	// overlay event listeners
+	document.getElementById('overlay-x').addEventListener('change', changeOverlayX)
+	document.getElementById('overlay-y').addEventListener('change', changeOverlayY)
+	document.getElementById('overlay-sprite').addEventListener('click', changeOverlaySprite)
+	document.getElementById('overlay-classifier').addEventListener('change', changeOverlayClassifier)
+	document.getElementById('overlay-plane').addEventListener('change', changeOverlayPlane)
+
 	// mouse pos elements
 	mouseXEl = document.getElementById('mouse-pos-x')
 	mouseYEl = document.getElementById('mouse-pos-y')
@@ -124,6 +137,7 @@ function draw() {
 		scale(2)
 		tint(255, config.bg_opacity)
 		image(bgImage, 0, 0)
+		noTint()
 		pop()
 	}
 
@@ -131,6 +145,10 @@ function draw() {
 	strokeWeight(1)
 	noFill()
 	rect(0, 0, metaroom.w, metaroom.h)
+
+	if (UI.overlayMode) {
+		stroke(255, 128)
+	}
 
 	const unselectedRooms = metaroom.rooms.filter(r => !UI.selectedRooms.includes(r) && !r.hasCollision)
 	const collidingRooms = metaroom.rooms.filter(r => !UI.selectedRooms.includes(r) && r.hasCollision)
@@ -152,7 +170,7 @@ function draw() {
 		Room.draw(room)
 	}
 
-	stroke(255)
+	stroke(255, UI.overlayMode && 128)
 	strokeWeight(2)
 	for (const room of UI.selectedRooms) {
 		Room.draw(room, true)
@@ -162,21 +180,21 @@ function draw() {
 		Door.draw(door)
 	}
 
-	fill(255)
+	fill(255, UI.overlayMode && 128)
 	noStroke()
 	for (const room of UI.selectedRooms) {
 		Room.drawCorners(room)
 	}
 
-	fill(255)
-	stroke(255)
+	fill(255, UI.overlayMode && 128)
+	stroke(255, UI.overlayMode && 128)
 	strokeWeight(1)
 	for (const link of metaroom.links) {
 		Link.draw(link)
 	}
 
 	noFill()
-	stroke(255)
+	stroke(255, UI.overlayMode && 128)
 	strokeWeight(1)
 	for (const room of metaroom.rooms) {
 		Room.drawSmells(room)
@@ -186,23 +204,43 @@ function draw() {
 		Favicon.draw()
 	}
 
+	stroke(255, !UI.overlayMode && 50)
+	for (const overlay of metaroom.overlays) {
+		Overlay.draw(overlay)
+	}
+
 	if (UI.isSelecting) {
 		UI.drawSelection()
 	}
 
-	if (document.activeElement.tagName !== 'INPUT') {
-		if (keyIsDown(LEFT_ARROW)) {
-			UI.xOffset += (keyIsDown(SHIFT) ? 100 : 10) / UI.zoomLevel
-		}
-		if (keyIsDown(RIGHT_ARROW)) {
-			UI.xOffset -= (keyIsDown(SHIFT) ? 100 : 10) / UI.zoomLevel
-		}
-		if (keyIsDown(UP_ARROW)) {
-			UI.yOffset += (keyIsDown(SHIFT) ? 100 : 10) / UI.zoomLevel
-		}
-		if (keyIsDown(DOWN_ARROW)) {
-			UI.yOffset -= (keyIsDown(SHIFT) ? 100 : 10) / UI.zoomLevel
-		}
+	if (document.activeElement.tagName !== 'INPUT' &&
+		(keyIsDown(LEFT_ARROW) || keyIsDown(RIGHT_ARROW) ||
+		keyIsDown(UP_ARROW) || keyIsDown(DOWN_ARROW))) {
+			if (UI.selectedRooms.length > 0) {
+				if (nudgeRepeatCounter === 0) {
+					for (const room of UI.selectedRooms) {
+						Room.nudge(room)
+					}
+				}
+			} else if (UI.selectedOverlays.length > 0) {
+				if (nudgeRepeatCounter === 0) {
+					for (const overlay of UI.selectedOverlays) {
+						Overlay.nudge(overlay)
+					}
+				}
+			} else if (UI.selectedFavicon) {
+				if (nudgeRepeatCounter === 0) {
+					Favicon.nudge()
+				}
+			} else {
+				UI.nudge()
+			}
+
+			if (nudgeRepeatCounter < NUDGE_REPEAT_DELAY) {
+				nudgeRepeatCounter += 1
+			} else {
+				nudgeRepeatCounter = 0
+			}
 	}
 }
 

@@ -350,6 +350,19 @@ input, textarea {
 	margin-right: 6px;
 }
 
+#overlay-mode-indicator {
+	z-index: 10;
+	position: absolute;
+	left: 0;
+	right: var(--sidebar-width);
+	top: var(--toolbar-height);
+	padding: 6px;
+	background-color: #464646;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	color: #ddd;
+	text-align: center;
+}
+
 #shortcut-guide {
 	z-index: 100;
 	position: absolute;
@@ -359,9 +372,9 @@ input, textarea {
 	border: 1px solid rgba(255,255,255,0.2);
 	border-radius: 16px;
 	background-color: rgba(0, 0, 0, 0.8);
-	color: #ddd;
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 	cursor: default;
+	color: #ddd;
 }
 
 #shortcut-guide > span {
@@ -388,7 +401,7 @@ input, textarea {
 	border: 1px solid rgba(255,255,255,0.2);
 	border-radius: 100px;
 	background-color: rgba(0, 0, 0, 0.8);
-	color: #ddd;
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	color: #ddd;
 	text-align: center;
 }

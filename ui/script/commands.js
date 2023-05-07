@@ -33,6 +33,9 @@ function openFile() {
 							metaroom.dir = dir
 							Metaroom.importBgImage(metaroom)
 							Favicon.importSprite()
+							for (const overlay of metaroom.overlays) {
+								Overlay.importSprite(overlay)
+							}
 						})
 						.catch((why) => console.error(why))
 						UI.reset()
@@ -177,12 +180,20 @@ function zoomReset() {
 }
 
 function newRoom() {
+	UI.disableOverlayMode()
 	UI.isStartDrawingRoom = true
 	cursor(CROSS)
 }
 
 function newLink() {
+	UI.disableOverlayMode()
 	UI.isStartDrawingLink = true
+	cursor(CROSS)
+}
+
+function newOverlay() {
+	UI.enableOverlayMode()
+	UI.isStartDrawingOverlay = true
 	cursor(CROSS)
 }
 
@@ -223,6 +234,10 @@ function deleteSelection() {
 			d.permeability = 0
 		})
 
+	} else if (UI.selectedOverlays.length > 0) {
+		metaroom.overlays = metaroom.overlays.filter(o => !UI.selectedOverlays.includes(o))
+		UI.selectedOverlays = []
+
 	} else {
 		for (const selectedRoom of UI.selectedRooms) {
 			metaroom.rooms.forEach((room, roomId) => {
@@ -248,4 +263,12 @@ function toggleMousePos() {
 	config.mouse_pos_enabled = !config.mouse_pos_enabled
 	UI.updateMousePos()
 	saveConfig()
+}
+
+function toggleOverlayView() {
+	if (!UI.overlayMode) {
+		UI.enableOverlayMode()
+	} else {
+		UI.disableOverlayMode()
+	}
 }

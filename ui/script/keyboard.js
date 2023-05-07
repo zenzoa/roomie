@@ -12,6 +12,7 @@ function keyPressed(event) {
 
 	UI.isStartDrawingRoom = false
 	UI.isStartDrawingLink = false
+	UI.isStartDrawingOverlay = false
 	cursor('auto')
 
 	const ctrlCmd = keyIsDown(CONTROL) || META_KEY_PRESSED
@@ -107,6 +108,14 @@ function keyPressed(event) {
 		toggleGuide()
 		return false
 
+	} else if (key === 'b' && ctrlCmd) {
+		toggleOverlayView()
+		return false
+
+	} else if (key === 'b') {
+		newOverlay()
+		return false
+
 	} else if (keyCode === DELETE || keyCode === BACKSPACE) {
 		deleteSelection()
 		return false
@@ -114,6 +123,10 @@ function keyPressed(event) {
 	} else if (keyCode === CONTROL || META_KEY_PRESSED) {
 		UI.snapEnabled = false
 		return false
+
+	} else if (keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW ||
+		keyCode === UP_ARROW || keyCode === DOWN_ARROW) {
+			nudgeRepeatCounter = 0
 	}
 }
 

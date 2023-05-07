@@ -19,6 +19,7 @@ class Metaroom {
 		this.rooms = []
 		this.doors = []
 		this.links = []
+		this.overlays = []
 	}
 
 	static updateSidebar(metaroom) {
@@ -65,6 +66,17 @@ class Metaroom {
 				if (Geometry.circleOnLine(x, y, SNAP_DIST, point1.x, point1.y, point2.x, point2.y)) {
 					return link
 				}
+			}
+		}
+	}
+
+	static overlayAt(metaroom, x, y) {
+		for (const overlay of metaroom.overlays) {
+			if (Geometry.intersect(
+					Geometry.rectPolygon(overlay),
+					Geometry.rectPolygon({ x, y, w: 1, h: 1 })
+				)) {
+					return overlay
 			}
 		}
 	}

@@ -34,12 +34,7 @@ class Favicon {
 	}
 
 	static draw() {
-		stroke(255)
-		if (UI.selectedFavicon) {
-			strokeWeight(4)
-		} else {
-			strokeWeight(1)
-		}
+		if (UI.selectedFavicon) { strokeWeight(4) }
 		if (faviconImage) {
 			const w = Math.floor(faviconImage.width / 3)
 			const h = faviconImage.height
@@ -49,12 +44,14 @@ class Favicon {
 		} else {
 			fill(40, 16, 80)
 			circle(metaroom.favicon.x + 24, metaroom.favicon.y + 23, 44)
+			noFill()
 		}
+		if (UI.selectedFavicon) { strokeWeight(1) }
 	}
 
 	static importSprite() {
 		if (metaroom && metaroom.favicon && metaroom.favicon.sprite) {
-			Tauri.invoke('get_favicon_path', { dir: metaroom.dir, title: metaroom.favicon.sprite })
+			Tauri.invoke('get_sprite_path', { dir: metaroom.dir, title: metaroom.favicon.sprite })
 			.then((favicon_path) => {
 				const assetUrl = Tauri.tauri.convertFileSrc(favicon_path)
 				loadImage(assetUrl,
@@ -71,6 +68,24 @@ class Favicon {
 				Tauri.dialog.message(why, { title: 'Image Error', type: 'error' })
 			})
 		}
+	}
+
+	static nudge() {
+		saveState()
+		const d = keyIsDown(SHIFT) ? 10 : 1
+		if (keyIsDown(LEFT_ARROW)){
+			metaroom.favicon.x -= d
+		}
+		if (keyIsDown(RIGHT_ARROW)) {
+			metaroom.favicon.x += d
+		}
+		if (keyIsDown(UP_ARROW)) {
+			metaroom.favicon.y -= d
+		}
+		if (keyIsDown(DOWN_ARROW)) {
+			metaroom.favicon.y += d
+		}
+		UI.updateSidebar()
 	}
 
 	static mouseOn(x, y) {

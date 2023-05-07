@@ -9,56 +9,62 @@
 	<body>
 
 		<div id="menubar">
-			<button id="new-file-button">
-				<img src="library/mono-icons/svg/document-empty.svg" alt="New" title="New (ctrl-n)">
+			<button id="new-file-button" title="New (ctrl+n)">
+				<img src="library/mono-icons/svg/document-empty.svg" alt="New">
 			</button>
-			<button id="open-file-button">
-				<img src="library/mono-icons/svg/folder.svg" alt="Open" title="Open (ctrl-o)">
+			<button id="open-file-button" title="Open (ctrl+o)">
+				<img src="library/mono-icons/svg/folder.svg" alt="Open">
 			</button>
-			<button id="save-file-button">
-				<img src="library/mono-icons/svg/save.svg" alt="Save" title="Save (ctrl-s)">
+			<button id="save-file-button" title="Save (ctrl+s)">
+				<img src="library/mono-icons/svg/save.svg" alt="Save">
 			</button>
-			<button id="save-as-file-button">
-				<img src="library/mono-icons/svg/document-add.svg" alt="Save As" title="Save As (ctrl-shift-s)">
-			</button>
-
-			<span></span>
-
-			<button id="undo-button">
-				<img src="library/mono-icons/svg/undo.svg" alt="Undo" title="Undo (ctrl-z)">
-			</button>
-			<button id="redo-button">
-				<img src="library/mono-icons/svg/refresh.svg" alt="Redo" title="Redo (ctrl-shift-z)">
+			<button id="save-as-file-button" title="Save As (ctrl+shift+s)">
+				<img src="library/mono-icons/svg/document-add.svg" alt="Save As">
 			</button>
 
 			<span></span>
 
-			<button id="zoom-in-button">
-				<img src="library/mono-icons/svg/zoom-in.svg" alt="Zoom In" title="Zoom In (=)">
+			<button id="undo-button" title="Undo (ctrl+z)">
+				<img src="library/mono-icons/svg/undo.svg" alt="Undo">
 			</button>
-			<button id="zoom-out-button">
-				<img src="library/mono-icons/svg/zoom-out.svg" alt="Zoom Out" title="Zoom Out (-)">
-			</button>
-			<button id="zoom-reset-button">
-				<img src="library/mono-icons/svg/expand.svg" alt="Reset Zoom" title="Reset Zoom (0)">
+			<button id="redo-button" title="Redo (ctrl+shift+z)">
+				<img src="library/mono-icons/svg/refresh.svg" alt="Redo">
 			</button>
 
 			<span></span>
 
-			<button id="new-room-button">
-				<img src="library/mono-icons/svg/add.svg" alt="New Room" title="New Room (r)">
+			<button id="zoom-in-button" title="Zoom In (=)">
+				<img src="library/mono-icons/svg/zoom-in.svg" alt="Zoom In">
 			</button>
-			<button id="new-link-button">
-				<img src="library/mono-icons/svg/link-alt.svg" alt="New Link" title="New Link (l)">
+			<button id="zoom-out-button" title="Zoom Out (-)">
+				<img src="library/mono-icons/svg/zoom-out.svg" alt="Zoom Out">
 			</button>
-			<button id="delete-selection-button">
-				<img src="library/mono-icons/svg/delete.svg" alt="Delete" title="Delete (del)">
+			<button id="zoom-reset-button" title="Reset Zoom (0)">
+				<img src="library/mono-icons/svg/expand.svg" alt="Reset Zoom">
 			</button>
 
 			<span></span>
 
-			<button id="guide-button" class="on">
-				<img src="library/mono-icons/svg/circle-help.svg" alt="Toggle Guide" title="Toggle Guide">
+			<button id="new-room-button" title="New Room (r)">
+				<img src="library/mono-icons/svg/add.svg" alt="New Room">
+			</button>
+			<button id="new-link-button" title="New Link (l)">
+				<img src="library/mono-icons/svg/link-alt.svg" alt="New Link">
+			</button>
+			<button id="new-overlay-button" title="New Overlay (b)">
+				<img src="library/mono-icons/svg/image.svg" alt="New Overlay">
+			</button>
+			<button id="delete-selection-button" title="Delete (del)">
+				<img src="library/mono-icons/svg/delete.svg" alt="Delete">
+			</button>
+
+			<span></span>
+
+			<button id="guide-button" class="on" title="Toggle Guide (ctrl+g)">
+				<img src="library/mono-icons/svg/circle-help.svg" alt="Toggle Guide">
+			</button>
+			<button id="mouse-pos-button" class="on" title="Toggle Mouse Position (ctrl+p)">
+				<img src="library/mono-icons/svg/arrow-left-up.svg" alt="Toggle Mouse Position">
 			</button>
 
 		</div>
@@ -293,12 +299,47 @@
 			<h2><span>Link Properties</span></h2>
 		</div>
 
+		<div class="sidebar" id="overlay-props">
+			<div class="resize-handle"></div>
+			<h2><span>Overlay Properties</span></h2>
+			<label id="overlay-sprite-label">
+				<span>Sprite</span>
+				<button id="overlay-sprite" class="file-button">
+					<span id="overlay-sprite-value">&mdash;</span>
+					<img src="library/mono-icons/svg/folder.svg">
+				</button>
+			</label>
+			<hr>
+			<label id="overlay-x-label">
+				<span>X</span>
+				<input id="overlay-x" type="number">
+			</label>
+			<label id="overlay-y-label">
+				<span>Y</span>
+				<input id="overlay-y" type="number">
+			</label>
+			<label id="overlay-plane-label">
+				<span>Plane</span>
+				<input id="overlay-plane" type="number">
+			</label>
+			<hr>
+			<label id="overlay-classifier-label">
+				<span>Classifier</span>
+				<input id="overlay-classifier" type="number">
+			</label>
+		</div>
+
+		<div class="hidden" id="overlay-mode-indicator">
+			<strong>Overlay Mode</strong><br><small>ctrl+b to exit</small>
+		</div>
+
 		<div class="hidden" id="shortcut-guide">
 			<span class="shortcut-header">create:</span>
 			<span>r - room</span>
 			<span>e - extrude</span>
 			<span>d - duplicate</span>
 			<span>l - link</span>
+			<span>b - overlay</span>
 			<br><br>
 			<span class="shortcut-header">modify:</span>
 			<span>shift - ortho move</span>
@@ -307,15 +348,12 @@
 			<br><br>
 			<span class="shortcut-header">view:</span>
 			<span>ctrl+scroll - zoom</span>
-			<span>space / arrows - pan</span>
+			<span>space - pan</span>
+			<span>ctrl+b - overlay mode</span>
 			<br>
 			<span class="shortcut-header"></span>
 			<span>ctrl+t - room type colors</span>
 			<span>ctrl+[ ] - bg opacity</span>
-			<br>
-			<span class="shortcut-header"></span>
-			<span>ctrl+p - mouse pos</span>
-			<span>ctrl+g - this guide</span>
 		</div>
 
 		<div class="hidden" id="mouse-pos">
@@ -339,6 +377,7 @@
 		<script src="./script/door.js"></script>
 		<script src="./script/smell.js"></script>
 		<script src="./script/link.js"></script>
+		<script src="./script/overlay.js"></script>
 		<script src="./script/geometry.js"></script>
 		<script src="./script/caos.js"></script>
 

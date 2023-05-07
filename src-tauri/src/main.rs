@@ -15,7 +15,7 @@ mod c16;
 
 fn main() {
 	tauri::Builder::default()
-		.invoke_handler(tauri::generate_handler![get_bg_path, get_favicon_path])
+		.invoke_handler(tauri::generate_handler![get_bg_path, get_sprite_path])
 		.run(tauri::generate_context!())
 		.expect("Error while running Roomie");
 }
@@ -92,7 +92,7 @@ fn blk_to_png(blk_path: &Path, png_path: &Path, title: &String) -> Result<(), St
 }
 
 #[tauri::command]
-fn get_favicon_path(dir: String, title: String, app_handle: tauri::AppHandle) -> Result<String, String> {
+fn get_sprite_path(dir: String, title: String, app_handle: tauri::AppHandle) -> Result<String, String> {
 	let png_path = Path::join(Path::new(&dir), &format!("{}.png", &title));
 	let c16_path = Path::join(Path::new(&dir), &format!("{}.c16", &title));
 
