@@ -121,7 +121,7 @@ class Metaroom {
 
 	static importBgImage(metaroom, updateDimensions) {
 		if (metaroom && metaroom.background) {
-			Tauri.invoke('get_bg_path', { dir: metaroom.dir, title: metaroom.background })
+			Tauri.invoke('get_background', { dir: metaroom.dir, title: metaroom.background })
 			.then((bg_path) => {
 				const assetUrl = Tauri.tauri.convertFileSrc(bg_path)
 				loadImage(assetUrl,

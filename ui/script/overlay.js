@@ -81,7 +81,7 @@ class Overlay {
 
 	static importSprite(overlay) {
 		if (overlay.sprite) {
-			Tauri.invoke('get_sprite_path', { dir: metaroom.dir, title: overlay.sprite })
+			Tauri.invoke('get_sprite', { dir: metaroom.dir, title: overlay.sprite, frameCount: 1 })
 			.then((overlay_path) => {
 				const assetUrl = Tauri.tauri.convertFileSrc(overlay_path)
 				loadImage(assetUrl,

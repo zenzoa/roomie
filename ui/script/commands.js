@@ -175,8 +175,8 @@ function zoomReset() {
 	const mx = mouseX / UI.zoomLevel - UI.xOffset
 	const my = mouseY / UI.zoomLevel - UI.yOffset
 	UI.zoomLevel = 1.0
-	UI.xOffset = mouseX / UI.zoomLevel - mx
-	UI.yOffset = mouseY / UI.zoomLevel - my
+	UI.xOffset = 20
+	UI.yOffset = 68
 }
 
 function newRoom() {

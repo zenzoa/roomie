@@ -15,13 +15,13 @@ mod c16;
 
 fn main() {
 	tauri::Builder::default()
-		.invoke_handler(tauri::generate_handler![get_bg_path, get_sprite_path])
+		.invoke_handler(tauri::generate_handler![get_background, get_sprite])
 		.run(tauri::generate_context!())
 		.expect("Error while running Roomie");
 }
 
 #[tauri::command]
-fn get_bg_path(dir: String, title: String, app_handle: tauri::AppHandle) -> Result<String, String> {
+fn get_background(dir: String, title: String, app_handle: tauri::AppHandle) -> Result<String, String> {
 	let png_path = Path::join(Path::new(&dir), &format!("{}.png", &title));
 	let blk_path = Path::join(Path::new(&dir), &format!("{}.blk", &title));
 
@@ -92,7 +92,7 @@ fn blk_to_png(blk_path: &Path, png_path: &Path, title: &String) -> Result<(), St
 }
 
 #[tauri::command]
-fn get_sprite_path(dir: String, title: String, app_handle: tauri::AppHandle) -> Result<String, String> {
+fn get_sprite(dir: String, title: String, frame_count: usize, app_handle: tauri::AppHandle) -> Result<String, String> {
 	let png_path = Path::join(Path::new(&dir), &format!("{}.png", &title));
 	let c16_path = Path::join(Path::new(&dir), &format!("{}.c16", &title));
 
@@ -100,11 +100,11 @@ fn get_sprite_path(dir: String, title: String, app_handle: tauri::AppHandle) -> 
 	let c16_exists = match File::open(&c16_path) { Ok(_) => true, Err(_) => false };
 
 	if png_exists && !c16_exists {
-		if let Err(why) = png_to_c16(&png_path, &c16_path, &title) {
+		if let Err(why) = png_to_c16(&png_path, &c16_path, &title, frame_count) {
 			return Err(why)
 		}
 	} else if c16_exists && !png_exists {
-		if let Err(why) = c16_to_png(&c16_path, &png_path, &title) {
+		if let Err(why) = c16_to_png(&c16_path, &png_path, &title, frame_count) {
 			return Err(why);
 		}
 	}
@@ -115,20 +115,19 @@ fn get_sprite_path(dir: String, title: String, app_handle: tauri::AppHandle) -> 
 	Ok(png_path.display().to_string())
 }
 
-fn png_to_c16(png_path: &Path, c16_path: &Path, title: &String) -> Result<(), String> {
+fn png_to_c16(png_path: &Path, c16_path: &Path, title: &String, frame_count: usize) -> Result<(), String> {
 	match ImageReader::open(&png_path) {
 		Ok(image_encoded) => {
 			match image_encoded.decode() {
 				Ok(image) => {
 					match File::create(c16_path) {
 						Ok(mut file) => {
-							let width = image.width() / 3;
+							let width = image.width() / frame_count as u32;
 							let height = image.height();
-							let mut frames = vec![
-								RgbaImage::new(width, height),
-								RgbaImage::new(width, height),
-								RgbaImage::new(width, height)
-							];
+							let mut frames = vec![];
+							for _i in 0..frame_count {
+								frames.push(RgbaImage::new(width, height));
+							}
 							let mut x = 0;
 							for frame in frames.iter_mut() {
 								let view = image.view(x, 0, width, height);
@@ -151,7 +150,7 @@ fn png_to_c16(png_path: &Path, c16_path: &Path, title: &String) -> Result<(), St
 	}
 }
 
-fn c16_to_png(c16_path: &Path, png_path: &Path, title: &String) -> Result<(), String> {
+fn c16_to_png(c16_path: &Path, png_path: &Path, title: &String, frame_count: usize) -> Result<(), String> {
 	match File::open(c16_path) {
 		Ok(mut file) => {
 			let mut buffer = Vec::new();
@@ -161,6 +160,7 @@ fn c16_to_png(c16_path: &Path, png_path: &Path, title: &String) -> Result<(), St
 						Ok(mut frames) => {
 							let mut width = 0;
 							let mut height = 0;
+							frames = (&frames[0..frame_count]).to_vec();
 							for frame in frames.iter_mut() {
 								width += frame.width();
 								if frame.height() > height {
