@@ -12,7 +12,7 @@ function keyPressed(event) {
 
 	UI.isStartDrawingRoom = false
 	UI.isStartDrawingLink = false
-	UI.isStartDrawingOverlay = false
+	UI.isDrawingOverlay = false
 	cursor('auto')
 
 	const ctrlCmd = keyIsDown(CONTROL) || META_KEY_PRESSED

@@ -182,19 +182,19 @@ function zoomReset() {
 function newRoom() {
 	UI.disableOverlayMode()
 	UI.isStartDrawingRoom = true
-	cursor(CROSS)
+	cursor('crosshair')
 }
 
 function newLink() {
 	UI.disableOverlayMode()
 	UI.isStartDrawingLink = true
-	cursor(CROSS)
+	cursor('crosshair')
 }
 
 function newOverlay() {
 	UI.enableOverlayMode()
-	UI.isStartDrawingOverlay = true
-	cursor(CROSS)
+	UI.isDrawingOverlay = true
+	cursor('crosshair')
 }
 
 function extrudeRoom() {

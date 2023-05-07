@@ -31,7 +31,7 @@ const UI = {
 	startDragPoint: { x: 0, y: 0 },
 	dragParts: [],
 
-	isStartDrawingOverlay: false,
+	isDrawingOverlay: false,
 	overlayMode: false,
 	selectedOverlays: [],
 
@@ -201,6 +201,7 @@ const UI = {
 				yTR: Math.floor(my),
 				yBR: Math.floor(my) + 5
 			})
+			cursor('crosshair')
 		}
 	},
 
@@ -213,11 +214,15 @@ const UI = {
 		Room.endMove(this.newRoom)
 	},
 
-	endNewRoom() {
+	endNewRoom(mx, my) {
 		this.isDrawingRoom = false
 		saveState()
 		metaroom.rooms.push(new Room(this.newRoom))
 		this.selectedRooms = [metaroom.rooms[metaroom.rooms.length - 1]]
+
+		if (keyIsDown(82)) {
+			newRoom()
+		}
 	},
 
 	cancelNewRoom() {
@@ -241,6 +246,7 @@ const UI = {
 			newLink.y1 = center.y
 			newLink.room1Id = metaroom.rooms.findIndex(r => r === room)
 			this.isDrawingLink = true
+			cursor('crosshair')
 		}
 	},
 
@@ -272,6 +278,10 @@ const UI = {
 			}
 		}
 		this.isDrawingLink = false
+
+		if (keyIsDown(76)) {
+			newLink()
+		}
 	},
 
 	cancelNewLink() {
@@ -391,12 +401,16 @@ const UI = {
 		}
 	},
 
-	endExtrudeRoom() {
+	endExtrudeRoom(mx, my) {
 		this.isExtrudingRoom = false
 		saveState()
 		metaroom.rooms = metaroom.rooms.concat(this.extrudedRooms)
 		this.selectedRooms = this.extrudedRooms
 		this.extrudedRooms = []
+
+		if (keyIsDown(69)) {
+			this.startExtrudeRoom(mx, my)
+		}
 	},
 
 	cancelExtrudeRoom() {
@@ -537,10 +551,15 @@ const UI = {
 	},
 
 	endNewOverlay(mx, my) {
+		UI.isDrawingOverlay = false
 		if (this.inBounds(mx, my)) {
 			saveState()
 			metaroom.overlays.push(new Overlay({ x: Math.floor(mx), y: Math.floor(my) }))
 			this.selectedOverlays = [metaroom.overlays[metaroom.overlays.length - 1]]
+		}
+
+		if (keyIsDown(66)) {
+			newOverlay()
 		}
 	},
 

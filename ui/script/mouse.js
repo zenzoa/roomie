@@ -21,19 +21,17 @@ function mousePressed() {
 
 	if (UI.isStartDrawingRoom) {
 		UI.startNewRoom(mx, my)
-		cursor('crosshair')
 
 	} else if (UI.isDrawingRoom) {
 		UI.endNewRoom(mx, my)
 
 	} else if (UI.isStartDrawingLink) {
 		UI.startNewLink(mx, my)
-		cursor('crosshair')
 
 	} else if (UI.isDrawingLink) {
 		UI.endNewLink(mx, my)
 
-	} else if (UI.isStartDrawingOverlay) {
+	} else if (UI.isDrawingOverlay) {
 		UI.endNewOverlay(mx, my)
 
 	} else if (UI.isExtrudingRoom) {
@@ -136,7 +134,6 @@ function mousePressed() {
 
 	UI.isStartDrawingRoom = false
 	UI.isStartDrawingLink = false
-	UI.isStartDrawingOverlay = false
 }
 
 function mouseDragged() {
@@ -206,7 +203,7 @@ function mouseMoved() {
 }
 
 function mouseReleased() {
-	if (!UI.isPanning) {
+	if (!UI.isPanning && !UI.isDrawingOverlay) {
 		cursor('auto')
 	}
 
