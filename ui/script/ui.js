@@ -193,33 +193,30 @@ const UI = {
 	startNewRoom(mx, my) {
 		if (this.inBounds(mx, my)) {
 			this.isDrawingRoom = true
-			this.newRoom.x = Math.floor(mx)
-			this.newRoom.y = Math.floor(my)
-			this.newRoom.w = 0
-			this.newRoom.h = 0
+			this.newRoom = new Room({
+				xL: Math.floor(mx),
+				yTL: Math.floor(my),
+				yBL: Math.floor(my) + 5,
+				xR: Math.floor(mx) + 5,
+				yTR: Math.floor(my),
+				yBR: Math.floor(my) + 5
+			})
 		}
 	},
 
 	moveNewRoom(mx, my) {
-		this.newRoom.w = Math.floor(mx - this.newRoom.x)
-		this.newRoom.h = Math.floor(my - this.newRoom.y)
+		this.newRoom.xR = Math.floor(mx)
+		this.newRoom.yBL = Math.floor(my)
+		this.newRoom.yBR = Math.floor(my)
+
+		Room.move(this.newRoom, 0, 0)
+		Room.endMove(this.newRoom)
 	},
 
 	endNewRoom() {
 		this.isDrawingRoom = false
-		const x = Math.min(this.newRoom.x, this.newRoom.x + this.newRoom.w)
-		const y = Math.min(this.newRoom.y, this.newRoom.y + this.newRoom.h)
-		const w = Math.max(Math.abs(this.newRoom.w), 50)
-		const h = Math.max(Math.abs(this.newRoom.h), 50)
 		saveState()
-		metaroom.rooms.push(new Room({
-			xL: x,
-			yTL: y,
-			yBL: y + h,
-			xR: x + w,
-			yTR: y,
-			yBR: y + h
-		}))
+		metaroom.rooms.push(new Room(this.newRoom))
 		this.selectedRooms = [metaroom.rooms[metaroom.rooms.length - 1]]
 	},
 
@@ -229,14 +226,7 @@ const UI = {
 	},
 
 	drawNewRoom() {
-		const x = Math.min(this.newRoom.x, this.newRoom.x + this.newRoom.w)
-		const y = Math.min(this.newRoom.y, this.newRoom.y + this.newRoom.h)
-		const w = Math.abs(this.newRoom.w)
-		const h = Math.abs(this.newRoom.h)
-		stroke(255, 255, 255)
-		strokeWeight(1)
-		noFill()
-		rect(x, y, w, h)
+		Room.draw(this.newRoom)
 	},
 
 	/* =========== */
@@ -303,7 +293,7 @@ const UI = {
 
 	startExtrudeRoom(mx, my) {
 		this.isExtrudingRoom = true
-		this.extrudedRooms = []
+		this.moveExtrudeRoom(mx, my)
 	},
 
 	moveExtrudeRoom(mx, my) {
@@ -335,50 +325,68 @@ const UI = {
 
 		for (const sourceRoom of this.selectedRooms) {
 			const gap = this.snapEnabled ? MIN_GAP : 1
+			let extrudedRoom = null
 			if (extrudeDirection === 'left' &&
 				sourceRoom.xL + (mx - sourceRoom.xL) < sourceRoom.xL - gap) {
-					this.extrudedRooms.push(new Room({
+					extrudedRoom = new Room({
 						xL: sourceRoom.xL + (mx - sourceRoom.xL),
 						yTL: sourceRoom.yTL + dy,
 						yBL: sourceRoom.yBL + dy,
 						xR: sourceRoom.xL,
 						yTR: sourceRoom.yTL,
 						yBR: sourceRoom.yBL
-					}))
+					})
+					Room.move(extrudedRoom, 0, 0)
+					extrudedRoom.xL = extrudedRoom.xL_temp
+					extrudedRoom.yTL = extrudedRoom.yTL_temp
+					extrudedRoom.yBL = extrudedRoom.yBL_temp
 
 			} else if (extrudeDirection === 'right' &&
 				sourceRoom.xR + (mx - sourceRoom.xR) > sourceRoom.xR + gap) {
-					this.extrudedRooms.push(new Room({
+					extrudedRoom = new Room({
 						xL: sourceRoom.xR,
 						yTL: sourceRoom.yTR,
 						yBL: sourceRoom.yBR,
 						xR: sourceRoom.xR + (mx - sourceRoom.xR),
 						yTR: sourceRoom.yTR + dy,
 						yBR: sourceRoom.yBR + dy
-					}))
+					})
+					Room.move(extrudedRoom, 0, 0)
+					extrudedRoom.xR = extrudedRoom.xR_temp
+					extrudedRoom.yTR = extrudedRoom.yTR_temp
+					extrudedRoom.yBR = extrudedRoom.yBR_temp
 
 			} else if (extrudeDirection === 'up') {
 				const dLeft = (sourceRoom.yTR - sourceRoom.yTL) / 2
-				this.extrudedRooms.push(new Room({
+				extrudedRoom = new Room({
 					xL: sourceRoom.xL,
 					yTL: my - dLeft,
 					yBL: sourceRoom.yTL,
 					xR: sourceRoom.xR,
 					yTR: my + dLeft,
 					yBR: sourceRoom.yTR
-				}))
+				})
+				Room.move(extrudedRoom, 0, 0)
+				extrudedRoom.yTL = extrudedRoom.yTL_temp
+				extrudedRoom.yTR = extrudedRoom.yTR_temp
 
 			} else if (extrudeDirection === 'down') {
 				const dRight = (sourceRoom.yBR - sourceRoom.yBL) / 2
-				this.extrudedRooms.push(new Room({
+				extrudedRoom = new Room({
 					xL: sourceRoom.xL,
 					yTL: sourceRoom.yBL,
 					yBL: my - dRight,
 					xR: sourceRoom.xR,
 					yTR: sourceRoom.yBR,
 					yBR: my + dRight
-				}))
+				})
+				Room.move(extrudedRoom, 0, 0)
+				extrudedRoom.yBL = extrudedRoom.yBL_temp
+				extrudedRoom.yBR = extrudedRoom.yBR_temp
+			}
 
+			if (extrudedRoom) {
+				this.extrudedRooms.push(extrudedRoom)
 			}
 		}
 	},
