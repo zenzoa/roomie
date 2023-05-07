@@ -7,15 +7,19 @@ function keyPressed(event) {
 
 	if (document.activeElement.tagName === 'INPUT') return
 
+	const ctrlCmd = keyIsDown(CONTROL) || META_KEY_PRESSED
+
 	const mx = mouseX / UI.zoomLevel - UI.xOffset
 	const my = mouseY / UI.zoomLevel - UI.yOffset
 
 	UI.isStartDrawingRoom = false
 	UI.isStartDrawingLink = false
 	UI.isDrawingOverlay = false
-	cursor('auto')
+	if (UI.isSplittingRoom && !(key === 's' && !ctrlCmd)) {
+		UI.isSplittingRoom = false
+	}
 
-	const ctrlCmd = keyIsDown(CONTROL) || META_KEY_PRESSED
+	cursor('auto')
 
 	if (key === ' ') {
 		UI.startPan(mouseX / UI.zoomLevel, mouseY / UI.zoomLevel)
@@ -37,6 +41,8 @@ function keyPressed(event) {
 			UI.cancelNewLink()
 		} else if (UI.isExtrudingRoom) {
 			UI.cancelExtrudeRoom()
+		} else if (UI.isSplittingRoom) {
+			UI.cancelSplitRoom()
 		} else {
 			UI.clearSelection()
 		}
@@ -80,6 +86,10 @@ function keyPressed(event) {
 
 	} else if (key === 'e') {
 		extrudeRoom()
+		return false
+
+	} else if (key === 's') {
+		splitRoom()
 		return false
 
 	} else if (key === 'd') {

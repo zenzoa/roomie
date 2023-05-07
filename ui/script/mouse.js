@@ -37,6 +37,9 @@ function mousePressed() {
 	} else if (UI.isExtrudingRoom) {
 		UI.endExtrudeRoom(mx, my)
 
+	} else if (UI.isSplittingRoom) {
+		UI.endSplitRoom(mx, my)
+
 	} else if (UI.isDragging) {
 		UI.endDrag(mx, my)
 
@@ -196,6 +199,9 @@ function mouseMoved() {
 
 	} else if (UI.isExtrudingRoom) {
 		UI.moveExtrudeRoom(mx, my)
+
+	} else if (UI.isSplittingRoom) {
+		UI.moveSplitRoom(mx, my)
 
 	} else if (UI.isDragging) {
 		UI.moveDrag(mx, my)

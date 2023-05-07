@@ -204,6 +204,10 @@ function draw() {
 		Favicon.draw()
 	}
 
+	if (UI.isSplittingRoom) {
+		UI.drawSplitRoom()
+	}
+
 	stroke(255, !UI.overlayMode && 50)
 	for (const overlay of metaroom.overlays) {
 		Overlay.draw(overlay)

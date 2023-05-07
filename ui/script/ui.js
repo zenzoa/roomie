@@ -26,6 +26,11 @@ const UI = {
 	isExtrudingRoom: false,
 	extrudedRooms: [],
 
+	isSplittingRoom: false,
+	roomToSplit: null,
+	splitPoint: { x: 0, y: 0 },
+	splitNS: false,
+
 	isDragging: false,
 	startDragPoint: { x: 0, y: 0 },
 	dragParts: [],
@@ -437,6 +442,113 @@ const UI = {
 	drawExtrudedRoom() {
 		for (const extrudedRoom of this.extrudedRooms) {
 			Room.draw(extrudedRoom)
+		}
+	},
+
+	/* ============ */
+	/*  SPLIT ROOM  */
+	/* ============ */
+
+	startSplitRoom(mx, my) {
+		this.clearSelection()
+		if (this.isSplittingRoom) {
+			this.splitNS = !this.splitNS
+		} else {
+			this.isSplittingRoom = true
+			this.splitNS = false
+		}
+		if (this.splitNS) {
+			cursor('ns-resize')
+		} else {
+			cursor('ew-resize')
+		}
+		this.moveSplitRoom(mx, my)
+	},
+
+	moveSplitRoom(mx, my) {
+		this.roomToSplit = Metaroom.roomAt(metaroom, mx, my)
+		this.splitPoint = { x: Math.floor(mx), y: Math.floor(my) }
+		if (this.roomToSplit) {
+			this.selectedRooms = [this.roomToSplit]
+		} else {
+			this.selectedRooms = []
+		}
+	},
+
+	endSplitRoom(mx, my) {
+		this.isSplittingRoom = false
+
+		if (this.roomToSplit) {
+			let room1 = null
+			let room2 = null
+
+			if (this.splitNS) {
+				if (this.splitPoint.y > this.roomToSplit.yTL && this.splitPoint.y > this.roomToSplit.yTR) {
+					room1 = Room.clone(this.roomToSplit)
+					room1.yBL = this.splitPoint.y
+					room1.yBR = this.splitPoint.y
+				}
+				if (this.splitPoint.y < this.roomToSplit.yBL && this.splitPoint.y < this.roomToSplit.yBR) {
+					room2 = Room.clone(this.roomToSplit)
+					room2.yTL = this.splitPoint.y
+					room2.yTR = this.splitPoint.y
+				}
+
+			} else {
+				const topSlope = (this.roomToSplit.yTR - this.roomToSplit.yTL) / (this.roomToSplit.xR - this.roomToSplit.xL)
+				const botSlope = (this.roomToSplit.yBR - this.roomToSplit.yBL) / (this.roomToSplit.xR - this.roomToSplit.xL)
+				const yTop = this.roomToSplit.yTL + (topSlope * (this.splitPoint.x - this.roomToSplit.xL))
+				const yBot = this.roomToSplit.yBL + (botSlope * (this.splitPoint.x - this.roomToSplit.xL))
+
+				room1 = Room.clone(this.roomToSplit)
+				room1.xR = this.splitPoint.x
+				room1.yTR = yTop
+				room1.yBR = yBot
+
+				room2 = Room.clone(this.roomToSplit)
+				room2.xL = this.splitPoint.x
+				room2.yTL = yTop
+				room2.yBL = yBot
+
+			}
+
+			if (room1 && room2) {
+				saveState()
+				const originalRoomId = metaroom.rooms.findIndex(r => r === this.roomToSplit)
+				Metaroom.removeRoom(metaroom, originalRoomId)
+				metaroom.rooms.push(room1)
+				metaroom.rooms.push(room2)
+				this.selectedRooms = [
+					metaroom.rooms[metaroom.rooms.length - 1],
+					metaroom.rooms[metaroom.rooms.length - 2]
+				]
+			}
+		}
+	},
+
+	cancelSplitRoom() {
+		this.isSplittingRoom = false
+		cursor('auto')
+	},
+
+	drawSplitRoom() {
+		if (this.roomToSplit) {
+			stroke(255)
+			strokeWeight(1)
+
+			if (this.splitNS) {
+				if (this.splitPoint.y > this.roomToSplit.yTL && this.splitPoint.y > this.roomToSplit.yTR &&
+					this.splitPoint.y < this.roomToSplit.yBL && this.splitPoint.y < this.roomToSplit.yBR) {
+						line(this.roomToSplit.xL, this.splitPoint.y, this.roomToSplit.xR, this.splitPoint.y)
+				}
+
+			} else {
+				const topSlope = (this.roomToSplit.yTR - this.roomToSplit.yTL) / (this.roomToSplit.xR - this.roomToSplit.xL)
+				const botSlope = (this.roomToSplit.yBR - this.roomToSplit.yBL) / (this.roomToSplit.xR - this.roomToSplit.xL)
+				const yTop = this.roomToSplit.yTL + (topSlope * (this.splitPoint.x - this.roomToSplit.xL))
+				const yBot = this.roomToSplit.yBL + (botSlope * (this.splitPoint.x - this.roomToSplit.xL))
+				line(this.splitPoint.x, yTop, this.splitPoint.x, yBot)
+			}
 		}
 	},
 

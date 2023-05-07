@@ -203,6 +203,12 @@ function extrudeRoom() {
 	UI.startExtrudeRoom(mx, my)
 }
 
+function splitRoom() {
+	const mx = mouseX / UI.zoomLevel - UI.xOffset
+	const my = mouseY / UI.zoomLevel - UI.yOffset
+	UI.startSplitRoom(mx, my)
+}
+
 function duplicateSelection() {
 	let newRooms = []
 	for (const room of UI.selectedRooms) {
