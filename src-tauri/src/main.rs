@@ -36,6 +36,8 @@ fn get_background(dir: String, title: String, app_handle: tauri::AppHandle) -> R
 		if let Err(why) = blk_to_png(&blk_path, &png_path, &title) {
 			return Err(why);
 		}
+	} else if !blk_exists && !png_exists {
+		return Err(String::from("not_found"));
 	}
 
 	let fs_scope = app_handle.fs_scope();
@@ -107,6 +109,8 @@ fn get_sprite(dir: String, title: String, frame_count: usize, app_handle: tauri:
 		if let Err(why) = c16_to_png(&c16_path, &png_path, &title, frame_count) {
 			return Err(why);
 		}
+	} else if !c16_exists && !png_exists {
+		return Err(String::from("not_found"));
 	}
 
 	let fs_scope = app_handle.fs_scope();

@@ -1,9 +1,9 @@
 class Favicon {
 
 	constructor() {
-		this.x = 0,
-		this.y = 0,
-		this.sprite = '',
+		this.x = 0
+		this.y = 0
+		this.sprite = ''
 		this.classifier = 1000
 	}
 
@@ -65,7 +65,11 @@ class Favicon {
 				)
 			})
 			.catch((why) => {
-				Tauri.dialog.message(why, { title: 'Image Error', type: 'error' })
+				if (why === 'not_found') {
+					Tauri.dialog.message('All images must be in the same folder as your COS file', { title: 'Wrong Folder', type: 'error' })
+				} else {
+					Tauri.dialog.message(why, { title: 'Image Error', type: 'error' })
+				}
 			})
 		}
 	}
