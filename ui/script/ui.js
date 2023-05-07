@@ -310,8 +310,6 @@ const UI = {
 		this.extrudedRooms = []
 
 		let dy = 0
-		mx = Math.floor(mx)
-		my = Math.floor(my)
 
 		let extrudeDirection = 'left'
 		if (this.selectedRooms.length > 0) {
@@ -320,13 +318,13 @@ const UI = {
 				extrudeDirection = 'left'
 				const midLeft = sourceRoom.yTL + (sourceRoom.yBL - sourceRoom.yTL) / 2
 				if (!keyIsDown(SHIFT)) {
-					dy = Math.floor(my - midLeft)
+					dy = my - midLeft
 				}
 			} else if (mx > sourceRoom.xR) {
 				extrudeDirection = 'right'
 				const midRight = sourceRoom.yTR + (sourceRoom.yBR - sourceRoom.yTR) / 2
 				if (!keyIsDown(SHIFT)) {
-					dy = Math.floor(my - midRight)
+					dy = my - midRight
 				}
 			} else if (my < sourceRoom.yTL || my < sourceRoom.yTR) {
 				extrudeDirection = 'up'
@@ -533,7 +531,7 @@ const UI = {
 	endNewOverlay(mx, my) {
 		if (this.inBounds(mx, my)) {
 			saveState()
-			metaroom.overlays.push(new Overlay({ x: mx, y: my }))
+			metaroom.overlays.push(new Overlay({ x: Math.floor(mx), y: Math.floor(my) }))
 			this.selectedOverlays = [metaroom.overlays[metaroom.overlays.length - 1]]
 		}
 	},

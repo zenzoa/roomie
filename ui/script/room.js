@@ -1,12 +1,12 @@
 class Room {
 
 	constructor({ xL, yTL, yBL, xR, yTR, yBR }) {
-		this.xL = xL || 0
-		this.yTL = yTL || 0
-		this.yBL = yBL || 0
-		this.xR = xR || 0
-		this.yTR = yTR || 0
-		this.yBR = yBR || 0
+		this.xL = Math.floor(xL) || 0
+		this.yTL = Math.floor(yTL) || 0
+		this.yBL = Math.floor(yBL) || 0
+		this.xR = Math.floor(xR) || 0
+		this.yTR = Math.floor(yTR) || 0
+		this.yBR = Math.floor(yBR) || 0
 
 		this.type = 0
 		this.music = ''
