@@ -1,11 +1,12 @@
 class Overlay {
 
-	constructor({ x, y, w, h, sprite, classifier, plane }) {
+	constructor({ x, y, w, h, sprite, frame, classifier, plane }) {
 		this.x = x || 0
 		this.y = y || 0
 		this.w = w || 50
 		this.h = h || 50
 		this.sprite = sprite || ''
+		this.frame = frame || 0
 		this.classifier = classifier || 1000
 		this.plane = plane || 8000
 	}
@@ -19,22 +20,28 @@ class Overlay {
 			document.getElementById('overlay-x').value = overlays[0].x
 			document.getElementById('overlay-y').value = overlays[0].y
 			document.getElementById('overlay-sprite-value').innerText = overlays[0].sprite || '—'
+			document.getElementById('overlay-frame').value = overlays[0].frame
 			document.getElementById('overlay-classifier').value = overlays[0].classifier
 			document.getElementById('overlay-plane').value = overlays[0].plane
 
-		} else if (overlays.length > 0) {
+		} else if (overlays.length > 1) {
 			document.getElementById('overlay-x-label').className = 'hidden'
 			document.getElementById('overlay-y-label').className = 'hidden'
 			document.getElementById('overlay-classifier-label').className = 'hidden'
 
 			let allSameSprite = true
 			let lastSprite = overlays[0].sprite
+			let allSameFrame = true
+			let lastFrame = overlays[0].frame
 			let allSamePlane = true
 			let lastPlane = overlays[0].plane
 
 			overlays.forEach(o => {
 				if (o.sprite !== lastSprite) {
 					allSameSprite = false
+				}
+				if (o.frame !== lastFrame) {
+					allSameFrame = false
 				}
 				if (o.plane !== lastPlane) {
 					allSamePlane = false
@@ -47,11 +54,16 @@ class Overlay {
 				lastSprite = '[multiple]'
 			}
 
+			if (!allSameFrame) {
+				lastFrame = null
+			}
+
 			if (!allSamePlane) {
 				lastPlane = null
 			}
 
 			document.getElementById('overlay-sprite-value').innerText = lastSprite || '—'
+			document.getElementById('overlay-frame').value = lastFrame
 			document.getElementById('overlay-plane').value = lastPlane
 		}
 	}
@@ -61,7 +73,7 @@ class Overlay {
 		const useTemp = UI.isDragging && isSelected
 		const x = useTemp ? overlay.x_temp : overlay.x
 		const y = useTemp ? overlay.y_temp : overlay.y
-		const sprite = overlayImages[overlay.sprite]
+		const sprite = overlayImages[`${overlay.sprite}-${overlay.frame}`]
 
 		if (sprite) {
 			if (!UI.overlayMode) { tint(255, 50) }
@@ -79,30 +91,60 @@ class Overlay {
 		}
 	}
 
-	static importSprite(overlay) {
-		if (overlay.sprite) {
-			Tauri.invoke('get_sprite', { dir: metaroom.dir, title: overlay.sprite, frameCount: 1 })
-			.then((overlay_path) => {
-				const assetUrl = Tauri.tauri.convertFileSrc(overlay_path)
-				loadImage(assetUrl,
-					(img) => {
-						overlayImages[overlay.sprite] = img
-						overlay.w = img.width
-						overlay.h = img.height
-						UI.updateSidebar()
-					},
-					() => {
-						Tauri.dialog.message('Unable to load overlay sprite, ' + overlay.sprite + '.png', { title: 'File Error', type: 'error' })
+	static importSprite(overlay, title, frame) {
+		if (title && !isNaN(frame) && frame >= 0) {
+			if (overlayImages[`${title}-${frame}`]) {
+				const img = overlayImages[`${title}-${frame}`]
+				overlay.sprite = title
+				overlay.frame = frame
+				overlay.w = img.width
+				overlay.h = img.height
+
+			} else {
+				Tauri.invoke('get_overlay_path', {
+					dir: metaroom.dir,
+					title: title,
+					frame: frame
+				})
+				.then((overlay_path) => {
+					const assetUrl = Tauri.tauri.convertFileSrc(overlay_path)
+					loadImage(assetUrl,
+						(img) => {
+							overlayImages[`${title}-${frame}`] = img
+							overlay.sprite = title
+							overlay.frame = frame
+							overlay.w = img.width
+							overlay.h = img.height
+							UI.updateSidebar()
+						},
+						() => {
+							Tauri.dialog.message('Unable to load overlay sprite, ' + title + '.png', { title: 'File Error', type: 'error' })
+						}
+					)
+				})
+				.catch((why) => {
+					const frameInput = document.getElementById('overlay-frame')
+					const ignoreChange = () => { frameInput.value = overlay.frame }
+					frameInput.removeEventListener('change', changeOverlayFrame)
+					frameInput.addEventListener('change', ignoreChange)
+
+					let dialog_title = 'Image Error'
+					let dialog_message = why
+					if (why === 'not_found') {
+						dialog_title = 'Wrong Folder'
+						dialog_message = 'All images must be in the same folder as your COS file'
+					} else if (why === 'wrong_frame_format') {
+						dialog_title = 'Image Not Found'
+						dialog_message = 'Frame PNGs must be named using the format "[title]-[index].png'
 					}
-				)
-			})
-			.catch((why) => {
-				if (why === 'not_found') {
-					Tauri.dialog.message('All images must be in the same folder as your COS file', { title: 'Wrong Folder', type: 'error' })
-				} else {
-					Tauri.dialog.message(why, { title: 'Image Error', type: 'error' })
-				}
-			})
+
+					Tauri.dialog.message(dialog_message, { title: dialog_title, type: 'error' })
+					.then(() => {
+						frameInput.addEventListener('change', changeOverlayFrame)
+						frameInput.removeEventListener('change', ignoreChange)
+					})
+				})
+			}
 		}
 	}
 
@@ -174,17 +216,44 @@ function changeOverlaySprite() {
 			Tauri.path.basename(filePath)
 			.then((basename) => {
 				saveState()
-				const sprite = basename.replace(/\.(png|c16)$/i, '')
-				UI.selectedOverlays.forEach(o => { o.sprite = sprite })
+				let title = ''
+				let frame = 0
+				if (basename.endsWith('.c16')) {
+					title = basename.replace('.c16', '')
+				} else {
+					const frameMatch = basename.match(/-(\d+).png$/i)
+					if (frameMatch && frameMatch.length >= 2 && !isNaN(parseInt(frameMatch[1]))) {
+						title = basename.replace(/-\d+.png$/i, '')
+						frame = parseInt(frameMatch[1])
+					} else {
+						title = basename.replace('.png', '')
+					}
+				}
 				if (!metaroom.dir) {
 					metaroom.dir = filePath.replace(basename, '')
 				}
-				UI.selectedOverlays.forEach(o => Overlay.importSprite(o))
+				UI.selectedOverlays.forEach(o => {
+					Overlay.importSprite(o, title, frame)
+				})
 				UI.updateSidebar()
 			})
 			.catch((why) => console.error(why))
 		})
 		.catch((why) => console.error(why))
+	}
+}
+
+function changeOverlayFrame() {
+	if (UI.selectedOverlays.length > 0) {
+		const input = document.getElementById('overlay-frame')
+		const frame = Math.max(0, parseInt(input.value))
+		if (!isNaN(frame)) {
+			saveState()
+			UI.selectedOverlays.forEach(o => {
+				Overlay.importSprite(o, o.sprite, frame)
+			})
+		}
+		UI.updateSidebar()
 	}
 }
 

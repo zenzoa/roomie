@@ -240,6 +240,7 @@ const Caos = {
 							target = 'overlay'
 							tempOverlay = {
 								sprite: sprite,
+								frame: firstImage,
 								classifier: species,
 								plane: plane
 							}
@@ -424,7 +425,7 @@ const Caos = {
 			lines.push('')
 			lines.push('*ROOMIE Add overlays')
 			overlays.forEach(o => {
-				lines.push(`new: simp 1 1 ${o.classifier} "${o.sprite}" 1 0 ${o.plane}`)
+				lines.push(`new: simp 1 1 ${o.classifier} "${o.sprite}" 1 ${o.frame} ${o.plane}`)
 				lines.push(`  mvto ${o.x + m.x} ${o.y + m.y}`)
 			})
 		}

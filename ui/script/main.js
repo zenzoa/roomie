@@ -105,6 +105,7 @@ function setup() {
 	document.getElementById('overlay-x').addEventListener('change', changeOverlayX)
 	document.getElementById('overlay-y').addEventListener('change', changeOverlayY)
 	document.getElementById('overlay-sprite').addEventListener('click', changeOverlaySprite)
+	document.getElementById('overlay-frame').addEventListener('change', changeOverlayFrame)
 	document.getElementById('overlay-classifier').addEventListener('change', changeOverlayClassifier)
 	document.getElementById('overlay-plane').addEventListener('change', changeOverlayPlane)
 

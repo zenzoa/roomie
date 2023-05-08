@@ -51,7 +51,10 @@ class Favicon {
 
 	static importSprite() {
 		if (metaroom && metaroom.favicon && metaroom.favicon.sprite) {
-			Tauri.invoke('get_sprite', { dir: metaroom.dir, title: metaroom.favicon.sprite, frameCount: 3 })
+			Tauri.invoke('get_favicon_path', {
+				dir: metaroom.dir,
+				title: metaroom.favicon.sprite
+			})
 			.then((favicon_path) => {
 				const assetUrl = Tauri.tauri.convertFileSrc(favicon_path)
 				loadImage(assetUrl,

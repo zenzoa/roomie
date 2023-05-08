@@ -34,7 +34,7 @@ function openFile() {
 							Metaroom.importBgImage(metaroom)
 							Favicon.importSprite()
 							for (const overlay of metaroom.overlays) {
-								Overlay.importSprite(overlay)
+								Overlay.importSprite(overlay, overlay.sprite, overlay.frame)
 							}
 						})
 						.catch((why) => console.error(why))
