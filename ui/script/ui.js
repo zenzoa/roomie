@@ -368,7 +368,7 @@ const UI = {
 						yTR: sourceRoom.yTL,
 						yBR: sourceRoom.yBL
 					})
-					Room.move(extrudedRoom, 0, 0)
+					Room.movePart(extrudedRoom, 'left-side', 0, 0)
 					extrudedRoom.xL = extrudedRoom.xL_temp
 					extrudedRoom.yTL = extrudedRoom.yTL_temp
 					extrudedRoom.yBL = extrudedRoom.yBL_temp
@@ -383,7 +383,7 @@ const UI = {
 						yTR: sourceRoom.yTR + dy,
 						yBR: sourceRoom.yBR + dy
 					})
-					Room.move(extrudedRoom, 0, 0)
+					Room.movePart(extrudedRoom, 'right-side', 0, 0)
 					extrudedRoom.xR = extrudedRoom.xR_temp
 					extrudedRoom.yTR = extrudedRoom.yTR_temp
 					extrudedRoom.yBR = extrudedRoom.yBR_temp
@@ -398,7 +398,7 @@ const UI = {
 					yTR: my + dLeft,
 					yBR: sourceRoom.yTR
 				})
-				Room.move(extrudedRoom, 0, 0)
+				Room.movePart(extrudedRoom, 'top-side', 0, 0)
 				extrudedRoom.yTL = extrudedRoom.yTL_temp
 				extrudedRoom.yTR = extrudedRoom.yTR_temp
 
@@ -412,7 +412,7 @@ const UI = {
 					yTR: sourceRoom.yBR,
 					yBR: my + dRight
 				})
-				Room.move(extrudedRoom, 0, 0)
+				Room.movePart(extrudedRoom, 'bottom-side', 0, 0)
 				extrudedRoom.yBL = extrudedRoom.yBL_temp
 				extrudedRoom.yBR = extrudedRoom.yBR_temp
 			}
