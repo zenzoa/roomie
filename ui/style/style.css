@@ -1,6 +1,32 @@
 :root {
 	--toolbar-height: 48px;
 	--sidebar-width: 348px;
+
+	--menubar-bg: #292929;
+	--sidebar-bg: #303030;
+
+	--divider-color: #444444;
+
+	--button-bg: #464646;
+	--button-hover-bg: #595959;
+	--button-hover-bg2: #636363;
+	--button-shadow: #222222;
+	--button-active-shadow: #444444;
+
+	--input-bg: #595959;
+	--input-disabled-bg: #434343;
+	--input-shadow: #494949;
+
+	--focus-outline: #939393;
+
+	--text-color: #ffffff;
+	--icon-filter: invert(1);
+
+	--overlay-bg: rgba(0, 0, 0, 0.8);
+	--overlay-border: rgba(255,255,255,0.2);
+	--overlay-text-color: #dddddd;
+
+	--warning-bg: rgba(255, 119, 0, 0.26);
 }
 
 * {
@@ -52,14 +78,14 @@ h1, h2, h3, h4 {
 	padding: 0 12px;
 	display: flex;
 	align-items: center;
-	background-color: #292929;
+	background-color: var(--menubar-bg);
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-	color: white;
+	color: var(--text-color);
 }
 
 #menubar img {
 	margin-top: 2px;
-	filter: invert(100%);
+	filter: var(--icon-filter);
 }
 
 #menubar > * + * {
@@ -68,7 +94,7 @@ h1, h2, h3, h4 {
 
 #menubar > span {
 	height: 24px;
-	border-left: 1px solid #444;
+	border-left: 1px solid var(--divider-color);
 	margin-left: 24px;
 	margin-right: 12px;
 }
@@ -81,8 +107,8 @@ h1, h2, h3, h4 {
 	right: 0;
 	padding: 18px 24px;
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-	background-color: #303030;
-	color: white;
+	background-color: var(--sidebar-bg);
+	color: var(--text-color);
 	width: var(--sidebar-width);
 	overflow-x: hidden;
 	overflow-y: auto;
@@ -115,7 +141,7 @@ h1, h2, h3, h4 {
 .sidebar > hr {
 	margin: 24px 0;
 	border: none;
-	border-bottom: 1px solid #444;
+	border-bottom: 1px solid var(--divider-color);
 }
 
 .sidebar > * + * {
@@ -169,20 +195,20 @@ input, textarea {
 }
 
 #menubar button.on {
-	background: #464646;
+	background: var(--button-bg);
 }
 
 #menubar button:focus {
-	outline: 1px solid #939393;
+	outline: 1px solid var(--focus-outline);
 	outline-offset: 1px;
 }
 
 #menubar button:hover {
-	background: #595959;
+	background: var(--button-hover-bg);
 }
 
 #menubar button.on:hover {
-	background: #636363;
+	background: var(--button-hover-bg2);
 }
 
 .sidebar button,
@@ -196,26 +222,26 @@ input, textarea {
 .sidebar button,
 .sidebar select {
 	position: relative;
-	background: #464646;
-	box-shadow: 2px 2px 0 0 #222;
+	background: var(--button-bg);
+	box-shadow: 2px 2px 0 0 var(--button-shadow);
 }
 
 .sidebar button:focus,
 .sidebar select:focus {
-	outline: 1px solid #939393;
+	outline: 1px solid var(--focus-outline);
 	outline-offset: 1px;
 }
 
 .sidebar button:hover,
 .sidebar select:hover {
-	background: #595959;
+	background: var(--button-hover-bg);
 }
 
 .sidebar button:active,
 .sidebar select:active {
 	top: 1px;
 	left: 1px;
-	box-shadow: 2px 2px 0 0 #444 inset;
+	box-shadow: 2px 2px 0 0 var(--button-active-shadow) inset;
 }
 
 .sidebar button {
@@ -229,7 +255,7 @@ input, textarea {
 }
 
 .sidebar button > img {
-	filter: invert(100%);
+	filter: var(--icon-filter);
 }
 
 .sidebar button.icon-button {
@@ -243,7 +269,7 @@ input, textarea {
 }
 
 .sidebar button.simple:hover {
-	background: #464646;
+	background: var(--button-bg);
 }
 
 .sidebar button.float-right {
@@ -264,7 +290,7 @@ input, textarea {
 }
 
 .sidebar .dropdown-arrow > img {
-	filter: invert(100%);
+	filter: var(--icon-filter);
 }
 
 .sidebar select:active + .dropdown-arrow {
@@ -273,17 +299,17 @@ input, textarea {
 }
 
 .sidebar input {
-	background: #595959;
-	box-shadow: 2px 2px 0 0 #494949 inset;
+	background: var(--input-bg);
+	box-shadow: 2px 2px 0 0 var(--input-shadow) inset;
 }
 
 .sidebar input:focus {
-	outline: 1px solid #939393;
+	outline: 1px solid var(--focus-outline);
 	outline-offset: 1px;
 }
 
 .sidebar input:disabled {
-	background: #434343;
+	background: var(--input-disabled-bg);
 }
 
 .sidebar h2 {
@@ -298,13 +324,14 @@ input, textarea {
 	position: relative;
 	top: 12px;
 	display: block;
-	border-bottom: 1px solid #666;
+	opacity: 0.5;
+	border-bottom: 1px solid var(--text-color);
 }
 
 .sidebar h2 > span {
 	position: relative;
 	padding: 0 12px;
-	background: #303030;
+	background: var(--sidebar-bg);
 }
 
 .sidebar h3 {
@@ -339,14 +366,14 @@ input, textarea {
 	justify-content: center;
 	padding: 6px 12px;
 	border-radius: 100px;
-	background-color: rgba(255, 119, 0, 0.26);
+	background-color: var(--warning-bg);
 	font-size: small;
 }
 
 #room-too-small img {
 	width: 16px;
 	height: 16px;
-	filter: invert(100%);
+	filter: var(--icon-filter);
 	margin-right: 6px;
 }
 
@@ -357,9 +384,9 @@ input, textarea {
 	right: var(--sidebar-width);
 	top: var(--toolbar-height);
 	padding: 6px;
-	background-color: #464646;
+	background-color: var(--button-bg);
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-	color: #ddd;
+	color: var(--overlay-text-color);
 	text-align: center;
 }
 
@@ -370,12 +397,12 @@ input, textarea {
 	bottom: 12px;
 	max-width: calc(100vw - var(--sidebar-width) - 24px);
 	padding: 12px 18px 14px;
-	border: 1px solid rgba(255,255,255,0.2);
+	border: 1px solid var(--overlay-border);
 	border-radius: 16px;
-	background-color: rgba(0, 0, 0, 0.8);
+	background-color: var(--overlay-bg);
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 	cursor: default;
-	color: #ddd;
+	color: var(--overlay-text-color);
 }
 
 #shortcut-guide > span {
@@ -399,10 +426,10 @@ input, textarea {
 	bottom: 12px;
 	padding: 6px;
 	width: 120px;
-	border: 1px solid rgba(255,255,255,0.2);
+	border: 1px solid var(--overlay-border);
 	border-radius: 100px;
-	background-color: rgba(0, 0, 0, 0.8);
+	background-color: var(--overlay-bg);
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-	color: #ddd;
+	color: var(--overlay-text-color);
 	text-align: center;
 }

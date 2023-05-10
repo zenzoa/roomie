@@ -19,7 +19,8 @@
 				"all": true,
 				"scope": [
 					"$APPCONFIG",
-					"$APPCONFIG/roomie.conf"
+					"$APPCONFIG/*",
+					"$APPCONFIG/themes/*"
 				]
 			},
 			"path": {

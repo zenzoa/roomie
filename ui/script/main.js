@@ -25,7 +25,8 @@ let nudgeRepeatCounter = 0
 let config = {
 	guide_enabled: true,
 	mouse_pos_enabled: true,
-	bg_opacity: 128
+	bg_opacity: 128,
+	theme: 'dark'
 }
 
 function setup() {
@@ -266,29 +267,39 @@ function loadConfig() {
 					config[key] = newConfig[key]
 				}
 			}
+			if (config.theme) {
+				Theme.load(config.theme)
+			}
 		} catch (why) {
 			console.error(why)
 		}
 	})
-	.catch((why) => console.error(why))
+	.catch((_) => {
+		saveConfig()
+		Theme.saveDefaults()
+	})
 }
 
 function saveConfig() {
 	const path = 'roomie.conf'
 	const dir = Tauri.fs.BaseDirectory.AppConfig
 	const contents = JSON.stringify(config)
+
 	Tauri.fs.exists(path, { dir })
-	.then(() => {
-		Tauri.fs.writeTextFile({ path, contents }, { dir })
-		.then(() => {})
-		.catch((why) => console.error(why))
-	})
-	.catch((_) => {
-		Tauri.fs.createDir('', { dir, recursive: true })
-		.then(() => {
+	.then((exists) => {
+		if (exists) {
 			Tauri.fs.writeTextFile({ path, contents }, { dir })
 			.then(() => {})
 			.catch((why) => console.error(why))
-		})
+
+		} else {
+			Tauri.fs.createDir('', { dir, recursive: true })
+			.then(() => {
+				Tauri.fs.writeTextFile({ path, contents }, { dir })
+				.then(() => {})
+				.catch((why) => console.error(why))
+			})
+			.catch((why) => console.error(why))
+		}
 	})
 }
