@@ -278,3 +278,19 @@ function toggleOverlayView() {
 		UI.disableOverlayMode()
 	}
 }
+
+function quit() {
+	if (isModified) {
+		Tauri.dialog.ask(
+			'You have unmodified changes to the current metaroom. Are you sure you want to discard the changes?',
+			{ title: 'Discard changes?', type: 'warning' }
+		)
+		.then((confirmed) => {
+			if (confirmed) {
+				Tauri.window.appWindow.close()
+			}
+		})
+	} else {
+		Tauri.window.appWindow.close()
+	}
+}

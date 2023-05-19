@@ -71,6 +71,10 @@ function keyPressed(event) {
 		saveAsFile()
 		return false
 
+	} else if (key === 'q' && ctrlCmd) {
+		quit()
+		return false
+
 	} else if (key === '-') {
 		zoomOut()
 		return false
