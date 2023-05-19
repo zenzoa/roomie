@@ -80,36 +80,36 @@ function mousePressed() {
 		}
 
 		for (const room of UI.selectedRooms) {
-			if (Geometry.pointInCircle(mx, my, room.xL, room.yTL, SELECT_DIST)) {
+			if (Geometry.pointInCircle(mx, my, room.xL, room.yTL, selectDist())) {
 				UI.dragParts.push({ room, part: 'top-left-corner' })
 				selectOnlyCorners()
 
-			} else if (Geometry.pointInCircle(mx, my, room.xL, room.yBL, SELECT_DIST)) {
+			} else if (Geometry.pointInCircle(mx, my, room.xL, room.yBL, selectDist())) {
 				UI.dragParts.push({ room, part: 'bottom-left-corner' })
 				selectOnlyCorners()
 
-			} else if (Geometry.pointInCircle(mx, my, room.xR, room.yBR, SELECT_DIST)) {
+			} else if (Geometry.pointInCircle(mx, my, room.xR, room.yBR, selectDist())) {
 				UI.dragParts.push({ room, part: 'bottom-right-corner' })
 				selectOnlyCorners()
 
-			} else if (Geometry.pointInCircle(mx, my, room.xR, room.yTR, SELECT_DIST)) {
+			} else if (Geometry.pointInCircle(mx, my, room.xR, room.yTR, selectDist())) {
 				UI.dragParts.push({ room, part: 'top-right-corner' })
 				selectOnlyCorners()
 
 			} else if (!selectingCorner &&
-				Geometry.circleOnLine(mx, my, SELECT_DIST, room.xL, room.yTL, room.xL, room.yBL)) {
+				Geometry.circleOnLine(mx, my, selectDist(), room.xL, room.yTL, room.xL, room.yBL)) {
 					UI.dragParts.push({ room, part: 'left-side' })
 
 			} else if (!selectingCorner &&
-				Geometry.circleOnLine(mx, my, SELECT_DIST, room.xR, room.yTR, room.xR, room.yBR)) {
+				Geometry.circleOnLine(mx, my, selectDist(), room.xR, room.yTR, room.xR, room.yBR)) {
 					UI.dragParts.push({ room, part: 'right-side' })
 
 			} else if (!selectingCorner &&
-				Geometry.circleOnLine(mx, my, SELECT_DIST, room.xL, room.yTL, room.xR, room.yTR)) {
+				Geometry.circleOnLine(mx, my, selectDist(), room.xL, room.yTL, room.xR, room.yTR)) {
 					UI.dragParts.push({ room, part: 'top-side' })
 
 			} else if (!selectingCorner &&
-				Geometry.circleOnLine(mx, my, SELECT_DIST, room.xL, room.yBL, room.xR, room.yBR)) {
+				Geometry.circleOnLine(mx, my, selectDist(), room.xL, room.yBL, room.xR, room.yBR)) {
 					UI.dragParts.push({ room, part: 'bottom-side' })
 			}
 		}
@@ -267,8 +267,8 @@ function mouseScroll(event) {
 			zoomOut(0.98)
 		}
 	} else {
-		UI.xOffset -= event.deltaX
-		UI.yOffset -= event.deltaY
+		UI.xOffset -= event.deltaX / UI.zoomLevel
+		UI.yOffset -= event.deltaY / UI.zoomLevel
 	}
 
 	return false

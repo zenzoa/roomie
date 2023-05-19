@@ -49,7 +49,7 @@ class Metaroom {
 		for (const door of metaroom.doors) {
 			if (door.active && door.overlap) {
 				const { x1, y1, x2, y2 } = door.overlap
-				if (Geometry.circleOnLine(x, y, SNAP_DIST, x1, y1, x2, y2)) {
+				if (Geometry.circleOnLine(x, y, snapDist(), x1, y1, x2, y2)) {
 					return door
 				}
 			}
@@ -63,7 +63,7 @@ class Metaroom {
 			if (room1 && room2) {
 				const point1 = Room.getCenter(room1)
 				const point2 = Room.getCenter(room2)
-				if (Geometry.circleOnLine(x, y, SNAP_DIST, point1.x, point1.y, point2.x, point2.y)) {
+				if (Geometry.circleOnLine(x, y, snapDist(), point1.x, point1.y, point2.x, point2.y)) {
 					return link
 				}
 			}

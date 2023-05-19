@@ -34,7 +34,7 @@ class Favicon {
 	}
 
 	static draw() {
-		if (UI.selectedFavicon) { strokeWeight(4) }
+		if (UI.selectedFavicon) { strokeWeight(4 / UI.zoomLevel) }
 		if (faviconImage) {
 			const w = Math.floor(faviconImage.width / 3)
 			const h = faviconImage.height
@@ -46,7 +46,7 @@ class Favicon {
 			circle(metaroom.favicon.x + 24, metaroom.favicon.y + 23, 44)
 			noFill()
 		}
-		if (UI.selectedFavicon) { strokeWeight(1) }
+		if (UI.selectedFavicon) { strokeWeight(1 / UI.zoomLevel) }
 	}
 
 	static importSprite() {

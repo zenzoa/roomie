@@ -172,7 +172,7 @@ const UI = {
 		const w = Math.abs(this.selection.w)
 		const h = Math.abs(this.selection.h)
 		stroke(255, 255, 255, 128)
-		strokeWeight(1)
+		strokeWeight(1 / UI.zoomLevel)
 		fill(255, 255, 255, 26)
 		rect(x, y, w, h)
 	},
@@ -312,7 +312,7 @@ const UI = {
 	},
 
 	drawNewLink() {
-		strokeWeight(4)
+		strokeWeight(4 / UI.zoomLevel)
 		fill(255)
 		line(newLink.x1, newLink.y1, newLink.x2, newLink.y2)
 		circle(newLink.x1, newLink.y1, 6)
@@ -534,7 +534,7 @@ const UI = {
 	drawSplitRoom() {
 		if (this.roomToSplit) {
 			stroke(255)
-			strokeWeight(1)
+			strokeWeight(1 / UI.zoomLevel)
 
 			if (this.splitNS) {
 				if (this.splitPoint.y > this.roomToSplit.yTL && this.splitPoint.y > this.roomToSplit.yTR &&

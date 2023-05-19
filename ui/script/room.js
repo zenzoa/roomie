@@ -110,7 +110,7 @@ class Room {
 		const isLastSelected = room === UI.selectedRooms[UI.selectedRooms.length - 1]
 
 		if (isSelected) {
-			if (isLastSelected) { strokeWeight(4) }
+			if (isLastSelected) { strokeWeight(4 / UI.zoomLevel) }
 			if (room.hasCollision) { stroke(200, 50, 50) }
 		}
 
@@ -132,7 +132,7 @@ class Room {
 		quad(xL, yTL, xL, yBL, xR, yBR, xR, yTR)
 
 		if (isSelected) {
-			if (isLastSelected) { strokeWeight(2) }
+			if (isLastSelected) { strokeWeight(2 / UI.zoomLevel) }
 			if (room.hasCollision) { stroke(255) }
 		}
 	}
@@ -143,7 +143,7 @@ class Room {
 
 		if (room.hasCollision) { fill(200, 50, 50) }
 
-		const diameter = isLastSelected ? 10 : 7
+		const diameter = (isLastSelected ? 10 : 7) / UI.zoomLevel
 
 		circle(xL, yTL, diameter)
 		circle(xL, yBL, diameter)
@@ -298,13 +298,13 @@ class Room {
 					room[xProps[0] + '_temp'] = Math.floor(snapCorner.x)
 					room[yProps[0] + '_temp'] = Math.floor(snapCorner.y)
 				} else {
-					if (yProps[0] === 'yTL' && Math.abs(room['yTL_temp'] - room['yTR_temp']) < SNAP_DIST) {
+					if (yProps[0] === 'yTL' && Math.abs(room['yTL_temp'] - room['yTR_temp']) < snapDist()) {
 						room['yTL_temp'] = Math.floor(room['yTR_temp'])
-					} else if (yProps[0] === 'yTR' && Math.abs(room['yTL_temp'] - room['yTR_temp']) < SNAP_DIST) {
+					} else if (yProps[0] === 'yTR' && Math.abs(room['yTL_temp'] - room['yTR_temp']) < snapDist()) {
 						room['yTR_temp'] = Math.floor(room['yTL_temp'])
-					} else if (yProps[0] === 'yBL' && Math.abs(room['yBL_temp'] - room['yBR_temp']) < SNAP_DIST) {
+					} else if (yProps[0] === 'yBL' && Math.abs(room['yBL_temp'] - room['yBR_temp']) < snapDist()) {
 						room['yBL_temp'] = Math.floor(room['yBR_temp'])
-					} else if (yProps[0] === 'yBR' && Math.abs(room['yBL_temp'] - room['yBR_temp']) < SNAP_DIST) {
+					} else if (yProps[0] === 'yBR' && Math.abs(room['yBL_temp'] - room['yBR_temp']) < snapDist()) {
 						room['yBR_temp'] = Math.floor(room['yBL_temp'])
 					}
 				}
@@ -340,19 +340,19 @@ class Room {
 		for (const r of metaroom.rooms) {
 			if (!UI.selectedRooms.includes(r)) {
 				// snap to top-left corner
-				if (Geometry.pointInCircle(x, y, r.xL, r.yTL, SNAP_DIST)) {
+				if (Geometry.pointInCircle(x, y, r.xL, r.yTL, snapDist())) {
 					return { x: r.xL, y: r.yTL }
 
 				// snap to bottom-left corner
-				} else if (Geometry.pointInCircle(x, y, r.xL, r.yBL, SNAP_DIST)) {
+				} else if (Geometry.pointInCircle(x, y, r.xL, r.yBL, snapDist())) {
 					return { x: r.xL, y: r.yBL }
 
 				// snap to bottom-right corner
-				} else if (Geometry.pointInCircle(x, y, r.xR, r.yBR, SNAP_DIST)) {
+				} else if (Geometry.pointInCircle(x, y, r.xR, r.yBR, snapDist())) {
 					return { x: r.xR, y: r.yBR }
 
 				// snap to top-right corner
-				} else if (Geometry.pointInCircle(x, y, r.xR, r.yTR, SNAP_DIST)) {
+				} else if (Geometry.pointInCircle(x, y, r.xR, r.yTR, snapDist())) {
 					return { x: r.xR, y: r.yTR }
 				}
 			}
@@ -362,21 +362,21 @@ class Room {
 		for (const r of metaroom.rooms) {
 			if (!UI.selectedRooms.includes(r)) {
 				// snap to left side
-				if (Geometry.circleOnLine(x, y, SNAP_DIST, r.xL, r.yTL, r.xL, r.yBL)) {
+				if (Geometry.circleOnLine(x, y, snapDist(), r.xL, r.yTL, r.xL, r.yBL)) {
 					const point = Geometry.closestPointOnLine(x, y, r.xL, r.yTL, r.xL, r.yBL)
 					if (Math.abs(point.x - x) > 1 || Math.abs(point.y - y) > 1) {
 						return point
 					}
 
 				// snap to right side
-				} else if (Geometry.circleOnLine(x, y, SNAP_DIST, r.xR, r.yTR, r.xR, r.yBR)) {
+				} else if (Geometry.circleOnLine(x, y, snapDist(), r.xR, r.yTR, r.xR, r.yBR)) {
 					const point = Geometry.closestPointOnLine(x, y, r.xR, r.yTR, r.xR, r.yBR)
 					if (Math.abs(point.x - x) > 1 || Math.abs(point.y - y) > 1) {
 						return point
 					}
 
 				// snap to top side
-				} else if (Geometry.circleOnLine(x, y, SNAP_DIST, r.xL, r.yTL, r.xR, r.yTR)) {
+				} else if (Geometry.circleOnLine(x, y, snapDist(), r.xL, r.yTL, r.xR, r.yTR)) {
 					let point = Geometry.closestPointOnLine(x, y, r.xL, r.yTL, r.xR, r.yTR)
 					let slope = (r.yTR - r.yTL)/(r.xR - r.xL)
 					let perfectY = (point.x - r.xL) * slope + r.yTL
@@ -388,7 +388,7 @@ class Room {
 					}
 
 				// snap to bottom side
-				} else if (Geometry.circleOnLine(x, y, SNAP_DIST, r.xL, r.yBL, r.xR, r.yBR)) {
+				} else if (Geometry.circleOnLine(x, y, snapDist(), r.xL, r.yBL, r.xR, r.yBR)) {
 					let point = Geometry.closestPointOnLine(x, y, r.xL, r.yBL, r.xR, r.yBR)
 					let slope = (r.yBR - r.yBL)/(r.xR - r.xL)
 					let perfectY = (point.x - r.xL) * slope + r.yBL
@@ -408,45 +408,45 @@ class Room {
 			if (!UI.selectedRooms.includes(r)) {
 				// snap to right side
 				if (part === 'left-side') {
-					if (Geometry.circleOnLine(x1, y1, SNAP_DIST, r.xR, r.yTR, r.xR, r.yBR)) {
+					if (Geometry.circleOnLine(x1, y1, snapDist(), r.xR, r.yTR, r.xR, r.yBR)) {
 						let newY1 = Geometry.closestPointOnLine(x1, y1, r.xR, r.yTR, r.xR, r.yBR).y
 						return { x1: r.xR, y1: newY1, x2: r.xR, y2: y2 }
 
-					} else if (Geometry.circleOnLine(x2, y2, SNAP_DIST, r.xR, r.yTR, r.xR, r.yBR)) {
+					} else if (Geometry.circleOnLine(x2, y2, snapDist(), r.xR, r.yTR, r.xR, r.yBR)) {
 						let newY2 = Geometry.closestPointOnLine(x2, y2, r.xR, r.yTR, r.xR, r.yBR).y
 						return { x1: r.xR, y1: y1, x2: r.xR, y2: newY2 }
 
-					} else if (Geometry.circleOnLine(r.xR, r.yTR, SNAP_DIST, x1, y1, x2, y2)) {
+					} else if (Geometry.circleOnLine(r.xR, r.yTR, snapDist(), x1, y1, x2, y2)) {
 						return { x1: r.xR, y1: y1, x2: r.xR, y2: y2 }
 
-					} else if (Geometry.circleOnLine(r.xR, r.yBR, SNAP_DIST, x1, y1, x2, y2)) {
+					} else if (Geometry.circleOnLine(r.xR, r.yBR, snapDist(), x1, y1, x2, y2)) {
 						return { x1: r.xR, y1: y1, x2: r.xR, y2: y2 }
 					}
 
 				// snap to left side
 				} else if (part === 'right-side') {
-					if (Geometry.circleOnLine(x1, y1, SNAP_DIST, r.xL, r.yTL, r.xL, r.yBL)) {
+					if (Geometry.circleOnLine(x1, y1, snapDist(), r.xL, r.yTL, r.xL, r.yBL)) {
 						let newY1 = Geometry.closestPointOnLine(x1, y1, r.xL, r.yTL, r.xL, r.yBL).y
 						return { x1: r.xL, y1: newY1, x2: r.xL, y2: y2 }
 
-					} else if (Geometry.circleOnLine(x2, y2, SNAP_DIST, r.xL, r.yTL, r.xL, r.yBL)) {
+					} else if (Geometry.circleOnLine(x2, y2, snapDist(), r.xL, r.yTL, r.xL, r.yBL)) {
 						let newY2 = Geometry.closestPointOnLine(x2, y2, r.xL, r.yTL, r.xL, r.yBL).y
 						return { x1: r.xL, y1: y1, x2: r.xL, y2: newY2 }
 
-					} else if (Geometry.circleOnLine(r.xL, r.yTL, SNAP_DIST, x1, y1, x2, y2)) {
+					} else if (Geometry.circleOnLine(r.xL, r.yTL, snapDist(), x1, y1, x2, y2)) {
 						return { x1: r.xL, y1: y1, x2: r.xL, y2: y2 }
 
-					} else if (Geometry.circleOnLine(r.xL, r.yBL, SNAP_DIST, x1, y1, x2, y2)) {
+					} else if (Geometry.circleOnLine(r.xL, r.yBL, snapDist(), x1, y1, x2, y2)) {
 						return { x1: r.xL, y1: y1, x2: r.xL, y2: y2 }
 					}
 
 				// snap to bottom side
 				} else if (part === 'top-side') {
 					let slope = (r.yBR - r.yBL)/(r.xR - r.xL)
-					if (Geometry.circleOnLine(x1, y1, SNAP_DIST, r.xL, r.yBL, r.xR, r.yBR) ||
-						Geometry.circleOnLine(x2, y2, SNAP_DIST, r.xL, r.yBL, r.xR, r.yBR) ||
-						Geometry.circleOnLine(r.xL, r.yBL, SNAP_DIST, x1, y1, x2, y2) ||
-						Geometry.circleOnLine(r.xR, r.yBR, SNAP_DIST, x1, y1, x2, y2)) {
+					if (Geometry.circleOnLine(x1, y1, snapDist(), r.xL, r.yBL, r.xR, r.yBR) ||
+						Geometry.circleOnLine(x2, y2, snapDist(), r.xL, r.yBL, r.xR, r.yBR) ||
+						Geometry.circleOnLine(r.xL, r.yBL, snapDist(), x1, y1, x2, y2) ||
+						Geometry.circleOnLine(r.xR, r.yBR, snapDist(), x1, y1, x2, y2)) {
 							const newY1 = Math.ceil(Geometry.closestPointOnLine(x1, y1, r.xL, r.yBL, r.xR, r.yBR).y)
 							const newY2 = Math.ceil(Geometry.closestPointOnLine(x2, y2, r.xL, r.yBL, r.xR, r.yBR).y)
 							return { x1: x1, y1: newY1, x2: x2, y2: newY2 }
@@ -454,10 +454,10 @@ class Room {
 
 				// snap to top side
 				} else if (part === 'bottom-side') {
-					if (Geometry.circleOnLine(x1, y1, SNAP_DIST, r.xL, r.yTL, r.xR, r.yTR) ||
-						Geometry.circleOnLine(x2, y2, SNAP_DIST, r.xL, r.yTL, r.xR, r.yTR) ||
-						Geometry.circleOnLine(r.xL, r.yTL, SNAP_DIST, x1, y1, x2, y2) ||
-						Geometry.circleOnLine(r.xR, r.yTR, SNAP_DIST, x1, y1, x2, y2)) {
+					if (Geometry.circleOnLine(x1, y1, snapDist(), r.xL, r.yTL, r.xR, r.yTR) ||
+						Geometry.circleOnLine(x2, y2, snapDist(), r.xL, r.yTL, r.xR, r.yTR) ||
+						Geometry.circleOnLine(r.xL, r.yTL, snapDist(), x1, y1, x2, y2) ||
+						Geometry.circleOnLine(r.xR, r.yTR, snapDist(), x1, y1, x2, y2)) {
 							let newY1 = Math.floor(Geometry.closestPointOnLine(x1, y1, r.xL, r.yTL, r.xR, r.yTR).y)
 							let newY2 = Math.floor(Geometry.closestPointOnLine(x2, y2, r.xL, r.yTL, r.xR, r.yTR).y)
 							return { x1: x1, y1: newY1, x2: x2, y2: newY2 }

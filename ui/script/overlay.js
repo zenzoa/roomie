@@ -85,9 +85,9 @@ class Overlay {
 		}
 
 		if (UI.overlayMode || !sprite) {
-			if (isSelected) { strokeWeight(4) }
+			if (isSelected) { strokeWeight(4 / UI.zoomLevel) }
 			rect(x, y, overlay.w, overlay.h)
-			if (isSelected) { strokeWeight(1) }
+			if (isSelected) { strokeWeight(1 / UI.zoomLevel) }
 		}
 	}
 

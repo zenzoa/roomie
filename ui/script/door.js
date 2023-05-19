@@ -24,15 +24,15 @@ class Door {
 				if (UI.isDragging) {
 					return
 				} else if (lastSelected === room1 || lastSelected === room2) {
-					strokeWeight(5)
+					strokeWeight(5 / UI.zoomLevel)
 				} else {
-					strokeWeight(3)
+					strokeWeight(3 / UI.zoomLevel)
 				}
 			} else {
 				if (UI.selectedDoors.includes(door)) {
-					strokeWeight(10)
+					strokeWeight(10 / UI.zoomLevel)
 				} else {
-					strokeWeight(2)
+					strokeWeight(2 / UI.zoomLevel)
 				}
 			}
 

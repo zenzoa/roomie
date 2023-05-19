@@ -147,7 +147,7 @@ function draw() {
 	}
 
 	stroke(255)
-	strokeWeight(1)
+	strokeWeight(1 / UI.zoomLevel)
 	noFill()
 	rect(0, 0, metaroom.w, metaroom.h)
 
@@ -176,7 +176,7 @@ function draw() {
 	}
 
 	stroke(255, UI.overlayMode && 128)
-	strokeWeight(2)
+	strokeWeight(2 / UI.zoomLevel)
 	for (const room of UI.selectedRooms) {
 		Room.draw(room, true)
 	}
@@ -193,14 +193,14 @@ function draw() {
 
 	fill(255, UI.overlayMode && 128)
 	stroke(255, UI.overlayMode && 128)
-	strokeWeight(1)
+	strokeWeight(1 / UI.zoomLevel)
 	for (const link of metaroom.links) {
 		Link.draw(link)
 	}
 
 	noFill()
 	stroke(255, UI.overlayMode && 128)
-	strokeWeight(1)
+	strokeWeight(1 / UI.zoomLevel)
 	for (const room of metaroom.rooms) {
 		Room.drawSmells(room)
 	}
@@ -302,4 +302,12 @@ function saveConfig() {
 			.catch((why) => console.error(why))
 		}
 	})
+}
+
+function snapDist() {
+	return SNAP_DIST / UI.zoomLevel
+}
+
+function selectDist() {
+	return SELECT_DIST / UI.zoomLevel
 }
