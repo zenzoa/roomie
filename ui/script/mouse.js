@@ -1,9 +1,11 @@
-function mousePressed() {
+function mousePressed(event) {
+	isMetaKeyDown = event.metaKey
+
 	if (UI.isResizingSidebar ||
 		mouseX > window.innerWidth - UI.sidebarWidth ||
 		mouseY < UI.toolbarHeight) {
 			return
-	} else if (UI.isPanning) {
+	} else if (UI.isPanning || event.button === 1) {
 		UI.startPan(mouseX / UI.zoomLevel, mouseY / UI.zoomLevel)
 		return
 	}
@@ -61,11 +63,11 @@ function mousePressed() {
 			UI.startSelection(mx, my)
 		}
 
-	} else if (Favicon.mouseOn(mx, my) && !keyIsDown(CONTROL) && !META_KEY_PRESSED) {
+	} else if (Favicon.mouseOn(mx, my) && !keyIsDown(CONTROL) && !isMetaKeyDown) {
 		UI.clearSelection()
 		UI.selectedFavicon = true
 
-	} else if (Metaroom.linkAt(metaroom, mx, my) && !keyIsDown(CONTROL) && !META_KEY_PRESSED) {
+	} else if (Metaroom.linkAt(metaroom, mx, my) && !keyIsDown(CONTROL) && !isMetaKeyDown) {
 		UI.clearSelection()
 		UI.selectedLink = Metaroom.linkAt(metaroom, mx, my)
 
@@ -121,7 +123,7 @@ function mousePressed() {
 			const clickedDoor = Metaroom.doorAt(metaroom, mx, my)
 			const alreadySelectingRooms = keyIsDown(SHIFT) && UI.selectedRooms.length > 0
 
-			if (clickedDoor && !keyIsDown(CONTROL) && !META_KEY_PRESSED && !alreadySelectingRooms) {
+			if (clickedDoor && !keyIsDown(CONTROL) && !isMetaKeyDown && !alreadySelectingRooms) {
 				UI.selectDoor(clickedDoor)
 
 			} else {
@@ -139,7 +141,9 @@ function mousePressed() {
 	UI.isStartDrawingLink = false
 }
 
-function mouseDragged() {
+function mouseDragged(event) {
+	isMetaKeyDown = event.metaKey
+
 	if (UI.isResizingSidebar) {
 		cursor('ew-resize')
 		return false
@@ -175,7 +179,9 @@ function mouseDragged() {
 	}
 }
 
-function mouseMoved() {
+function mouseMoved(event) {
+	isMetaKeyDown = event.metaKey
+
 	if (UI.isPanning ||
 		UI.isResizingSidebar ||
 		mouseX > window.innerWidth - UI.sidebarWidth ||
@@ -208,9 +214,15 @@ function mouseMoved() {
 	}
 }
 
-function mouseReleased() {
+function mouseReleased(event) {
+	isMetaKeyDown = false
+
 	if (!UI.isPanning && !UI.isDrawingOverlay) {
 		cursor('auto')
+	}
+
+	if (UI.isPanning && event.button === 1) {
+		UI.endPan()
 	}
 
 	if (UI.isPanning ||
@@ -253,6 +265,8 @@ function mouseReleased() {
 }
 
 function mouseScroll(event) {
+	isMetaKeyDown = event.metaKey
+
 	if (UI.isPanning ||
 		UI.isResizingSidebar ||
 		mouseX > window.innerWidth - UI.sidebarWidth ||
@@ -260,7 +274,7 @@ function mouseScroll(event) {
 			return
 	}
 
-	if (keyIsDown(CONTROL) || META_KEY_PRESSED) {
+	if (keyIsDown(CONTROL) || isMetaKeyDown) {
 		if (event.deltaY > 0) {
 			zoomIn(1.02)
 		} else {

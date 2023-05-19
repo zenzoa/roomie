@@ -1,13 +1,12 @@
-let META_KEY_PRESSED = false
+let isMetaKeyDown = false
 
 function keyPressed(event) {
-	if (event.key === 'Meta') {
-		META_KEY_PRESSED = true
-	}
+	isMetaKeyDown = event.metaKey
+	key = key.toLowerCase()
 
 	if (document.activeElement.tagName === 'INPUT') return
 
-	const ctrlCmd = keyIsDown(CONTROL) || META_KEY_PRESSED
+	const ctrlCmd = keyIsDown(CONTROL) || isMetaKeyDown
 
 	const mx = mouseX / UI.zoomLevel - UI.xOffset
 	const my = mouseY / UI.zoomLevel - UI.yOffset
@@ -48,11 +47,11 @@ function keyPressed(event) {
 		}
 		return false
 
-	} else if (key === 'z' && ctrlCmd) {
+	} else if (key === 'z' && !keyIsDown(SHIFT) && ctrlCmd) {
 		undo()
 		return false
 
-	} else if (key === 'Z' && ctrlCmd) {
+	} else if (key === 'z' && keyIsDown(SHIFT) && ctrlCmd) {
 		redo()
 		return false
 
@@ -64,11 +63,11 @@ function keyPressed(event) {
 		openFile()
 		return false
 
-	} else if (key === 's' && ctrlCmd) {
+	} else if (key === 's' && !keyIsDown(SHIFT) && ctrlCmd) {
 		saveFile()
 		return false
 
-	} else if (key === 'S' && ctrlCmd) {
+	} else if (key === 's' && keyIsDown(SHIFT) && ctrlCmd) {
 		saveAsFile()
 		return false
 
@@ -130,7 +129,7 @@ function keyPressed(event) {
 		deleteSelection()
 		return false
 
-	} else if (keyCode === CONTROL || META_KEY_PRESSED) {
+	} else if (keyCode === CONTROL || isMetaKeyDown) {
 		UI.snapEnabled = false
 		return false
 
@@ -141,7 +140,7 @@ function keyPressed(event) {
 }
 
 function keyReleased(event) {
-	META_KEY_PRESSED = false
+	isMetaKeyDown = false
 
 	if (document.activeElement.tagName === 'INPUT') return
 
