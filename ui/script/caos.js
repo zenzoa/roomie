@@ -270,8 +270,8 @@ const Caos = {
 							tempEmitter.room = room
 						}
 					} else if (newMetaroom && target === 'overlay') {
-						tempOverlay.x = mvtoX
-						tempOverlay.y = mvtoY
+						tempOverlay.x = mvtoX - newMetaroom.x
+						tempOverlay.y = mvtoY - newMetaroom.y
 						newMetaroom.overlays.push(new Overlay(tempOverlay))
 					} else {
 						ignoredLines.push(`mvto ${mvtoX} ${mvtoY}`)
