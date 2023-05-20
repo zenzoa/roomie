@@ -126,6 +126,7 @@ function saveAsFile() {
 
 function saveState() {
 	undoStack.push(JSON.stringify(metaroom))
+	redoStack = []
 	isModified = true
 }
 
