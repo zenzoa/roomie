@@ -137,69 +137,77 @@ function draw() {
 	noFill()
 	rect(0, 0, metaroom.w, metaroom.h)
 
-	if (UI.overlayMode) {
-		stroke(255, 128)
-	}
+	if (!UI.overlayMode) {
+		const unselectedRooms = metaroom.rooms.filter(r =>
+			!UI.selectedRooms.includes(r) && !r.hasCollision)
 
-	const unselectedRooms = metaroom.rooms.filter(r => !UI.selectedRooms.includes(r) && !r.hasCollision)
-	const collidingRooms = metaroom.rooms.filter(r => !UI.selectedRooms.includes(r) && r.hasCollision)
+		const collidingRooms = metaroom.rooms.filter(r =>
+			!UI.selectedRooms.includes(r) && r.hasCollision)
 
-	for (const room of unselectedRooms) {
-		Room.draw(room)
-	}
+		for (const room of unselectedRooms) {
+			Room.draw(room)
+		}
 
-	if (UI.isDrawingRoom) {
-		UI.drawNewRoom()
-	} else if (UI.isDrawingLink) {
-		UI.drawNewLink()
-	} else if (UI.isExtrudingRoom) {
-		UI.drawExtrudedRoom()
-	}
+		if (UI.isDrawingRoom) {
+			UI.drawNewRoom()
+		} else if (UI.isDrawingLink) {
+			UI.drawNewLink()
+		} else if (UI.isExtrudingRoom) {
+			UI.drawExtrudedRoom()
+		}
 
-	stroke(200, 50, 50)
-	for (const room of collidingRooms) {
-		Room.draw(room)
-	}
+		stroke(200, 50, 50)
+		for (const room of collidingRooms) {
+			Room.draw(room)
+		}
 
-	stroke(255, UI.overlayMode && 128)
-	strokeWeight(2 / UI.zoomLevel)
-	for (const room of UI.selectedRooms) {
-		Room.draw(room, true)
-	}
+		stroke(255)
+		strokeWeight(2 / UI.zoomLevel)
+		for (const room of UI.selectedRooms) {
+			Room.draw(room, true)
+		}
 
-	for (const door of metaroom.doors) {
-		Door.draw(door)
-	}
+		for (const door of metaroom.doors) {
+			Door.draw(door)
+		}
 
-	fill(255, UI.overlayMode && 128)
-	noStroke()
-	for (const room of UI.selectedRooms) {
-		Room.drawCorners(room)
-	}
+		fill(255)
+		noStroke()
+		for (const room of UI.selectedRooms) {
+			Room.drawCorners(room)
+		}
 
-	fill(255, UI.overlayMode && 128)
-	stroke(255, UI.overlayMode && 128)
-	strokeWeight(1 / UI.zoomLevel)
-	for (const link of metaroom.links) {
-		Link.draw(link)
+		fill(255)
+		stroke(255)
+		strokeWeight(1 / UI.zoomLevel)
+		for (const link of metaroom.links) {
+			Link.draw(link)
+		}
+
+		noFill()
+		stroke(255)
+		strokeWeight(1 / UI.zoomLevel)
+		for (const room of metaroom.rooms) {
+			Room.drawSmells(room)
+		}
+
+		if (UI.isSplittingRoom) {
+			UI.drawSplitRoom()
+		}
 	}
 
 	noFill()
-	stroke(255, UI.overlayMode && 128)
-	strokeWeight(1 / UI.zoomLevel)
-	for (const room of metaroom.rooms) {
-		Room.drawSmells(room)
+	if (UI.overlayMode) {
+		noStroke()
+	} else {
+		stroke(255)
+		strokeWeight(1 / UI.zoomLevel)
 	}
-
 	if (metaroom.hasFavicon) {
 		Favicon.draw()
 	}
 
-	if (UI.isSplittingRoom) {
-		UI.drawSplitRoom()
-	}
-
-	stroke(255, !UI.overlayMode && 50)
+	stroke(255)
 	for (const overlay of metaroom.overlays) {
 		Overlay.draw(overlay)
 	}

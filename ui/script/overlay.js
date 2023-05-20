@@ -76,18 +76,22 @@ class Overlay {
 		const sprite = overlayImages[`${overlay.sprite}-${overlay.frame}`]
 
 		if (sprite) {
-			if (!UI.overlayMode) { tint(255, 50) }
+			if (!UI.overlayMode || isSelected) { tint(255, 128) }
 			image(sprite, x, y)
-			if (!UI.overlayMode) { noTint() }
+			if (!UI.overlayMode || isSelected) { noTint() }
 		} else {
 			line(x, y, x + overlay.w, y + overlay.h)
 			line(x + overlay.w, y, x, y + overlay.h)
 		}
 
 		if (UI.overlayMode || !sprite) {
-			if (isSelected) { strokeWeight(4 / UI.zoomLevel) }
-			rect(x, y, overlay.w, overlay.h)
-			if (isSelected) { strokeWeight(1 / UI.zoomLevel) }
+			if (isSelected) {
+				strokeWeight(4 / UI.zoomLevel)
+				rect(x - 6, y - 6, overlay.w + 12, overlay.h + 12)
+				strokeWeight(1 / UI.zoomLevel)
+			} else {
+				rect(x, y, overlay.w, overlay.h)
+			}
 		}
 	}
 
