@@ -103,7 +103,7 @@ class Metaroom {
 					(d.room1Id === room2Id && d.room2Id === room1Id)
 				)
 				const overlap = Room.sideOverlap(room1, room2)
-				if (overlap) {
+				if (overlap && !(overlap.x1 === overlap.x2 && overlap.y1 === overlap.y2)) {
 					if (door) {
 						door.active = true
 					} else {
