@@ -1,4 +1,8 @@
 function mousePressed(event) {
+	if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+		document.activeElement.blur()
+	}
+
 	isMetaKeyDown = event.metaKey
 
 	if (UI.isResizingSidebar ||

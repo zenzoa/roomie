@@ -216,7 +216,7 @@ function draw() {
 		UI.drawSelection()
 	}
 
-	if (document.activeElement.tagName !== 'INPUT' &&
+	if (document.activeElement && document.activeElement.tagName !== 'INPUT' &&
 		(keyIsDown(LEFT_ARROW) || keyIsDown(RIGHT_ARROW) ||
 		keyIsDown(UP_ARROW) || keyIsDown(DOWN_ARROW))) {
 			if (UI.selectedRooms.length > 0) {

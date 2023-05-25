@@ -4,7 +4,7 @@ function keyPressed(event) {
 	isMetaKeyDown = event.metaKey
 	key = key.toLowerCase()
 
-	if (document.activeElement.tagName === 'INPUT') return
+	if (document.activeElement && document.activeElement.tagName === 'INPUT') return
 
 	const ctrlCmd = keyIsDown(CONTROL) || isMetaKeyDown
 
@@ -146,7 +146,7 @@ function keyPressed(event) {
 function keyReleased(event) {
 	isMetaKeyDown = false
 
-	if (document.activeElement.tagName === 'INPUT') return
+	if (document.activeElement && document.activeElement.tagName === 'INPUT') return
 
 	if (UI.isPanning) {
 		UI.endPan()
