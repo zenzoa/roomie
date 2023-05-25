@@ -233,9 +233,8 @@ const Caos = {
 						} else if ((newMetaroom && family === 3 && genus === 5 && sprite === 'blnk')
 							|| (newMetaroom && family === 1 && genus === 1 && sprite === 'blnk')) {
 							target = 'emitter'
-							tempEmitter = {
-								classifier: species
-							}
+							newMetaroom.emitterClassifier = species
+							tempEmitter = {}
 						} else if (newMetaroom && family === 1 && genus === 1) {
 							target = 'overlay'
 							tempOverlay = {
@@ -266,7 +265,6 @@ const Caos = {
 					} else if (newMetaroom && target === 'emitter') {
 						const room = Metaroom.roomAt(newMetaroom, mvtoX - newMetaroom.x, mvtoY - newMetaroom.y)
 						if (room) {
-							room.emitterClassifier = tempEmitter.classifier
 							tempEmitter.room = room
 						}
 					} else if (newMetaroom && target === 'overlay') {
@@ -410,10 +408,10 @@ const Caos = {
 					firstEmitter = false
 				}
 				let roomCenter = Room.getCenter(r)
-				lines.push(`new: simp 1 1 ${r.emitterClassifier} "blnk" 2 0 0`)
-				lines.push(`  attr 18`)
-				lines.push(`  mvto ${roomCenter.x + m.x} ${roomCenter.y + m.y}`)
 				r.smells.forEach(smell => {
+					lines.push(`new: simp 1 1 ${m.emitterClassifier} "blnk" 2 0 0`)
+					lines.push(`  attr 16`)
+					lines.push(`  mvto ${roomCenter.x + m.x} ${roomCenter.y + m.y}`)
 					lines.push(`  emit ${smell.ca} ${smell.amount}`)
 				})
 			}

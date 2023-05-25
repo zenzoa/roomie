@@ -10,8 +10,6 @@ class Room {
 
 		this.type = 0
 		this.music = ''
-
-		this.emitterClassifier = 1000
 		this.smells = []
 
 		this.hasCollision = false
@@ -67,8 +65,6 @@ class Room {
 			document.getElementById('remove-smell-' + i).removeEventListener('click', removeSmell)
 			document.getElementById('remove-smell-' + i).addEventListener('click', removeSmell)
 		})
-
-		document.getElementById('room-emitter-classifier').value = room.emitterClassifier
 	}
 
 	static updateMultiSidebar(rooms) {
@@ -100,7 +96,6 @@ class Room {
 		let newRoom = new Room(room)
 		newRoom.type = room.type
 		newRoom.music = room.music
-		newRoom.emitterClassifier = room.emitterClassifier
 		newRoom.smells = room.smells.slice()
 		return newRoom
 	}

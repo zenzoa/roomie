@@ -99,16 +99,3 @@ function changeSmellAmount(event) {
 		}
 	}
 }
-
-function changeEmitterClassifier() {
-	if (UI.selectedRooms.length === 1) {
-		const room = UI.selectedRooms[0]
-		const input = document.getElementById('room-emitter-classifier')
-		const classifier = parseInt(input.value)
-		if (!isNaN(classifier) && classifier >= 0) {
-			saveState()
-			room.emitterClassifier = classifier
-		}
-		UI.updateSidebar()
-	}
-}

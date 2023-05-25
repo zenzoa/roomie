@@ -16,6 +16,8 @@ class Metaroom {
 		this.hasFavicon = false
 		this.favicon = new Favicon()
 
+		this.emitterClassifier = 1000
+
 		this.rooms = []
 		this.doors = []
 		this.links = []
@@ -25,11 +27,13 @@ class Metaroom {
 	static updateSidebar(metaroom) {
 		document.getElementById('metaroom-background-value').innerText = metaroom.background || '—'
 		document.getElementById('metaroom-music-value').innerText = metaroom.music || '—'
+		document.getElementById('metaroom-emitter-classifier').value = metaroom.emitterClassifier
 
 		document.getElementById('metaroom-x').value = metaroom.x
 		document.getElementById('metaroom-y').value = metaroom.y
 		document.getElementById('metaroom-w').value = metaroom.w
 		document.getElementById('metaroom-h').value = metaroom.h
+
 
 		Favicon.updateSidebar(metaroom.favicon)
 	}
@@ -236,4 +240,14 @@ function changeMetaroomH() {
 	}
 	UI.updateSidebar()
 	Room.checkCollisions()
+}
+
+function changeEmitterClassifier() {
+	const input = document.getElementById('metaroom-emitter-classifier')
+	const classifier = parseInt(input.value)
+	if (!isNaN(classifier) && classifier >= 0) {
+		saveState()
+		metaroom.emitterClassifier = classifier
+	}
+	UI.updateSidebar()
 }

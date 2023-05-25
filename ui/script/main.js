@@ -97,7 +97,7 @@ function setup() {
 
 	// smell event listeners
 	document.getElementById('add-smell').addEventListener('click', addSmell)
-	document.getElementById('room-emitter-classifier').addEventListener('change', changeEmitterClassifier)
+	document.getElementById('metaroom-emitter-classifier').addEventListener('change', changeEmitterClassifier)
 
 	// door event listeners
 	document.getElementById('door-permeability').addEventListener('change', changeDoorPermeability)
