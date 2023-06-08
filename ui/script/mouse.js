@@ -219,6 +219,10 @@ function mouseMoved(event) {
 }
 
 function mouseReleased(event) {
+	if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+		return
+	}
+
 	isMetaKeyDown = false
 
 	if (!UI.isPanning && !UI.isDrawingOverlay) {
