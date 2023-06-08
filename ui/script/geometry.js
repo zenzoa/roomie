@@ -35,7 +35,7 @@ const Geometry = {
 		const d1 = Math.sqrt((px - x1) ** 2 + (py - y1) ** 2)
 		const d2 = Math.sqrt((px - x2) ** 2 + (py - y2) ** 2)
 		const lineLength = Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-		const buffer = 0.1
+		const buffer = 0.01
 		return (d1 + d2 >= lineLength - buffer) && (d1 + d2 <= lineLength + buffer)
 	},
 
