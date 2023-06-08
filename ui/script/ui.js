@@ -293,12 +293,7 @@ const UI = {
 				(l.room1Id === room1Id && l.room2Id === room2Id) ||
 				(l.room1Id === room2Id && l.room2Id === room1Id)
 			)
-			let door = metaroom.doors.find(d =>
-				((d.room1Id === room1Id && d.room2Id === room2Id) ||
-				(d.room1Id === room2Id && d.room2Id === room1Id)) &&
-				d.active
-			)
-			if (!existingLink && !door) {
+			if (!existingLink) {
 				saveState()
 				metaroom.links.push(new Link({ room1Id, room2Id }))
 				this.selectedLink = metaroom.links[metaroom.links.length - 1]

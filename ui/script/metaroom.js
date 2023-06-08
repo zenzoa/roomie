@@ -115,10 +115,6 @@ class Metaroom {
 						metaroom.doors.push(door)
 					}
 					door.overlap = overlap
-					metaroom.links = metaroom.links.filter(l =>
-						!((l.room1Id === room1Id && l.room2Id === room2Id) ||
-						(l.room1Id === room2Id && l.room2Id === room1Id))
-					)
 				} else if (door) {
 					door.active = false
 					door.overlap = null
