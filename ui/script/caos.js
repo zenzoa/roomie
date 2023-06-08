@@ -260,16 +260,16 @@ const Caos = {
 					const mvtoX = decodeNextToken()
 					const mvtoY = decodeNextToken()
 					if (newMetaroom && target === 'favicon') {
-						newMetaroom.favicon.x = mvtoX - newMetaroom.x
-						newMetaroom.favicon.y = mvtoY - newMetaroom.y
+						newMetaroom.favicon.x = Math.floor(mvtoX - newMetaroom.x)
+						newMetaroom.favicon.y = Math.floor(mvtoY - newMetaroom.y)
 					} else if (newMetaroom && target === 'emitter') {
 						const room = Metaroom.roomAt(newMetaroom, mvtoX - newMetaroom.x, mvtoY - newMetaroom.y)
 						if (room) {
 							tempEmitter.room = room
 						}
 					} else if (newMetaroom && target === 'overlay') {
-						tempOverlay.x = mvtoX - newMetaroom.x
-						tempOverlay.y = mvtoY - newMetaroom.y
+						tempOverlay.x = Math.floor(mvtoX - newMetaroom.x)
+						tempOverlay.y = Math.floor(mvtoY - newMetaroom.y)
 						newMetaroom.overlays.push(new Overlay(tempOverlay))
 					} else {
 						ignoredLines.push(`mvto ${mvtoX} ${mvtoY}`)

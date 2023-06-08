@@ -100,8 +100,8 @@ class Favicon {
 	}
 
 	static move(x, y) {
-		metaroom.favicon.x = x - 24
-		metaroom.favicon.y = y - 23
+		metaroom.favicon.x = Math.floor(x - 24)
+		metaroom.favicon.y = Math.floor(y - 23)
 	}
 
 }
