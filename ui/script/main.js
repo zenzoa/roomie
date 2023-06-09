@@ -66,6 +66,7 @@ function setup() {
 	document.getElementById('metaroom-background-remove').addEventListener('click', removeMetaroomBackground)
 	document.getElementById('metaroom-music').addEventListener('click', changeMetaroomMusic)
 	document.getElementById('metaroom-music-remove').addEventListener('click', removeMetaroomMusic)
+	document.getElementById('metaroom-removescript').addEventListener('change', changeMetaroomRemoveScript)
 	document.getElementById('metaroom-x').addEventListener('change', changeMetaroomX)
 	document.getElementById('metaroom-y').addEventListener('change', changeMetaroomY)
 	document.getElementById('metaroom-w').addEventListener('change', changeMetaroomW)

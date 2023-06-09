@@ -96,6 +96,11 @@ const Caos = {
 					if (token.value === '***ROOMIE_START***') {
 						inRoomieCode = true
 						reachedRoomieCode = true
+					} else if (token.value === '***ROOMIE_REMOVE_SCRIPT***') {
+						if (newMetaroom) {
+							newMetaroom.hasRemoveScript = true
+						}
+						tokens = []
 					} else {
 						ignoreLine(token, token.value)
 					}
@@ -453,6 +458,64 @@ const Caos = {
 		if (m.ignoredLines && m.ignoredLines.length > 0) {
 			lines.push('')
 			lines = lines.concat(m.ignoredLines)
+		}
+
+		// add remove script
+		if (m.hasRemoveScript) {
+			lines.push('')
+			lines = lines.concat(`***ROOMIE_REMOVE_SCRIPT***
+rscr
+
+*get metaroom id
+setv va00 gmap ${m.x + Math.floor(m.w / 2)} ${m.y + Math.floor(m.h / 2)}
+
+inst
+
+*delete all agents in the room
+enum 0 0 0
+	doif room targ ne -1
+		doif gmap posx posy eq va00
+		kill targ
+		endi
+	endi
+next
+
+*delete all links
+${m.links.map(l => {
+	const r1 = m.rooms[l.room1Id]
+	const r2 = m.rooms[l.room2Id]
+	if (r1 && r2) {
+		const r1c = Room.getCenter(r1)
+		const r2c = Room.getCenter(r2)
+		return `link grap ${m.x + r1c.x} ${m.y + r1c.y} grap ${m.x + r2c.x} ${m.y + r2c.y} 0`
+	} else {
+		return ''
+	}
+}).filter(s => s.length).join('\n')}
+
+*delete all the rooms
+${m.rooms.map(r => {
+	const rc = Room.getCenter(r)
+	return `delr grap ${m.x + rc.x} ${m.y + rc.y}`
+}).join('\n')}
+
+*delete the metaroom
+delm va00
+
+slow
+
+*delete favicon
+rtar 1 3 ${m.favicon.classifier}
+setv va00 ov50
+kill targ
+
+subv game "ds_favourites" 1
+enum 1 4 0
+	doif ov50 gt va00
+		subv ov50 1
+		tick 1
+	endi
+next`.split('\n'))
 		}
 
 		return lines.join('\r\n')

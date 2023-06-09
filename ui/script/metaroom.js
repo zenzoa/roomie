@@ -22,11 +22,14 @@ class Metaroom {
 		this.doors = []
 		this.links = []
 		this.overlays = []
+
+		this.hasRemoveScript = false
 	}
 
 	static updateSidebar(metaroom) {
 		document.getElementById('metaroom-background-value').innerText = metaroom.background || '—'
 		document.getElementById('metaroom-music-value').innerText = metaroom.music || '—'
+		document.getElementById('metaroom-removescript').value = metaroom.hasRemoveScript ? 'yes' : 'no'
 		document.getElementById('metaroom-emitter-classifier').value = metaroom.emitterClassifier
 
 		document.getElementById('metaroom-x').value = metaroom.x
@@ -197,6 +200,17 @@ function changeMetaroomMusic() {
 function removeMetaroomMusic() {
 	saveState()
 	metaroom.music = ''
+	UI.updateSidebar()
+}
+
+function changeMetaroomRemoveScript() {
+	const input = document.getElementById('metaroom-removescript')
+	saveState()
+	if (input.value === 'yes') {
+		metaroom.hasRemoveScript = true
+	} else {
+		metaroom.hasRemoveScript = false
+	}
 	UI.updateSidebar()
 }
 
