@@ -1,403 +1,131 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Roomie</title>
 		<link rel="stylesheet" href="./style/style.css">
+
+		<script src="./script/main.js"></script>
+		<script src="./script/toolbar.js"></script>
+		<script src="./script/input.js"></script>
+		<script src="./script/canvas.js"></script>
+		<script src="./script/selection.js"></script>
+		<script src="./script/movement.js"></script>
+		<script src="./script/constraints.js"></script>
+		<script src="./script/theme.js"></script>
+		<script src="./script/about.js"></script>
+
+		<script src="./script/sidebar.js"></script>
+		<script src="./script/sidebars/cornersidebar.js"></script>
+		<script src="./script/sidebars/doorsidebar.js"></script>
+		<script src="./script/sidebars/faviconsidebar.js"></script>
+		<script src="./script/sidebars/linksidebar.js"></script>
+		<script src="./script/sidebars/metaroomsidebar.js"></script>
+		<script src="./script/sidebars/overlaysidebar.js"></script>
+		<script src="./script/sidebars/roomsidebar.js"></script>
+		<script src="./script/sidebars/sidesidebar.js"></script>
 	</head>
+
 	<body>
 
-		<div id="menubar">
-			<button id="new-file-button" title="New (ctrl+n)">
+		<!-- TOOLBAR -->
+		<div id="toolbar" class="hidden">
+			<button id="new-file-button" title="New">
 				<img src="library/mono-icons/svg/document-empty.svg" alt="New">
 			</button>
-			<button id="open-file-button" title="Open (ctrl+o)">
+			<button id="open-file-button" title="Open">
 				<img src="library/mono-icons/svg/folder.svg" alt="Open">
 			</button>
-			<button id="save-file-button" title="Save (ctrl+s)">
+			<button id="save-file-button" title="Save">
 				<img src="library/mono-icons/svg/save.svg" alt="Save">
 			</button>
-			<button id="save-as-file-button" title="Save As (ctrl+shift+s)">
+			<button id="save-as-file-button" title="Save As">
 				<img src="library/mono-icons/svg/document-add.svg" alt="Save As">
 			</button>
 
 			<span></span>
 
-			<button id="undo-button" title="Undo (ctrl+z)">
+			<button id="undo-button" title="Undo">
 				<img src="library/mono-icons/svg/undo.svg" alt="Undo">
 			</button>
-			<button id="redo-button" title="Redo (ctrl+shift+z)">
+			<button id="redo-button" title="Redo">
 				<img src="library/mono-icons/svg/refresh.svg" alt="Redo">
 			</button>
 
 			<span></span>
 
-			<button id="zoom-in-button" title="Zoom In (=)">
-				<img src="library/mono-icons/svg/zoom-in.svg" alt="Zoom In">
+			<button id="add-room-button" title="Add Room">
+				<img src="library/mono-icons/svg/add.svg" alt="Add Room">
 			</button>
-			<button id="zoom-out-button" title="Zoom Out (-)">
-				<img src="library/mono-icons/svg/zoom-out.svg" alt="Zoom Out">
+			<button id="add-link-button" title="Add Link">
+				<img src="library/mono-icons/svg/link-alt.svg" alt="Add Link">
 			</button>
-			<button id="zoom-reset-button" title="Reset Zoom (0)">
-				<img src="library/mono-icons/svg/expand.svg" alt="Reset Zoom">
+			<button id="add-overlay-button" title="Add Overlay">
+				<img src="library/mono-icons/svg/image.svg" alt="Add Overlay">
 			</button>
-
-			<span></span>
-
-			<button id="new-room-button" title="New Room (r)">
-				<img src="library/mono-icons/svg/add.svg" alt="New Room">
+			<button id="add-favicon-button" title="Add Favicon">
+				<img src="library/mono-icons/svg/circle.svg" alt="Add Favicon">
 			</button>
-			<button id="new-link-button" title="New Link (l)">
-				<img src="library/mono-icons/svg/link-alt.svg" alt="New Link">
-			</button>
-			<button id="new-overlay-button" title="New Overlay (b)">
-				<img src="library/mono-icons/svg/image.svg" alt="New Overlay">
-			</button>
-			<button id="delete-selection-button" title="Delete (del)">
+			<button id="delete-button" title="Delete">
 				<img src="library/mono-icons/svg/delete.svg" alt="Delete">
 			</button>
-
-			<span></span>
-
-			<button id="guide-button" class="on" title="Toggle Guide (ctrl+g)">
-				<img src="library/mono-icons/svg/circle-help.svg" alt="Toggle Guide">
-			</button>
-			<button id="mouse-pos-button" class="on" title="Toggle Mouse Position (ctrl+p)">
-				<img src="library/mono-icons/svg/arrow-left-up.svg" alt="Toggle Mouse Position">
-			</button>
-
 		</div>
 
-		<div class="sidebar" id="metaroom-props">
-			<div class="resize-handle"></div>
-			<h2><span>Metaroom Properties</span></h2>
-			<div class="row">
-				<span>Background</span>
-				<button id="metaroom-background" class="file-button">
-					<span id="metaroom-background-value">&mdash;</span>
-					<img src="library/mono-icons/svg/folder.svg">
-				</button>
-				<button id="metaroom-background-remove" class="icon-button simple">
-					<img src="library/mono-icons/svg/close.svg">
-				</button>
+		<!-- SIDEBAR -->
+		<div id="sidebar" class="hidden">
+			<div id="sidebar-handle"></div>
+			<div id="sidebar-content"></div>
+		</div>
+
+		<!-- CANVAS -->
+		<main id="main">
+			<div id="metaroom-container">
+				<div id="metaroom-bg" class="metaroom-layer"></div>
+				<canvas id="canvas-rooms" class="metaroom-layer"></canvas>
+				<canvas id="canvas-overlays" class="metaroom-layer"></canvas>
+				<canvas id="canvas-selection" class="metaroom-layer"></canvas>
 			</div>
-			<div class="row">
-				<span>Music</span>
-				<button id="metaroom-music" class="file-button">
-					<span id="metaroom-music-value">&mdash;</span>
-					<img src="library/mono-icons/svg/folder.svg">
-				</button>
-				<button id="metaroom-music-remove" class="icon-button simple">
-					<img src="library/mono-icons/svg/close.svg">
-				</button>
-			</div>
-			<div class="row">
-				<span>Remove Script</span>
-				<select id="metaroom-removescript">
-					<option value="no">Don't Include</option>
-					<option value="yes">Include</option>
-				</select>
-				<div class="dropdown-arrow">
-					<img src="library/mono-icons/svg/chevron-down.svg">
+		</main>
+
+		<!-- POSITION -->
+		<div id="position" class="hidden">
+			<span id="position-x"></span>, <span id="position-y"></span>
+		</div>
+
+		<!-- WAITING SPINNER -->
+		<div id="spinner" class="spinner">
+			<img src="library/egg_spinner.gif">
+		</div>
+
+		<!-- ABOUT -->
+		<div id="about-dialog" class="dialog">
+			<div class="dialog-content">
+				<div class="dialog-header">
+					<span class="dialog-title">
+						About Roomie
+					</span>
+					<button id="about-close-button" class="dialog-close-button" title="Close Dialog">
+						<img src="library/mono-icons/svg/close.svg" alt="Close Dialog">
+					</button>
+				</div>
+				<div class="dialog-body about-dialog">
+					<img src="icon.png">
+					<p><strong>Theist <span id="about-version">x.x.x<span></strong></p>
+					<p>
+						A metaroom editor for the Creatures game series
+						<br>
+						<em>https://github.com/zenzoa/roomie</em>
+					</p>
+					<div class="input-row button-row">
+						<button id="about-ok-button" class="text-button primary">
+							Ok
+						</button>
+					</div>
 				</div>
 			</div>
-			<hr>
-			<label>
-				<span>X</span>
-				<input id="metaroom-x" type="number">
-			</label>
-			<label>
-				<span>Y</span>
-				<input id="metaroom-y" type="number">
-			</label>
-			<label>
-				<span>Width</span>
-				<input id="metaroom-w" type="number">
-			</label>
-			<label>
-				<span>Height</span>
-				<input id="metaroom-h" type="number">
-			</label>
-			<hr>
-			<button id="favicon-add" class="float-right icon-button">
-				<img src="library/mono-icons/svg/add.svg" alt="Add Favorite Place Icon" title="Add Favorite Place Icon">
-			</button>
-			<button id="favicon-remove" class="float-right icon-button hidden">
-				<img src="library/mono-icons/svg/delete.svg" alt="Remove Favorite Place Icon" title="Remove Favorite Place Icon">
-			</button>
-			<h3>Favorite Place Icon</h3>
-			<label id="favicon-x-label" class="hidden">
-				<span>X</span>
-				<input id="favicon-x" type="number">
-			</label>
-			<label id="favicon-y-label" class="hidden">
-				<span>Y</span>
-				<input id="favicon-y" type="number">
-			</label>
-			<label id="favicon-sprite-label" class="hidden">
-				<span>Sprite</span>
-				<button id="favicon-sprite" class="file-button">
-					<span id="favicon-sprite-value">&mdash;</span>
-					<img src="library/mono-icons/svg/folder.svg">
-				</button>
-			</label>
-			<label id="favicon-classifier-label" class="hidden">
-				<span>Classifier</span>
-				<input id="favicon-classifier" type="number">
-			</label>
-			<hr>
-			<h3>Smell Emitters</h3>
-			<label>
-				<span>Classifier</span>
-				<input id="metaroom-emitter-classifier" type="number">
-			</label>
 		</div>
-
-		<div class="sidebar hidden" id="room-props">
-			<div class="resize-handle"></div>
-			<h2><span>Room Properties</span></h2>
-			<label>
-				<span>Type</span>
-				<select id="room-type">
-					<option value="0">0 - Atmosphere</option>
-					<option value="1">1 - Wooden Walkway</option>
-					<option value="2">2 - Concrete Walkway</option>
-					<option value="3">3 - Indoor Concrete</option>
-					<option value="4">4 - Outdoor Concrete</option>
-					<option value="5">5 - Normal Soil</option>
-					<option value="6">6 - Boggy Soil</option>
-					<option value="7">7 - Drained Soil</option>
-					<option value="8">8 - Fresh Water</option>
-					<option value="9">9 - Salt Water</option>
-					<option value="10">10 - Ettin Home</option>
-					<option value="11">11 - [unknown]</option>
-					<option value="12">12 - [unknown]</option>
-					<option value="13">13 - [unknown]</option>
-					<option value="14">14 - [unknown]</option>
-					<option value="15">15 - [unknown]</option>
-					<option value="16">16 - [unknown]</option>
-					<option value="17">17 - [unknown]</option>
-					<option value="18">18 - [unknown]</option>
-					<option value="19">19 - [unknown]</option>
-					<option value="20">20 - [unknown]</option>
-				</select>
-				<div class="dropdown-arrow">
-					<img src="library/mono-icons/svg/chevron-down.svg">
-				</div>
-			</label>
-			<div class="row">
-				<span>Music</span>
-				<button id="room-music" class="file-button">
-					<span id="room-music-value">&mdash;</span>
-					<img src="library/mono-icons/svg/folder.svg">
-				</button>
-				<button id="room-music-remove" class="icon-button simple">
-					<img src="library/mono-icons/svg/close.svg">
-				</button>
-			</div>
-			<hr>
-			<label>
-				<span>X Left</span>
-				<input id="room-x-left" type="number">
-			</label>
-			<label>
-				<span>X Right</span>
-				<input id="room-x-right" type="number">
-			</label>
-			<br>
-			<label>
-				<span>Y Top Left</span>
-				<input id="room-y-top-left" type="number">
-			</label>
-			<label>
-				<span>Y Top Right</span>
-				<input id="room-y-top-right" type="number">
-			</label>
-			<label>
-				<span>Top Slope</span>
-				<input id="room-top-slope" disabled>
-			</label>
-			<br>
-			<label>
-				<span>Y Bottom Left</span>
-				<input id="room-y-bottom-left" type="number">
-			</label>
-			<label>
-				<span>Y Bottom Right</span>
-				<input id="room-y-bottom-right" type="number">
-			</label>
-			<label>
-				<span>Bottom Slope</span>
-				<input id="room-bottom-slope" disabled>
-			</label>
-			<br>
-			<label>
-				<span>Width</span>
-				<input id="room-width" disabled>
-			</label>
-			<label>
-				<span>Height</span>
-				<input id="room-height" disabled>
-			</label>
-			<div id="room-too-small">
-				<img src="library/mono-icons/svg/warning.svg">
-				<span>room may be too small for creatures</span>
-			</div>
-			<hr>
-			<button id="add-smell" class="float-right icon-button">
-				<img src="library/mono-icons/svg/add.svg" alt="Add Smell" title="Add Smell">
-			</button>
-			<h3>Smells</h3>
-			<div id="smell-list"></div>
-		</div>
-
-		<div class="sidebar hidden" id="multi-room-props">
-			<div class="resize-handle"></div>
-			<h2><span>Room Properties</span></h2>
-			<label>
-				<span>Type</span>
-				<select id="multi-room-type">
-					<option value="-1">[multiple]</option>
-					<option value="0">0 - Atmosphere</option>
-					<option value="1">1 - Wooden Walkway</option>
-					<option value="2">2 - Concrete Walkway</option>
-					<option value="3">3 - Indoor Concrete</option>
-					<option value="4">4 - Outdoor Concrete</option>
-					<option value="5">5 - Normal Soil</option>
-					<option value="6">6 - Boggy Soil</option>
-					<option value="7">7 - Drained Soil</option>
-					<option value="8">8 - Fresh Water</option>
-					<option value="9">9 - Salt Water</option>
-					<option value="10">10 - Ettin Home</option>
-					<option value="11">11 - [unknown]</option>
-					<option value="12">12 - [unknown]</option>
-					<option value="13">13 - [unknown]</option>
-					<option value="14">14 - [unknown]</option>
-					<option value="15">15 - [unknown]</option>
-					<option value="16">16 - [unknown]</option>
-					<option value="17">17 - [unknown]</option>
-					<option value="18">18 - [unknown]</option>
-					<option value="19">19 - [unknown]</option>
-					<option value="20">20 - [unknown]</option>
-				</select>
-				<div class="dropdown-arrow">
-					<img src="library/mono-icons/svg/chevron-down.svg">
-				</div>
-			</label>
-			<div class="row">
-				<span>Music</span>
-				<button id="multi-room-music" class="file-button">
-					<span id="multi-room-music-value">&mdash;</span>
-					<img src="library/mono-icons/svg/folder.svg">
-				</button>
-				<button id="multi-room-music-remove" class="icon-button simple">
-					<img src="library/mono-icons/svg/close.svg">
-				</button>
-			</div>
-		</div>
-
-		<div class="sidebar hidden" id="door-props">
-			<div class="resize-handle"></div>
-			<h2><span>Door Properties</span></h2>
-			<label>
-				<span>Permeability</span>
-				<input id="door-permeability" type="number">
-			</label>
-		</div>
-
-		<div class="sidebar hidden" id="link-props">
-			<div class="resize-handle"></div>
-			<h2><span>Link Properties</span></h2>
-		</div>
-
-		<div class="sidebar" id="overlay-props">
-			<div class="resize-handle"></div>
-			<h2><span>Overlay Properties</span></h2>
-			<label id="overlay-sprite-label">
-				<span>Sprite</span>
-				<button id="overlay-sprite" class="file-button">
-					<span id="overlay-sprite-value">&mdash;</span>
-					<img src="library/mono-icons/svg/folder.svg">
-				</button>
-			</label>
-			<label id="overlay-frame-label">
-				<span>Frame</span>
-				<input id="overlay-frame" type="number">
-			</label>
-			<hr>
-			<label id="overlay-x-label">
-				<span>X</span>
-				<input id="overlay-x" type="number">
-			</label>
-			<label id="overlay-y-label">
-				<span>Y</span>
-				<input id="overlay-y" type="number">
-			</label>
-			<label id="overlay-plane-label">
-				<span>Plane</span>
-				<input id="overlay-plane" type="number">
-			</label>
-			<hr>
-			<label id="overlay-classifier-label">
-				<span>Classifier</span>
-				<input id="overlay-classifier" type="number">
-			</label>
-		</div>
-
-		<div class="hidden" id="overlay-mode-indicator">
-			<strong>Overlay Mode</strong><br><small>ctrl+b to exit</small>
-		</div>
-
-		<div class="hidden" id="mouse-pos">
-			<span id="mouse-pos-x"></span>,
-			<span id="mouse-pos-y"></span>
-		</div>
-
-		<div class="hidden" id="shortcut-guide">
-			<span class="shortcut-header">create:</span>
-			<span>r - room</span>
-			<span>e - extrude</span>
-			<span>d - duplicate</span>
-			<span>s - split</span>
-			<span>l - link</span>
-			<span>b - overlay</span>
-			<br><br>
-			<span class="shortcut-header">modify:</span>
-			<span>shift - ortho move</span>
-			<span>ctrl - no snap</span>
-			<span>del/bksp - delete</span>
-			<br><br>
-			<span class="shortcut-header">view:</span>
-			<span>ctrl+scroll - zoom</span>
-			<span>space - pan</span>
-			<span>ctrl+b - overlay mode</span>
-			<br>
-			<span class="shortcut-header"></span>
-			<span>ctrl+t - room type colors</span>
-			<span>ctrl+[ ] - bg opacity</span>
-		</div>
-
-		<main><!-- p5 sketch goes here --></main>
-
-		<script src="./library/p5.min.js"></script>
-		<script src="./library/polybool.min.js"></script>
-
-		<script src="./script/main.js"></script>
-		<script src="./script/keyboard.js"></script>
-		<script src="./script/mouse.js"></script>
-		<script src="./script/commands.js"></script>
-		<script src="./script/ui.js"></script>
-		<script src="./script/metaroom.js"></script>
-		<script src="./script/favicon.js"></script>
-		<script src="./script/room.js"></script>
-		<script src="./script/door.js"></script>
-		<script src="./script/smell.js"></script>
-		<script src="./script/link.js"></script>
-		<script src="./script/overlay.js"></script>
-		<script src="./script/geometry.js"></script>
-		<script src="./script/caos.js"></script>
-		<script src="./script/theme.js"></script>
-
 	</body>
 </html>

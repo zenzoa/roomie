@@ -1,308 +1,131 @@
 const Tauri = window.__TAURI__
+const tauri_listen = Tauri.event.listen
+const tauri_invoke = Tauri.core.invoke
+const convertFileSrc = Tauri.core.convertFileSrc
 
 let metaroom = null
-let undoStack = []
-let redoStack = []
-let isModified = false
 
-let bgImage = null
-let faviconImage = null
-let overlayImages = {}
+let positionEl = null
+let xPositionEl = null
+let yPositionEl = null
 
-const WORLD_WIDTH = 200000
-const WORLD_HEIGHT = 200000
+window.addEventListener('load', () => {
+	document.body.addEventListener('contextmenu', event => {
+		event.preventDefault()
+		return false
+	}, false)
 
-const MIN_GAP = 10
-const SNAP_DIST = 8
-const SELECT_DIST = 8
+	setupCanvas()
+	setupInput()
 
-let mouseXEl = null
-let mouseYEl = null
+	Toolbar.setup()
+	Sidebar.setup()
 
-const NUDGE_REPEAT_DELAY = 10
-let nudgeRepeatCounter = 0
+	positionEl = document.getElementById('position')
+	xPositionEl = document.getElementById('position-x')
+	yPositionEl = document.getElementById('position-y')
 
-let config = {
-	guide_enabled: true,
-	mouse_pos_enabled: true,
-	bg_opacity: 128,
-	theme: 'dark'
-}
+	tauri_listen('update_metaroom', (event) => {
+		if (event.payload) {
+			metaroom = event.payload[0]
 
-function setup() {
-	createCanvas(window.innerWidth, window.innerHeight)
-	UI.disableContextMenu()
-	UI.setupResizeHandles()
-	strokeJoin(ROUND)
+			if (event.payload[1]) {
+				metaroomBG.style.backgroundImage = null
+				faviconImage = null
+				overlayImages = []
+				resetSelection()
 
-	metaroom = new Metaroom({})
-	UI.reset()
-	loadConfig()
-	UI.updateGuide()
-	UI.updateMousePos()
+			} else if (addedLink) {
+				selectionType = 'Links'
+				newSelection = [metaroom.links.length - 1]
+				finishSelectingObject()
 
-	// fix mouse wheel on macos
-	document.getElementById('defaultCanvas0').addEventListener('wheel', mouseScroll)
+			} else if (addedOverlay) {
+				selectionType = 'Overlays'
+				newSelection = [metaroom.overlays.length - 1]
+				finishSelectingObject()
 
-	// titlebar event listeners
-	document.getElementById('new-file-button').addEventListener('click', newFile)
-	document.getElementById('open-file-button').addEventListener('click', openFile)
-	document.getElementById('save-file-button').addEventListener('click', saveFile)
-	document.getElementById('save-as-file-button').addEventListener('click', saveAsFile)
-	document.getElementById('undo-button').addEventListener('click', undo)
-	document.getElementById('redo-button').addEventListener('click', redo)
-	document.getElementById('zoom-in-button').addEventListener('click', zoomIn)
-	document.getElementById('zoom-out-button').addEventListener('click', zoomOut)
-	document.getElementById('zoom-reset-button').addEventListener('click', zoomReset)
-	document.getElementById('new-room-button').addEventListener('click', newRoom)
-	document.getElementById('new-link-button').addEventListener('click', newLink)
-	document.getElementById('new-overlay-button').addEventListener('click', newOverlay)
-	document.getElementById('delete-selection-button').addEventListener('click', deleteSelection)
-	document.getElementById('guide-button').addEventListener('click', toggleGuide)
-	document.getElementById('mouse-pos-button').addEventListener('click', toggleMousePos)
+			} else if (addedFavicon) {
+				selectionType = 'Favicon'
+				newSelection = [0]
+				finishSelectingObject()
+			}
 
-	// metaroom event listeners
-	document.getElementById('metaroom-background').addEventListener('click', changeMetaroomBackground)
-	document.getElementById('metaroom-background-remove').addEventListener('click', removeMetaroomBackground)
-	document.getElementById('metaroom-music').addEventListener('click', changeMetaroomMusic)
-	document.getElementById('metaroom-music-remove').addEventListener('click', removeMetaroomMusic)
-	document.getElementById('metaroom-removescript').addEventListener('change', changeMetaroomRemoveScript)
-	document.getElementById('metaroom-x').addEventListener('change', changeMetaroomX)
-	document.getElementById('metaroom-y').addEventListener('change', changeMetaroomY)
-	document.getElementById('metaroom-w').addEventListener('change', changeMetaroomW)
-	document.getElementById('metaroom-h').addEventListener('change', changeMetaroomH)
+			drawAll()
 
-	// favicon event listeners
-	document.getElementById('favicon-add').addEventListener('click', enableFavicon)
-	document.getElementById('favicon-remove').addEventListener('click', disableFavicon)
-	document.getElementById('favicon-x').addEventListener('change', changeFaviconX)
-	document.getElementById('favicon-y').addEventListener('change', changeFaviconY)
-	document.getElementById('favicon-sprite').addEventListener('click', changeFaviconSprite)
-	document.getElementById('favicon-classifier').addEventListener('change', changeFaviconClassifier)
-
-	// room event listeners
-	document.getElementById('room-type').addEventListener('change', changeRoomType)
-	document.getElementById('room-music').addEventListener('click', changeRoomMusic)
-	document.getElementById('room-music-remove').addEventListener('click', removeRoomMusic)
-	document.getElementById('room-x-left').addEventListener('change', changeRoomXL)
-	document.getElementById('room-x-right').addEventListener('change', changeRoomXR)
-	document.getElementById('room-y-top-left').addEventListener('change', changeRoomYTL)
-	document.getElementById('room-y-top-right').addEventListener('change', changeRoomYTR)
-	document.getElementById('room-y-bottom-left').addEventListener('change', changeRoomYBL)
-	document.getElementById('room-y-bottom-right').addEventListener('change', changeRoomYBR)
-
-	// multi-room event listeners
-	document.getElementById('multi-room-type').addEventListener('change', changeRoomType)
-	document.getElementById('multi-room-music').addEventListener('click', changeRoomMusic)
-	document.getElementById('multi-room-music-remove').addEventListener('click', removeRoomMusic)
-
-	// smell event listeners
-	document.getElementById('add-smell').addEventListener('click', addSmell)
-	document.getElementById('metaroom-emitter-classifier').addEventListener('change', changeEmitterClassifier)
-
-	// door event listeners
-	document.getElementById('door-permeability').addEventListener('change', changeDoorPermeability)
-
-	// overlay event listeners
-	document.getElementById('overlay-x').addEventListener('change', changeOverlayX)
-	document.getElementById('overlay-y').addEventListener('change', changeOverlayY)
-	document.getElementById('overlay-sprite').addEventListener('click', changeOverlaySprite)
-	document.getElementById('overlay-frame').addEventListener('change', changeOverlayFrame)
-	document.getElementById('overlay-classifier').addEventListener('change', changeOverlayClassifier)
-	document.getElementById('overlay-plane').addEventListener('change', changeOverlayPlane)
-
-	// mouse pos elements
-	mouseXEl = document.getElementById('mouse-pos-x')
-	mouseYEl = document.getElementById('mouse-pos-y')
-
-	// close requested listener
-	Tauri.window.appWindow.listen("tauri://close-requested", quit)
-}
-
-function draw() {
-	clear()
-	scale(UI.zoomLevel)
-	translate(UI.xOffset, UI.yOffset)
-
-	if (bgImage && metaroom.background) {
-		push()
-		scale(2)
-		tint(255, config.bg_opacity)
-		image(bgImage, 0, 0)
-		noTint()
-		pop()
-	}
-
-	stroke(255)
-	strokeWeight(1 / UI.zoomLevel)
-	noFill()
-	rect(0, 0, metaroom.w, metaroom.h)
-
-	if (!UI.overlayMode) {
-		const unselectedRooms = metaroom.rooms.filter(r =>
-			!UI.selectedRooms.includes(r) && !r.hasCollision)
-
-		const collidingRooms = metaroom.rooms.filter(r =>
-			!UI.selectedRooms.includes(r) && r.hasCollision)
-
-		for (const room of unselectedRooms) {
-			Room.draw(room)
+			const focusedID = document.activeElement ? document.activeElement.id : null
+			Sidebar.setTo(selectionType)
+			const focusedEl = document.getElementById(focusedID)
+			if (focusedEl) focusedEl.focus()
 		}
+	})
 
-		if (UI.isDrawingRoom) {
-			UI.drawNewRoom()
-		} else if (UI.isDrawingLink) {
-			UI.drawNewLink()
-		} else if (UI.isExtrudingRoom) {
-			UI.drawExtrudedRoom()
-		}
+	tauri_listen('start_adding_room', startAddingRoom)
+	tauri_listen('start_adding_link', startAddingLink)
+	tauri_listen('start_adding_favicon', startAddingFavicon)
+	tauri_listen('start_adding_overlay', startAddingOverlay)
 
-		stroke(200, 50, 50)
-		for (const room of collidingRooms) {
-			Room.draw(room)
-		}
+	tauri_listen('redraw', drawAll)
 
-		stroke(255)
-		strokeWeight(2 / UI.zoomLevel)
-		for (const room of UI.selectedRooms) {
-			Room.draw(room, true)
-		}
+	tauri_listen('update_bg_image', updateBGImage)
+	tauri_listen('update_favicon_image', updateFaviconImage)
+	tauri_listen('update_overlay_image', updateOverlayImage)
 
-		for (const door of metaroom.doors) {
-			Door.draw(door)
-		}
+	tauri_listen('select_all', selectAllRooms)
+	tauri_listen('deselect', clearSelection)
 
-		fill(255)
-		noStroke()
-		for (const room of UI.selectedRooms) {
-			Room.drawCorners(room)
-		}
+	tauri_listen('reset_zoom', () => setScale(1))
+	tauri_listen('zoom_in', () => setScale(scale * 1.1))
+	tauri_listen('zoom_out', () => setScale(scale * 0.9))
+	tauri_listen('zoom_fill', () => scaleToFill())
 
-		fill(255)
-		stroke(255)
-		strokeWeight(1 / UI.zoomLevel)
-		for (const link of metaroom.links) {
-			Link.draw(link)
-		}
+	tauri_listen('set_theme', e => Theme.set(e.payload))
+	tauri_listen('set_toolbar_visibility', e => Toolbar.setVisibility(e.payload))
+	tauri_listen('set_coords_visibility', e => setCoordsVisibility(e.payload))
+	tauri_listen('set_room_color_visibility', e => setRoomColorVisibility(e.payload, true))
 
-		noFill()
-		stroke(255)
-		strokeWeight(1 / UI.zoomLevel)
-		for (const room of metaroom.rooms) {
-			Room.drawSmells(room)
-		}
+	tauri_listen('set_bg_visibility', e => setBGVisibility(e.payload))
+	tauri_listen('set_room_visibility', e => setRoomVisibility(e.payload))
+	tauri_listen('set_overlay_visibility', e => setOverlayVisibility(e.payload))
 
-		if (UI.isSplittingRoom) {
-			UI.drawSplitRoom()
-		}
-	}
+	tauri_listen('set_bg_opacity', e => setBGOpacity(e.payload))
+	tauri_listen('set_overlay_opacity', e => setOverlayOpacity(e.payload))
 
-	noFill()
-	if (UI.overlayMode) {
-		noStroke()
+	tauri_listen('show_spinner', showSpinner)
+	tauri_listen('hide_spinner', hideSpinner)
+
+	tauri_listen('error', showErrorDialog)
+
+	AboutDialog.setup()
+
+	tauri_invoke('load_config_file').then(result => {
+		Theme.set(result.theme.toLowerCase())
+		Toolbar.setVisibility(result.show_toolbar)
+		setCoordsVisibility(result.show_coords)
+		setRoomColorVisibility(result.show_room_colors, false)
+		setBGOpacity(result.bg_opacity)
+		setOverlayOpacity(result.overlay_opacity)
+	})
+})
+
+const setCoordsVisibility = (value) => {
+	if (value) {
+		positionEl.classList.remove('always-hidden')
 	} else {
-		stroke(255)
-		strokeWeight(1 / UI.zoomLevel)
-	}
-	if (metaroom.hasFavicon) {
-		Favicon.draw()
-	}
-
-	stroke(255)
-	for (const overlay of metaroom.overlays) {
-		Overlay.draw(overlay)
-	}
-
-	if (UI.isSelecting) {
-		UI.drawSelection()
-	}
-
-	if (document.activeElement && document.activeElement.tagName !== 'INPUT' &&
-		(keyIsDown(LEFT_ARROW) || keyIsDown(RIGHT_ARROW) ||
-		keyIsDown(UP_ARROW) || keyIsDown(DOWN_ARROW))) {
-			if (UI.selectedRooms.length > 0) {
-				if (nudgeRepeatCounter === 0) {
-					for (const room of UI.selectedRooms) {
-						Room.nudge(room)
-					}
-				}
-			} else if (UI.selectedOverlays.length > 0) {
-				if (nudgeRepeatCounter === 0) {
-					for (const overlay of UI.selectedOverlays) {
-						Overlay.nudge(overlay)
-					}
-				}
-			} else if (UI.selectedFavicon) {
-				if (nudgeRepeatCounter === 0) {
-					Favicon.nudge()
-				}
-			} else {
-				UI.nudge()
-			}
-
-			if (nudgeRepeatCounter < NUDGE_REPEAT_DELAY) {
-				nudgeRepeatCounter += 1
-			} else {
-				nudgeRepeatCounter = 0
-			}
+		positionEl.classList.add('always-hidden')
 	}
 }
 
-function windowResized() {
-	resizeCanvas(windowWidth, windowHeight);
+const showSpinner = (event) => {
+	const spinnerEl = document.getElementById('spinner')
+	spinnerEl.classList.add('on')
 }
 
-function loadConfig() {
-	Tauri.fs.readTextFile('roomie.conf', { dir: Tauri.fs.BaseDirectory.AppConfig })
-	.then((contents) => {
-		try {
-			const newConfig = JSON.parse(contents)
-			for (const key in newConfig) {
-				if (config[key] !== null) {
-					config[key] = newConfig[key]
-				}
-			}
-			if (config.theme) {
-				Theme.load(config.theme)
-			}
-		} catch (why) {
-			console.error(why)
-		}
-	})
-	.catch((_) => {
-		saveConfig()
-		Theme.saveDefaults()
-	})
+const hideSpinner = (event) => {
+	const spinnerEl = document.getElementById('spinner')
+	spinnerEl.classList.remove('on')
 }
 
-function saveConfig() {
-	const path = 'roomie.conf'
-	const dir = Tauri.fs.BaseDirectory.AppConfig
-	const contents = JSON.stringify(config)
-
-	Tauri.fs.exists(path, { dir })
-	.then((exists) => {
-		if (exists) {
-			Tauri.fs.writeTextFile({ path, contents }, { dir })
-			.then(() => {})
-			.catch((why) => console.error(why))
-
-		} else {
-			Tauri.fs.createDir('', { dir, recursive: true })
-			.then(() => {
-				Tauri.fs.writeTextFile({ path, contents }, { dir })
-				.then(() => {})
-				.catch((why) => console.error(why))
-			})
-			.catch((why) => console.error(why))
-		}
-	})
-}
-
-function snapDist() {
-	return SNAP_DIST / UI.zoomLevel
-}
-
-function selectDist() {
-	return SELECT_DIST / UI.zoomLevel
+const showErrorDialog = (event) => {
+	tauri_invoke('error_dialog', { why: event.payload })
 }
