@@ -218,7 +218,6 @@ pub fn set_toolbar_visibility(handle: &AppHandle, show_toolbar: bool, init: bool
 	}
 }
 
-#[tauri::command]
 pub fn toggle_toolbar_visibility(handle: AppHandle) {
 	let config_state: State<ConfigState> = handle.state();
 	let show_toolbar = !*config_state.show_toolbar.lock().unwrap();
@@ -241,7 +240,6 @@ pub fn set_coords_visibility(handle: &AppHandle, show_coords: bool, init: bool) 
 	}
 }
 
-#[tauri::command]
 pub fn toggle_coords_visibility(handle: AppHandle) {
 	let config_state: State<ConfigState> = handle.state();
 	let show_coords = !*config_state.show_coords.lock().unwrap();
@@ -319,7 +317,6 @@ pub fn set_room_colors_visibility(handle: &AppHandle, show_room_colors: bool, in
 	}
 }
 
-#[tauri::command]
 pub fn toggle_room_colors_visibility(handle: AppHandle) {
 	let config_state: State<ConfigState> = handle.state();
 	let show_room_colors = !*config_state.show_room_colors.lock().unwrap();
@@ -387,10 +384,11 @@ pub fn set_bg_visibility(handle: &AppHandle, show_bg: bool) {
 	handle.emit("set_bg_visibility", show_bg).unwrap_or_default();
 }
 
-pub fn toggle_bg_visibility(handle: &AppHandle) {
+#[tauri::command]
+pub fn toggle_bg_visibility(handle: AppHandle) {
 	let config_state: State<ConfigState> = handle.state();
 	let show_bg = !*config_state.show_bg.lock().unwrap();
-	set_bg_visibility(handle, show_bg)
+	set_bg_visibility(&handle, show_bg)
 }
 
 pub fn set_room_visibility(handle: &AppHandle, show_rooms: bool) {
@@ -406,10 +404,11 @@ pub fn set_room_visibility(handle: &AppHandle, show_rooms: bool) {
 	handle.emit("set_room_visibility", show_rooms).unwrap_or_default();
 }
 
-pub fn toggle_room_visibility(handle: &AppHandle) {
+#[tauri::command]
+pub fn toggle_room_visibility(handle: AppHandle) {
 	let config_state: State<ConfigState> = handle.state();
 	let show_rooms = !*config_state.show_rooms.lock().unwrap();
-	set_room_visibility(handle, show_rooms)
+	set_room_visibility(&handle, show_rooms)
 }
 
 pub fn set_overlay_visibility(handle: &AppHandle, show_overlays: bool) {
@@ -425,8 +424,9 @@ pub fn set_overlay_visibility(handle: &AppHandle, show_overlays: bool) {
 	handle.emit("set_overlay_visibility", show_overlays).unwrap_or_default();
 }
 
-pub fn toggle_overlay_visibility(handle: &AppHandle) {
+#[tauri::command]
+pub fn toggle_overlay_visibility(handle: AppHandle) {
 	let config_state: State<ConfigState> = handle.state();
 	let show_overlays = !*config_state.show_overlays.lock().unwrap();
-	set_overlay_visibility(handle, show_overlays)
+	set_overlay_visibility(&handle, show_overlays)
 }

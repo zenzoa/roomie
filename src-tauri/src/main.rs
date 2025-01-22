@@ -172,9 +172,9 @@ fn main() {
 					"overlay_opacity_75" => config::set_overlay_opacity(&handle, 75, false),
 					"overlay_opacity_100" => config::set_overlay_opacity(&handle, 100, false),
 
-					"show_bg" => config::toggle_bg_visibility(&handle),
-					"show_rooms" => config::toggle_room_visibility(&handle),
-					"show_overlays" => config::toggle_overlay_visibility(&handle),
+					"show_bg" => config::toggle_bg_visibility(handle),
+					"show_rooms" => config::toggle_room_visibility(handle),
+					"show_overlays" => config::toggle_overlay_visibility(handle),
 
 					// HELP MENU
 					"about" => handle.emit("show_about_dialog", ()).unwrap_or_default(),
@@ -229,9 +229,9 @@ fn main() {
 			frontend::add_overlay,
 			frontend::remove_overlays,
 
-			config::toggle_toolbar_visibility,
-			config::toggle_coords_visibility,
-			config::toggle_room_colors_visibility,
+			config::toggle_bg_visibility,
+			config::toggle_room_visibility,
+			config::toggle_overlay_visibility,
 
 			load_config_file,
 			error_dialog,

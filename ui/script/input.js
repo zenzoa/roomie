@@ -61,70 +61,92 @@ const setupInput = () => {
 				}
 
 			} else if (key === 'delete' || key === 'backspace') {
+				event.preventDefault()
 				removeSelectedObjects()
 
 			} else if (key === 'escape' && (mouseAction === 'addingLink' || mouseAction === 'addingFavicon' || mouseAction === 'addingOverlay')) {
+				event.preventDefault()
 				cancelMouseAction()
 
 			} else if (ctrlCmdKey && !shiftKey && key === 'n') {
+				event.preventDefault()
 				tauri_invoke('new_file')
 
 			} else if (ctrlCmdKey && !shiftKey && key === 'o') {
+				event.preventDefault()
 				tauri_invoke('open_file')
 
 			} else if (ctrlCmdKey && !shiftKey && key === 's') {
+				event.preventDefault()
 				tauri_invoke('save_file')
 
 			} else if (ctrlCmdKey && shiftKey && key === 's') {
+				event.preventDefault()
 				tauri_invoke('save_as')
 
 			} else if (ctrlCmdKey && !shiftKey && key === 'q') {
+				event.preventDefault()
 				tauri_invoke('try_quit')
 
 			} else if (ctrlCmdKey && !shiftKey && key === 'z') {
+				event.preventDefault()
 				tauri_invoke('undo')
 
 			} else if (ctrlCmdKey && shiftKey && key === 'z') {
+				event.preventDefault()
 				tauri_invoke('redo')
 
 			} else if (!ctrlCmdKey && shiftKey && key === 'r') {
+				event.preventDefault()
 				tauri_invoke('add_room')
 
 			} else if (!ctrlCmdKey && shiftKey && key === 'l') {
+				event.preventDefault()
 				startAddingLink()
 
 			} else if (!ctrlCmdKey && shiftKey && key === 'o') {
+				event.preventDefault()
 				tauri_invoke('try_adding_favicon')
 
 			} else if (!ctrlCmdKey && shiftKey && key === 'f') {
+				event.preventDefault()
 				tauri_invoke('try_adding_overlay')
 
 			} else if (ctrlCmdKey && !shiftKey && key === '0') {
+				event.preventDefault()
 				setScale(1)
 
 			} else if (ctrlCmdKey && !shiftKey && key === '=') {
+				event.preventDefault()
 				setScale(scale * 1.1)
 
 			} else if (ctrlCmdKey && !shiftKey && key === '-') {
+				event.preventDefault()
 				setScale(scale * 0.9)
 
 			} else if (ctrlCmdKey && !shiftKey && key === '9') {
+				event.preventDefault()
 				scaleToFill()
 
 			} else if (ctrlCmdKey && !shiftKey && key === 'a') {
+				event.preventDefault()
 				selectAllRooms()
 
 			} else if (ctrlCmdKey && !shiftKey && key === 'd') {
+				event.preventDefault()
 				clearSelection()
 
 			} else if (ctrlCmdKey && shiftKey && key === 'b') {
-				tauri_invoke('toggle_toolbar_visibility')
+				event.preventDefault()
+				tauri_invoke('toggle_bg_visibility')
 
 			} else if (ctrlCmdKey && shiftKey && key === 'r') {
-				tauri_invoke('toggle_coords_visibility')
+				event.preventDefault()
+				tauri_invoke('toggle_room_visibility')
 
 			} else if (ctrlCmdKey && shiftKey && key === 'o') {
-				tauri_invoke('toggle_room_colors_visibility')
+				event.preventDefault()
+				tauri_invoke('toggle_overlay_visibility')
 			}
 		}
 	})
