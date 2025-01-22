@@ -332,12 +332,12 @@ const startAddingRoom = () => {
 
 	const roomID = metaroom.rooms.length - 1
 
-	metaroom.rooms[roomID].x_left = xMouseRel - 50
-	metaroom.rooms[roomID].x_right = xMouseRel + 50
-	metaroom.rooms[roomID].y_top_left = yMouseRel - 50
-	metaroom.rooms[roomID].y_top_right = yMouseRel - 50
-	metaroom.rooms[roomID].y_bot_left = yMouseRel + 50
-	metaroom.rooms[roomID].y_bot_right = yMouseRel + 50
+	metaroom.rooms[roomID].x_left = xMouseRel - 75
+	metaroom.rooms[roomID].x_right = xMouseRel + 75
+	metaroom.rooms[roomID].y_top_left = yMouseRel - 85
+	metaroom.rooms[roomID].y_top_right = yMouseRel - 85
+	metaroom.rooms[roomID].y_bot_left = yMouseRel + 85
+	metaroom.rooms[roomID].y_bot_right = yMouseRel + 85
 
 	selectionType = 'Rooms'
 	selectedRooms = [roomID]
