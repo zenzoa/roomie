@@ -3,8 +3,8 @@ class Metaroom {
 	constructor({ x, y, w, h, background }) {
 		this.x = x || 0
 		this.y = y || 0
-		this.w = w || 800
-		this.h = h || 600
+		this.w = w || 1600
+		this.h = h || 1024
 
 		this.path = ''
 		this.dir = ''

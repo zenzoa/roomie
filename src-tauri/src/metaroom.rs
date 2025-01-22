@@ -56,8 +56,8 @@ pub struct Metaroom {
 impl Metaroom {
 	pub fn new() -> Self {
 		Metaroom {
-			width: 800,
-			height: 600,
+			width: 1600,
+			height: 1024,
 			..Default::default()
 		}
 	}
