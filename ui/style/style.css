@@ -30,7 +30,7 @@ html, body {
 	position: relative;
 	height: 100%;
 	overflow: hidden;
-	background-color: var(--panel-bg);
+	background-color: var(--main-bg);
 	font-family: "Lato", "Segoe UI", sans-serif;
 	font-size: 14px;
 	color: var(--text-color);
@@ -172,7 +172,7 @@ canvas {
 }
 
 #metaroom-container {
-	background-color: var(--main-bg);
+	background-color: black;
 }
 
 .metaroom-layer {
