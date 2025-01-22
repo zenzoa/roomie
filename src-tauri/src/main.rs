@@ -62,13 +62,11 @@ fn main() {
 					&MenuItem::with_id(handle, "save_as", "Save As...", true, Some("CmdOrCtrl+Shift+S"))?,
 					&PredefinedMenuItem::separator(handle)?,
 					&MenuItem::with_id(handle, "quit", "Quit", true, Some("CmdOrCtrl+Q"))?,
-					])?,
+				])?,
 
 				&Submenu::with_id_and_items(handle, "edit", "Edit", true, &[
 					&MenuItem::with_id(handle, "undo", "Undo", true, Some("CmdOrCtrl+Z"))?,
-					&MenuItem::with_id(handle, "redo", "Redo", true, Some("CmdOrCtrl+Shift+Z"))?,
-					// &PredefinedMenuItem::separator(handle)?,
-					// &MenuItem::with_id(handle, "delete", "Delete", true, Some("Del"))?,
+					&MenuItem::with_id(handle, "redo", "Redo", true, Some("CmdOrCtrl+Shift+Z"))?
 				])?,
 
 				&Submenu::with_id_and_items(handle, "add", "Add", true, &[
@@ -160,9 +158,9 @@ fn main() {
 					"theme_dark" => config::set_theme(&handle, Theme::Dark, false),
 					"theme_light" => config::set_theme(&handle, Theme::Light, false),
 					"theme_purple" => config::set_theme(&handle, Theme::Purple, false),
-					"show_toolbar" => config::toggle_toolbar_visibility(&handle),
-					"show_coords" => config::toggle_coords_visibility(&handle),
-					"show_room_colors" => config::toggle_room_colors_visibility(&handle),
+					"show_toolbar" => config::toggle_toolbar_visibility(handle),
+					"show_coords" => config::toggle_coords_visibility(handle),
+					"show_room_colors" => config::toggle_room_colors_visibility(handle),
 
 					"bg_opacity_25" => config::set_bg_opacity(&handle, 25, false),
 					"bg_opacity_50" => config::set_bg_opacity(&handle, 50, false),
@@ -230,6 +228,10 @@ fn main() {
 			frontend::update_overlays,
 			frontend::add_overlay,
 			frontend::remove_overlays,
+
+			config::toggle_toolbar_visibility,
+			config::toggle_coords_visibility,
+			config::toggle_room_colors_visibility,
 
 			load_config_file,
 			error_dialog,

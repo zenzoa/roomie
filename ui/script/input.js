@@ -44,6 +44,9 @@ const setupInput = () => {
 				keysDown.push(key)
 			}
 
+			const ctrlCmdKey = event.ctrlKey || event.metaKey
+			const shiftKey = event.shiftKey
+
 			if (key === ' ' && !mouseAction) {
 				event.preventDefault()
 				canvasSelection.style.cursor = 'grab'
@@ -62,6 +65,66 @@ const setupInput = () => {
 
 			} else if (key === 'escape' && (mouseAction === 'addingLink' || mouseAction === 'addingFavicon' || mouseAction === 'addingOverlay')) {
 				cancelMouseAction()
+
+			} else if (ctrlCmdKey && !shiftKey && key === 'n') {
+				tauri_invoke('new_file')
+
+			} else if (ctrlCmdKey && !shiftKey && key === 'o') {
+				tauri_invoke('open_file')
+
+			} else if (ctrlCmdKey && !shiftKey && key === 's') {
+				tauri_invoke('save_file')
+
+			} else if (ctrlCmdKey && shiftKey && key === 's') {
+				tauri_invoke('save_as')
+
+			} else if (ctrlCmdKey && !shiftKey && key === 'q') {
+				tauri_invoke('try_quit')
+
+			} else if (ctrlCmdKey && !shiftKey && key === 'z') {
+				tauri_invoke('undo')
+
+			} else if (ctrlCmdKey && shiftKey && key === 'z') {
+				tauri_invoke('redo')
+
+			} else if (!ctrlCmdKey && shiftKey && key === 'r') {
+				tauri_invoke('add_room')
+
+			} else if (!ctrlCmdKey && shiftKey && key === 'l') {
+				startAddingLink()
+
+			} else if (!ctrlCmdKey && shiftKey && key === 'o') {
+				tauri_invoke('try_adding_favicon')
+
+			} else if (!ctrlCmdKey && shiftKey && key === 'f') {
+				tauri_invoke('try_adding_overlay')
+
+			} else if (ctrlCmdKey && !shiftKey && key === '0') {
+				setScale(1)
+
+			} else if (ctrlCmdKey && !shiftKey && key === '=') {
+				setScale(scale * 1.1)
+
+			} else if (ctrlCmdKey && !shiftKey && key === '-') {
+				setScale(scale * 0.9)
+
+			} else if (ctrlCmdKey && !shiftKey && key === '9') {
+				scaleToFill()
+
+			} else if (ctrlCmdKey && !shiftKey && key === 'a') {
+				selectAllRooms()
+
+			} else if (ctrlCmdKey && !shiftKey && key === 'd') {
+				clearSelection()
+
+			} else if (ctrlCmdKey && shiftKey && key === 'b') {
+				tauri_invoke('toggle_toolbar_visibility')
+
+			} else if (ctrlCmdKey && shiftKey && key === 'r') {
+				tauri_invoke('toggle_coords_visibility')
+
+			} else if (ctrlCmdKey && shiftKey && key === 'o') {
+				tauri_invoke('toggle_room_colors_visibility')
 			}
 		}
 	})
