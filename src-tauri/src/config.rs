@@ -9,7 +9,6 @@ use serde::Serialize;
 use tauri::{ AppHandle, Manager, State, Emitter };
 use tauri::menu::{ MenuItem, MenuItemKind };
 
-#[derive(Default)]
 pub struct ConfigState {
 	pub theme: Mutex<Theme>,
 	pub show_toolbar: Mutex<bool>,
@@ -25,18 +24,22 @@ pub struct ConfigState {
 
 impl ConfigState {
 	pub fn new() -> Self {
-		ConfigState {
+		Self {
+			theme: Mutex::new(Theme::Dark),
+			show_toolbar: Mutex::new(true),
+			show_coords: Mutex::new(true),
+			show_room_colors: Mutex::new(true),
 			bg_opacity: Mutex::new(50),
 			overlay_opacity: Mutex::new(100),
+			recent_files: Mutex::new(Vec::new()),
 			show_bg: Mutex::new(true),
 			show_rooms: Mutex::new(true),
-			show_overlays: Mutex::new(true),
-			..Default::default()
+			show_overlays: Mutex::new(true)
 		}
 	}
 }
 
-#[derive(Default, Serialize)]
+#[derive(Serialize)]
 pub struct ConfigInfo {
 	pub theme: Theme,
 	pub show_toolbar: bool,
@@ -47,9 +50,22 @@ pub struct ConfigInfo {
 	pub recent_files: Vec<String>
 }
 
-#[derive(Default, Copy, Clone, PartialEq, Serialize)]
+impl ConfigInfo {
+	pub fn new() -> Self {
+		Self {
+			theme: Theme::Dark,
+			show_toolbar: true,
+			show_coords: true,
+			show_room_colors: true,
+			bg_opacity: 50,
+			overlay_opacity: 50,
+			recent_files: Vec::new()
+		}
+	}
+}
+
+#[derive(Copy, Clone, PartialEq, Serialize)]
 pub enum Theme {
-	#[default]
 	Dark,
 	Light,
 	Purple
@@ -67,7 +83,7 @@ impl fmt::Display for Theme {
 
 #[tauri::command]
 pub fn load_config_file(handle: AppHandle) -> ConfigInfo {
-	let mut config_info = ConfigInfo::default();
+	let mut config_info = ConfigInfo::new();
 
 	if let Ok(config_dir) = handle.path().config_dir() {
 		let config_file_path = config_dir.join("roomie.conf");
@@ -202,10 +218,11 @@ pub fn set_toolbar_visibility(handle: &AppHandle, show_toolbar: bool, init: bool
 	}
 }
 
-pub fn toggle_toolbar_visibility(handle: &AppHandle) {
+#[tauri::command]
+pub fn toggle_toolbar_visibility(handle: AppHandle) {
 	let config_state: State<ConfigState> = handle.state();
 	let show_toolbar = !*config_state.show_toolbar.lock().unwrap();
-	set_toolbar_visibility(handle, show_toolbar, false)
+	set_toolbar_visibility(&handle, show_toolbar, false)
 }
 
 pub fn set_coords_visibility(handle: &AppHandle, show_coords: bool, init: bool) {
@@ -224,10 +241,11 @@ pub fn set_coords_visibility(handle: &AppHandle, show_coords: bool, init: bool) 
 	}
 }
 
-pub fn toggle_coords_visibility(handle: &AppHandle) {
+#[tauri::command]
+pub fn toggle_coords_visibility(handle: AppHandle) {
 	let config_state: State<ConfigState> = handle.state();
 	let show_coords = !*config_state.show_coords.lock().unwrap();
-	set_coords_visibility(handle, show_coords, false)
+	set_coords_visibility(&handle, show_coords, false)
 }
 
 pub fn set_bg_opacity(handle: &AppHandle, bg_opacity: u16, init: bool) {
@@ -301,10 +319,11 @@ pub fn set_room_colors_visibility(handle: &AppHandle, show_room_colors: bool, in
 	}
 }
 
-pub fn toggle_room_colors_visibility(handle: &AppHandle) {
+#[tauri::command]
+pub fn toggle_room_colors_visibility(handle: AppHandle) {
 	let config_state: State<ConfigState> = handle.state();
 	let show_room_colors = !*config_state.show_room_colors.lock().unwrap();
-	set_room_colors_visibility(handle, show_room_colors, false)
+	set_room_colors_visibility(&handle, show_room_colors, false)
 }
 
 pub fn add_recent_file(handle: &AppHandle, path: &Path) {
