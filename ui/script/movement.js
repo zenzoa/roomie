@@ -142,7 +142,7 @@ const setupSelectionForMovement = () => {
 }
 
 const moveSelection = (dx, dy, ignoreShift) => {
-	if (!ignoreShift && keysDown.includes('shift')) {
+	if (!ignoreShift && isShiftDown) {
 		if (Math.abs(dx) >= Math.abs(dy)) {
 			dy = 0
 		} else {
@@ -312,7 +312,7 @@ const finishMovingSelection = () => {
 const nudgeSelection = (dir) => {
 	setupSelectionForMovement()
 
-	const d = keysDown.includes('shift') ? 10 : 1;
+	const d = isShiftDown ? 10 : 1;
 	if (dir === 'arrowup') {
 		moveSelection(0, -d, true)
 	} else if (dir === 'arrowdown') {

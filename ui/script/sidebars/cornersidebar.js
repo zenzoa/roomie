@@ -10,13 +10,13 @@ class CornerSidebar {
 			for (let corner of tempCorners) {
 				corner.x = x
 				const room = tempRooms.find(r => r.id === corner.room_id)
-				if (room && side.position === 'TopLeft') {
+				if (room && corner.position === 'TopLeft') {
 					room.x_left = x
-				} else if (room && side.position === 'TopRight') {
+				} else if (room && corner.position === 'TopRight') {
 					room.x_right = x
-				} else if (room && side.position === 'BottomLeft') {
+				} else if (room && corner.position === 'BottomLeft') {
 					room.x_left = x
-				} else if (room && side.position === 'BottomRight') {
+				} else if (room && corner.position === 'BottomRight') {
 					room.x_right = x
 				}
 			}

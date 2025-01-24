@@ -1,4 +1,6 @@
-let keysDown = []
+let isCtrlDown = false
+let isShiftDown = false
+let isSpaceDown = false
 
 let isMouseDown = false
 let mouseAction = null
@@ -26,6 +28,8 @@ const setupInput = () => {
 	metaroomContainer.addEventListener('mouseup', mouseUp)
 
 	metaroomContainer.addEventListener('mouseenter', (event) => {
+		isCtrlDown = event.ctrlKey || event.metaKey
+		isShiftDown = event.shiftKey
 		if (isMouseDown && !event.buttons) {
 			mouseUp(event)
 		}
@@ -38,16 +42,11 @@ const setupInput = () => {
 	document.body.addEventListener('keydown', (event) => {
 		if (event.target.tagName !== 'INPUT') {
 			const key = event.key.toLowerCase()
-			if (event.shiftKey && !keysDown.includes('shift')) {
-				keysDown.push('shift')
-			} else if (!keysDown.includes(key)) {
-				keysDown.push(key)
-			}
-
-			const ctrlCmdKey = event.ctrlKey || event.metaKey
-			const shiftKey = event.shiftKey
+			isCtrlDown = event.ctrlKey || event.metaKey
+			isShiftDown = event.shiftKey
 
 			if (key === ' ' && !mouseAction) {
+				isSpaceDown = true
 				event.preventDefault()
 				canvasSelection.style.cursor = 'grab'
 
@@ -68,83 +67,83 @@ const setupInput = () => {
 				event.preventDefault()
 				cancelMouseAction()
 
-			} else if (ctrlCmdKey && !shiftKey && key === 'n') {
+			} else if (isCtrlDown && !isShiftDown && key === 'n') {
 				event.preventDefault()
 				tauri_invoke('new_file')
 
-			} else if (ctrlCmdKey && !shiftKey && key === 'o') {
+			} else if (isCtrlDown && !isShiftDown && key === 'o') {
 				event.preventDefault()
 				tauri_invoke('open_file')
 
-			} else if (ctrlCmdKey && !shiftKey && key === 's') {
+			} else if (isCtrlDown && !isShiftDown && key === 's') {
 				event.preventDefault()
 				tauri_invoke('save_file')
 
-			} else if (ctrlCmdKey && shiftKey && key === 's') {
+			} else if (isCtrlDown && isShiftDown && key === 's') {
 				event.preventDefault()
 				tauri_invoke('save_as')
 
-			} else if (ctrlCmdKey && !shiftKey && key === 'q') {
+			} else if (isCtrlDown && !isShiftDown && key === 'q') {
 				event.preventDefault()
 				tauri_invoke('try_quit')
 
-			} else if (ctrlCmdKey && !shiftKey && key === 'z') {
+			} else if (isCtrlDown && !isShiftDown && key === 'z') {
 				event.preventDefault()
 				tauri_invoke('undo')
 
-			} else if (ctrlCmdKey && shiftKey && key === 'z') {
+			} else if (isCtrlDown && isShiftDown && key === 'z') {
 				event.preventDefault()
 				tauri_invoke('redo')
 
-			} else if (!ctrlCmdKey && shiftKey && key === 'r') {
+			} else if (!isCtrlDown && isShiftDown && key === 'r') {
 				event.preventDefault()
 				tauri_invoke('add_room')
 
-			} else if (!ctrlCmdKey && shiftKey && key === 'l') {
+			} else if (!isCtrlDown && isShiftDown && key === 'l') {
 				event.preventDefault()
 				startAddingLink()
 
-			} else if (!ctrlCmdKey && shiftKey && key === 'o') {
+			} else if (!isCtrlDown && isShiftDown && key === 'o') {
 				event.preventDefault()
 				tauri_invoke('try_adding_favicon')
 
-			} else if (!ctrlCmdKey && shiftKey && key === 'f') {
+			} else if (!isCtrlDown && isShiftDown && key === 'f') {
 				event.preventDefault()
 				tauri_invoke('try_adding_overlay')
 
-			} else if (ctrlCmdKey && !shiftKey && key === '0') {
+			} else if (isCtrlDown && !isShiftDown && key === '0') {
 				event.preventDefault()
 				setScale(1)
 
-			} else if (ctrlCmdKey && !shiftKey && key === '=') {
+			} else if (isCtrlDown && !isShiftDown && key === '=') {
 				event.preventDefault()
 				setScale(scale * 1.1)
 
-			} else if (ctrlCmdKey && !shiftKey && key === '-') {
+			} else if (isCtrlDown && !isShiftDown && key === '-') {
 				event.preventDefault()
 				setScale(scale * 0.9)
 
-			} else if (ctrlCmdKey && !shiftKey && key === '9') {
+			} else if (isCtrlDown && !isShiftDown && key === '9') {
 				event.preventDefault()
 				scaleToFill()
 
-			} else if (ctrlCmdKey && !shiftKey && key === 'a') {
+			} else if (isCtrlDown && !isShiftDown && key === 'a') {
 				event.preventDefault()
 				selectAllRooms()
 
-			} else if (ctrlCmdKey && !shiftKey && key === 'd') {
+			} else if (isCtrlDown && !isShiftDown && key === 'd') {
 				event.preventDefault()
 				clearSelection()
 
-			} else if (ctrlCmdKey && shiftKey && key === 'b') {
+			} else if (isCtrlDown && isShiftDown && key === 'b') {
 				event.preventDefault()
 				tauri_invoke('toggle_bg_visibility')
 
-			} else if (ctrlCmdKey && shiftKey && key === 'r') {
+			} else if (isCtrlDown && isShiftDown && key === 'r') {
 				event.preventDefault()
 				tauri_invoke('toggle_room_visibility')
 
-			} else if (ctrlCmdKey && shiftKey && key === 'o') {
+			} else if (isCtrlDown && isShiftDown && key === 'o') {
 				event.preventDefault()
 				tauri_invoke('toggle_overlay_visibility')
 			}
@@ -152,14 +151,10 @@ const setupInput = () => {
 	})
 
 	document.body.addEventListener('keyup', (event) => {
-		if (event.target.tagName !== 'INPUT') {
-			const key = event.key.toLowerCase()
-			keysDown = keysDown.filter(k => k != key)
-			if (!event.shiftKey && keysDown.includes('shift')) {
-				keysDown = keysDown.filter(k => k != 'shift')
-			}
+		if (event.key === ' ') isSpaceDown = false
 
-			if (key === ' ' && !mouseAction) {
+		if (event.target.tagName !== 'INPUT') {
+			if (event.key === ' ' && !mouseAction) {
 				event.preventDefault()
 				canvasSelection.style.cursor = 'auto'
 			}
@@ -193,6 +188,9 @@ const unadjustPos = (n) => {
 
 const mouseDown = (event) => {
 	event.preventDefault()
+
+	isCtrlDown = event.ctrlKey || event.metaKey
+	isShiftDown = event.shiftKey
 
 	if (!mouseAction && event.buttons > 1) {
 		isMouseDown = true
@@ -251,6 +249,9 @@ const mouseMove = (event) => {
 	xPositionEl.innerText = xMouseRel
 	yPositionEl.innerText = yMouseRel
 
+	isCtrlDown = event.ctrlKey || event.metaKey
+	isShiftDown = event.shiftKey
+
 	if (isMouseDown || mouseAction === 'moving' || mouseAction === 'addingLink' || mouseAction === 'addingFavicon' || mouseAction === 'addingOverlay') {
 		event.preventDefault()
 
@@ -259,7 +260,7 @@ const mouseMove = (event) => {
 		let dist = Math.sqrt(dx*dx + dy*dy)
 
 		if (!mouseAction && dist > 10) {
-			if (keysDown.includes(' ')) {
+			if (isSpaceDown) {
 				startPanning(event.offsetX, event.offsetY)
 			} else if (selectionType !== 'Any') {
 				tryMovingSelection()
@@ -297,6 +298,9 @@ const mouseMove = (event) => {
 }
 
 const mouseUp = (event) => {
+	isCtrlDown = event.ctrlKey || event.metaKey
+	isShiftDown = event.shiftKey
+
 	if (!mouseAction) {
 		finishSelectingObject(event)
 	} else if (mouseAction === 'moving') {
@@ -312,7 +316,10 @@ const mouseUp = (event) => {
 }
 
 const mouseWheel = (event) => {
-	if (metaroom) {
+	isCtrlDown = event.ctrlKey || event.metaKey
+	isShiftDown = event.shiftKey
+
+	if (isCtrlDown && metaroom) {
 		event.preventDefault()
 		scrollAmount -= event.deltaY
 		scrollAmount = Math.min(Math.max(scrollAmount, -1000), 1000)

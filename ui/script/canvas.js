@@ -468,7 +468,7 @@ const setOffset = (x, y) => {
 }
 
 const nudgeOffset = (dir) => {
-	const d = keysDown.includes('shift') ? 500 : 50;
+	const d = isShiftDown ? 500 : 50;
 
 	if (dir === 'arrowup') {
 		setOffset(xOffset, yOffset + d)

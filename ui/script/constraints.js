@@ -26,7 +26,7 @@ const updateFromTempPos = (room) => {
 }
 
 const checkRoomConstraints = (room) => {
-	if (!keysDown.includes('control')) {
+	if (!isCtrlDown) {
 		const r = SNAP_RADIUS / scale * DPR
 		const rSq = r*r
 
@@ -49,8 +49,11 @@ const checkRoomConstraints = (room) => {
 				checkBLonT(room, other, rSq)
 				checkBRonT(room, other, rSq)
 
-				checkTonBLR(room, other, rSq)
-				checkBonTLR(room, other, rSq)
+				checkTonBL(room, other, rSq)
+				checkTonBR(room, other, rSq)
+				checkBonTL(room, other, rSq)
+				checkBonTR(room, other, rSq)
+				checkBonTR(room, other, rSq)
 			}
 		}
 
@@ -98,7 +101,7 @@ const checkRoomConstraints = (room) => {
 }
 
 const checkSideConstraints = (side, room) => {
-	if (!keysDown.includes('control')) {
+	if (!isCtrlDown) {
 		const r = SNAP_RADIUS / scale * DPR
 		const rSq = r*r
 
@@ -109,11 +112,13 @@ const checkSideConstraints = (side, room) => {
 				if (side.position === 'Top') {
 					checkTLonB(room, other, rSq)
 					checkTRonB(room, other, rSq)
-					checkTonBLR(room, other, rSq)
+					checkTonBL(room, other, rSq)
+					checkTonBR(room, other, rSq)
 				} else if (side.position === 'Bottom') {
 					checkBLonT(room, other, rSq)
 					checkBRonT(room, other, rSq)
-					checkBonTLR(room, other, rSq)
+					checkBonTL(room, other, rSq)
+					checkBonTR(room, other, rSq)
 				} else if (side.position === 'Left') {
 					checkTLonR(room, other, rSq)
 					checkBLonR(room, other, rSq)
@@ -159,7 +164,7 @@ const checkSideConstraints = (side, room) => {
 }
 
 const checkCornerConstraints = (corner, room) => {
-	if (!keysDown.includes('control')) {
+	if (!isCtrlDown) {
 		const r = SNAP_RADIUS / scale * DPR
 		const rSq = r*r
 
@@ -179,25 +184,41 @@ const checkCornerConstraints = (corner, room) => {
 						checkTLonCorner(room, otherCorner.x, otherCorner.y, rSq)
 					}
 					checkTLonR(room, other, rSq)
-					checkTLonB(room, other, rSq)
+					checkTLonB(room, other, rSq, true)
+					checkLonTR(room, other, rSq)
+					checkLonBR(room, other, rSq)
+					checkTonBL(room, other, rSq)
+					checkTonBR(room, other, rSq)
 				} else if (corner.position === 'TopRight') {
 					for (const otherCorner of otherCorners) {
 						checkTRonCorner(room, otherCorner.x, otherCorner.y, rSq)
 					}
 					checkTRonL(room, other, rSq)
-					checkTRonB(room, other, rSq)
+					checkTRonB(room, other, rSq, true)
+					checkRonTL(room, other, rSq)
+					checkRonBL(room, other, rSq)
+					checkTonBL(room, other, rSq)
+					checkTonBR(room, other, rSq)
 				} else if (corner.position === 'BottomLeft') {
 					for (const otherCorner of otherCorners) {
 						checkBLonCorner(room, otherCorner.x, otherCorner.y, rSq)
 					}
 					checkBLonR(room, other, rSq)
-					checkBLonT(room, other, rSq)
+					checkBLonT(room, other, rSq, true)
+					checkLonTR(room, other, rSq)
+					checkLonBR(room, other, rSq)
+					checkBonTL(room, other, rSq)
+					checkBonTR(room, other, rSq)
 				} else if (corner.position === 'BottomRight') {
 					for (const otherCorner of otherCorners) {
 						checkBRonCorner(room, otherCorner.x, otherCorner.y, rSq)
 					}
 					checkBRonL(room, other, rSq)
-					checkBRonT(room, other, rSq)
+					checkBRonT(room, other, rSq, true)
+					checkRonTL(room, other, rSq)
+					checkRonBL(room, other, rSq)
+					checkBonTL(room, other, rSq)
+					checkBonTR(room, other, rSq)
 				}
 			}
 		}
@@ -289,10 +310,17 @@ const checkTLonR = (room, other, rSq) => {
 	}
 }
 
-const checkTLonB = (room, other, rSq) => {
+const checkTLonB = (room, other, rSq, xCanChange) => {
 	const TLonB = cornerLineSnapPoint(room.x_left, room.y_top_left, other.x_left, other.y_bot_left, other.x_right, other.y_bot_right, rSq)
 	if (TLonB && (new_y_top_left == null || Math.abs(room.y_top_left - TLonB.y) < Math.abs(room.y_top_left - new_y_top_left))) {
-		new_y_top_left = Math.min(Math.ceil(TLonB.y), room.y_bot_left - MIN_DIM)
+		const slope = (other.y_bot_right - other.y_bot_left) / (other.x_right - other.x_left)
+		if (xCanChange) {
+			new_x_left = Math.min(slope >= 0 ? Math.floor(TLonB.x) : Math.ceil(TLonB.x), room.x_right - MIN_DIM)
+			new_y_top_left = Math.min(Math.ceil(TLonB.y), room.y_bot_left - MIN_DIM)
+		} else {
+			const y = other.y_bot_left + slope * (room.x_left - other.x_left)
+			new_y_top_left = Math.min(Math.ceil(y), room.y_bot_left - MIN_DIM)
+		}
 	}
 }
 
@@ -303,10 +331,17 @@ const checkTRonL = (room, other, rSq) => {
 	}
 }
 
-const checkTRonB = (room, other, rSq) => {
+const checkTRonB = (room, other, rSq, xCanChange) => {
 	const TRonB = cornerLineSnapPoint(room.x_right, room.y_top_right, other.x_left, other.y_bot_left, other.x_right, other.y_bot_right, rSq)
 	if (TRonB && (new_y_top_right == null || Math.abs(room.y_top_right - TRonB.y) < Math.abs(room.y_top_right - new_y_top_right))) {
-		new_y_top_right = Math.min(Math.ceil(TRonB.y), room.y_bot_right - MIN_DIM)
+		const slope = (other.y_bot_right - other.y_bot_left) / (other.x_right - other.x_left)
+		if (xCanChange) {
+			new_x_right = Math.max(slope >= 0 ? Math.floor(TRonB.x) : Math.ceil(TRonB.x), room.x_left + MIN_DIM)
+			new_y_top_right = Math.min(Math.ceil(TRonB.y), room.y_bot_right - MIN_DIM)
+		} else {
+			const y = other.y_bot_left + slope * (room.x_right - other.x_left)
+			new_y_top_right = Math.min(Math.ceil(y), room.y_bot_right - MIN_DIM)
+		}
 	}
 }
 
@@ -317,10 +352,17 @@ const checkBLonR = (room, other, rSq) => {
 	}
 }
 
-const checkBLonT = (room, other, rSq) => {
+const checkBLonT = (room, other, rSq, xCanChange) => {
 	const BLonT = cornerLineSnapPoint(room.x_left, room.y_bot_left, other.x_left, other.y_top_left, other.x_right, other.y_top_right, rSq)
 	if (BLonT && (new_y_bot_left == null || Math.abs(room.y_bot_left - BLonT.y) < Math.abs(room.y_bot_left - new_y_bot_left))) {
-		new_y_bot_left = Math.max(Math.floor(BLonT.y), room.y_top_left + MIN_DIM)
+		const slope = (other.y_top_right - other.y_top_left) / (other.x_right - other.x_left)
+		if (xCanChange) {
+			new_x_left = Math.min(slope >= 0 ? Math.ceil(BLonT.x) : Math.floor(BLonT.x), room.x_right - MIN_DIM)
+			new_y_bot_left = Math.max(Math.floor(BLonT.y), room.y_top_left + MIN_DIM)
+		} else {
+			const y = other.y_top_left + slope * (room.x_left - other.x_left)
+			new_y_bot_left = Math.max(Math.floor(y), room.y_top_left + MIN_DIM)
+		}
 	}
 }
 
@@ -331,10 +373,17 @@ const checkBRonL = (room, other, rSq) => {
 	}
 }
 
-const checkBRonT = (room, other, rSq) => {
+const checkBRonT = (room, other, rSq, xCanChange) => {
 	const BRonT = cornerLineSnapPoint(room.x_right, room.y_bot_right, other.x_left, other.y_top_left, other.x_right, other.y_top_right, rSq)
 	if (BRonT && (new_y_bot_right == null || Math.abs(room.y_bot_right - BRonT.y) < Math.abs(room.y_bot_right - new_y_bot_right))) {
-		new_y_bot_right = Math.max(Math.floor(BRonT.y), room.y_top_right + MIN_DIM)
+		const slope = (other.y_top_right - other.y_top_left) / (other.x_right - other.x_left)
+		if (xCanChange) {
+			new_x_right = Math.max(slope >= 0 ? Math.ceil(BRonT.x) : Math.floor(BRonT.x), room.x_left + MIN_DIM)
+			new_y_bot_right = Math.max(Math.floor(BRonT.y), room.y_top_right + MIN_DIM)
+		} else {
+			const y = other.y_top_left + slope * (room.x_right - other.x_left)
+			new_y_bot_right = Math.max(Math.floor(y), room.y_top_right + MIN_DIM)
+		}
 	}
 }
 
@@ -366,47 +415,55 @@ const checkRonBL = (room, other, rSq) => {
 	}
 }
 
-const checkTonBLR = (room, other, rSq) => {
+const checkTonBL = (room, other, rSq) => {
 	const TonBL = cornerLineSnapPoint(other.x_left, other.y_bot_left, room.x_left, room.y_top_left, room.x_right, room.y_top_right, rSq)
-	const TonBR = cornerLineSnapPoint(other.x_right, other.y_bot_right, room.x_left, room.y_top_left, room.x_right, room.y_top_right, rSq)
-	const slope = (other.y_bot_right - other.y_bot_left) / (other.x_right - other.x_left)
 	if (TonBL) {
-		const yTL = Math.min(
+		const slope = (room.y_top_right - room.y_top_left) / (room.x_right - room.x_left)
+		new_y_top_left = Math.min(
 			room.y_bot_left - MIN_DIM,
 			Math.ceil(other.y_bot_left + slope * (room.x_left - other.x_left)))
-		if (new_y_top_left == null || Math.abs(room.y_top_left - yTL) < Math.abs(room.y_top_left - new_y_top_left)) {
-			new_y_top_left = yTL
-		}
-	}
-	if (TonBR) {
-		const yTR = Math.min(
+		new_y_top_right = Math.min(
 			room.y_bot_right - MIN_DIM,
-			Math.ceil(other.y_bot_right + slope * (room.x_right - other.x_right)))
-		if (new_y_top_right == null || Math.abs(room.y_top_right - yTR) < Math.abs(room.y_top_right - new_y_top_right)) {
-			new_y_top_right = yTR
-		}
+			Math.ceil(other.y_bot_left + slope * (room.x_right - other.x_left)))
 	}
 }
 
-const checkBonTLR = (room, other, rSq) => {
+const checkTonBR = (room, other, rSq) => {
+	const TonBR = cornerLineSnapPoint(other.x_right, other.y_bot_right, room.x_left, room.y_top_left, room.x_right, room.y_top_right, rSq)
+	if (TonBR) {
+		const slope = (room.y_top_right - room.y_top_left) / (room.x_right - room.x_left)
+		new_y_top_left = Math.min(
+			room.y_bot_left - MIN_DIM,
+			Math.ceil(other.y_bot_right + slope * (room.x_left - other.x_right)))
+		new_y_top_right = Math.min(
+			room.y_bot_right - MIN_DIM,
+			Math.ceil(other.y_bot_right + slope * (room.x_right - other.x_right)))
+	}
+}
+
+const checkBonTL = (room, other, rSq) => {
 	const BonTL = cornerLineSnapPoint(other.x_left, other.y_top_left, room.x_left, room.y_bot_left, room.x_right, room.y_bot_right, rSq)
-	const BonTR = cornerLineSnapPoint(other.x_right, other.y_top_right, room.x_left, room.y_bot_left, room.x_right, room.y_bot_right, rSq)
-	const slope = (other.y_top_right - other.y_top_left) / (other.x_right - other.x_left)
 	if (BonTL) {
-		const yBL = Math.max(
+		const slope = (room.y_bot_right - room.y_bot_left) / (room.x_right - room.x_left)
+		new_y_bot_left = Math.max(
 			room.y_top_left + MIN_DIM,
 			Math.floor(other.y_top_left + slope * (room.x_left - other.x_left)))
-		if (new_y_bot_left == null || Math.abs(room.y_bot_left - yBL) < Math.abs(room.y_bot_left - new_y_bot_left)) {
-			new_y_bot_left = yBL
-		}
+		new_y_bot_right = Math.max(
+			room.y_top_right + MIN_DIM,
+			Math.floor(other.y_top_left + slope * (room.x_right - other.x_left)))
 	}
+}
+
+const checkBonTR = (room, other, rSq) => {
+	const BonTR = cornerLineSnapPoint(other.x_right, other.y_top_right, room.x_left, room.y_bot_left, room.x_right, room.y_bot_right, rSq)
 	if (BonTR) {
-		const yBR = Math.max(
+		const slope = (room.y_bot_right - room.y_bot_left) / (room.x_right - room.x_left)
+		new_y_bot_left = Math.max(
+			room.y_top_left + MIN_DIM,
+			Math.floor(other.y_top_right + slope * (room.x_left - other.x_right)))
+		new_y_bot_right = Math.max(
 			room.y_top_right + MIN_DIM,
 			Math.floor(other.y_top_right + slope * (room.x_right - other.x_right)))
-		if (new_y_bot_right == null || Math.abs(room.y_bot_right - yBR) < Math.abs(room.y_bot_right - new_y_bot_right)) {
-			new_y_bot_right = yBR
-		}
 	}
 }
 
