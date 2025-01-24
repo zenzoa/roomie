@@ -232,6 +232,7 @@ fn main() {
 			config::toggle_bg_visibility,
 			config::toggle_room_visibility,
 			config::toggle_overlay_visibility,
+			config::set_sidebar_width,
 
 			load_config_file,
 			error_dialog,

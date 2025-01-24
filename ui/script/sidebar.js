@@ -4,6 +4,7 @@ let MAX_U32 = 4294967295
 class Sidebar {
 	static el = null
 	static contentEl = null
+	static baseWidth = 360
 	static width = 0
 
 	static setup() {
@@ -11,11 +12,23 @@ class Sidebar {
 		Sidebar.contentEl = document.getElementById('sidebar-content')
 	}
 
+	static setWidth(width, init) {
+		Sidebar.baseWidth = width
+		if (!Sidebar.el.classList.contains('hidden')) {
+			const style = document.documentElement.style
+			style.setProperty(`--sidebar-width`, `${width}px`)
+			Sidebar.width = width
+		}
+		if (!init) {
+			tauri_invoke('set_sidebar_width', { sidebarWidth: width, init: false })
+		}
+	}
+
 	static setVisibility(value) {
 		if (value) {
-			document.documentElement.style.setProperty('--sidebar-width', '360px')
+			document.documentElement.style.setProperty('--sidebar-width', `${Sidebar.baseWidth}px`)
 			Sidebar.el.classList.remove('hidden')
-			Sidebar.width = 360
+			Sidebar.width = Sidebar.baseWidth
 		} else {
 			document.documentElement.style.setProperty('--sidebar-width', '0')
 			Sidebar.el.classList.add('hidden')

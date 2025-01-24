@@ -20,6 +20,7 @@ window.addEventListener('load', () => {
 
 	Toolbar.setup()
 	Sidebar.setup()
+	AboutDialog.setup()
 
 	positionEl = document.getElementById('position')
 	xPositionEl = document.getElementById('position-x')
@@ -83,6 +84,7 @@ window.addEventListener('load', () => {
 	tauri_listen('set_toolbar_visibility', e => Toolbar.setVisibility(e.payload))
 	tauri_listen('set_coords_visibility', e => setCoordsVisibility(e.payload))
 	tauri_listen('set_room_color_visibility', e => setRoomColorVisibility(e.payload, true))
+	tauri_listen('set_sidebar_width', e => Sidebar.setWidth(e.payload, true))
 
 	tauri_listen('set_bg_visibility', e => setBGVisibility(e.payload))
 	tauri_listen('set_room_visibility', e => setRoomVisibility(e.payload))
@@ -96,8 +98,6 @@ window.addEventListener('load', () => {
 
 	tauri_listen('error', showErrorDialog)
 
-	AboutDialog.setup()
-
 	tauri_invoke('load_config_file').then(result => {
 		Theme.set(result.theme.toLowerCase())
 		Toolbar.setVisibility(result.show_toolbar)
@@ -105,6 +105,7 @@ window.addEventListener('load', () => {
 		setRoomColorVisibility(result.show_room_colors, false)
 		setBGOpacity(result.bg_opacity)
 		setOverlayOpacity(result.overlay_opacity)
+		Sidebar.setWidth(result.sidebar_width)
 	})
 })
 

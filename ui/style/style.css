@@ -84,7 +84,7 @@ html, body {
 #sidebar-handle {
 	width: 2px;
 	border-right: 4px double var(--divider-color);
-	/* cursor: ew-resize; */
+	cursor: ew-resize;
 }
 
 #sidebar-content {

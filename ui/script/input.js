@@ -20,24 +20,51 @@ let yOffsetStart = 0
 
 let scrollAmount = 0
 
+let isResizingSidebar = false
+let xResizeStart = 0
+let tempWidth = 0
+
 const setupInput = () => {
 	metaroomContainer.addEventListener('mousedown', mouseDown)
 
-	metaroomContainer.addEventListener('mousemove', mouseMove)
+	metaroomContainer.addEventListener('wheel', mouseWheel)
 
-	metaroomContainer.addEventListener('mouseup', mouseUp)
+	document.getElementById('sidebar-handle').addEventListener('mousedown', (event) => {
+		if (!isResizingSidebar) {
+			isResizingSidebar = true
+			xResizeStart = event.pageX
+			tempWidth = Sidebar.width
+		}
+	})
 
-	metaroomContainer.addEventListener('mouseenter', (event) => {
-		isCtrlDown = event.ctrlKey || event.metaKey
-		isShiftDown = event.shiftKey
-		if (isMouseDown && !event.buttons) {
+	document.body.addEventListener('mousemove', (event) => {
+		if (isResizingSidebar) {
+			const dx = xResizeStart - event.pageX
+			tempWidth = Math.min(600, Math.max(200, Math.floor(Sidebar.width + dx)))
+			const style = document.documentElement.style
+			style.setProperty(`--sidebar-width`, `${tempWidth}px`)
+		} else {
+			mouseMove(event)
+		}
+	})
+
+	document.body.addEventListener('mouseup', (event) => {
+		if (isResizingSidebar) {
+			isResizingSidebar = false
+			Sidebar.setWidth(tempWidth)
+		} else {
 			mouseUp(event)
 		}
 	})
 
-	metaroomContainer.addEventListener('mouseleave', mouseMove)
-
-	metaroomContainer.addEventListener('wheel', mouseWheel)
+	document.body.addEventListener('mouseenter', (event) => {
+		isCtrlDown = event.ctrlKey || event.metaKey
+		isShiftDown = event.shiftKey
+		isResizingSidebar = false
+		if (isMouseDown && !event.buttons) {
+			mouseUp(event)
+		}
+	})
 
 	document.body.addEventListener('keydown', (event) => {
 		if (event.target.tagName !== 'INPUT') {
@@ -166,16 +193,18 @@ const setMousePos = (x, y) => {
 	xMouse = Math.floor(x)
 	yMouse = Math.floor(y)
 
+	const top = metaroomContainer.getBoundingClientRect().top
 	xMouseRel = Math.min(Math.max(0, adjustPos(x) - Math.floor(xOffset / scale)), metaroom ? metaroom.width : 0)
-	yMouseRel = Math.min(Math.max(0, adjustPos(y) - Math.floor(yOffset / scale)), metaroom ? metaroom.height : 0)
+	yMouseRel = Math.min(Math.max(0, adjustPos(y - top) - Math.floor(yOffset / scale)), metaroom ? metaroom.height : 0)
 }
 
 const setDragPos = (x, y) => {
 	xDragStart = Math.floor(x)
 	yDragStart = Math.floor(y)
 
-	xDragStartRel = adjustPos(x) - Math.floor(xOffset / scale)
-	yDragStartRel = adjustPos(y) - Math.floor(yOffset / scale)
+	const top = metaroomContainer.getBoundingClientRect().top
+	xDragStartRel = Math.min(Math.max(0, adjustPos(x) - Math.floor(xOffset / scale)), metaroom ? metaroom.width : 0)
+	yDragStartRel = Math.min(Math.max(0, adjustPos(y - top) - Math.floor(yOffset / scale)), metaroom ? metaroom.height : 0)
 }
 
 const adjustPos = (n) => {
@@ -194,7 +223,7 @@ const mouseDown = (event) => {
 
 	if (!mouseAction && event.buttons > 1) {
 		isMouseDown = true
-		startPanning(event.offsetX, event.offsetY)
+		startPanning(event.pageX, event.pageY)
 
 	} else if (mouseAction === 'moving') {
 		finishMovingSelection()
@@ -235,7 +264,7 @@ const mouseDown = (event) => {
 
 	} else {
 		isMouseDown = true
-		setDragPos(event.offsetX, event.offsetY)
+		setDragPos(event.pageX, event.pageY)
 		startSelectingObject(event)
 	}
 }
@@ -244,7 +273,7 @@ const mouseMove = (event) => {
 	xLast = xMouse
 	yLast = yMouse
 
-	setMousePos(event.offsetX, event.offsetY)
+	setMousePos(event.pageX, event.pageY)
 
 	xPositionEl.innerText = xMouseRel
 	yPositionEl.innerText = yMouseRel
@@ -261,7 +290,7 @@ const mouseMove = (event) => {
 
 		if (!mouseAction && dist > 10) {
 			if (isSpaceDown) {
-				startPanning(event.offsetX, event.offsetY)
+				startPanning(event.pageX, event.pageY)
 			} else if (selectionType !== 'Any') {
 				tryMovingSelection()
 			} else {

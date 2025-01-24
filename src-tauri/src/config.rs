@@ -16,10 +16,11 @@ pub struct ConfigState {
 	pub show_room_colors: Mutex<bool>,
 	pub bg_opacity: Mutex<u16>,
 	pub overlay_opacity: Mutex<u16>,
+	pub sidebar_width: Mutex<u16>,
 	pub recent_files: Mutex<Vec<String>>,
 	pub show_bg: Mutex<bool>,
 	pub show_rooms: Mutex<bool>,
-	pub show_overlays: Mutex<bool>
+	pub show_overlays: Mutex<bool>,
 }
 
 impl ConfigState {
@@ -31,6 +32,7 @@ impl ConfigState {
 			show_room_colors: Mutex::new(true),
 			bg_opacity: Mutex::new(50),
 			overlay_opacity: Mutex::new(100),
+			sidebar_width: Mutex::new(360),
 			recent_files: Mutex::new(Vec::new()),
 			show_bg: Mutex::new(true),
 			show_rooms: Mutex::new(true),
@@ -47,6 +49,7 @@ pub struct ConfigInfo {
 	pub show_room_colors: bool,
 	pub bg_opacity: u16,
 	pub overlay_opacity: u16,
+	pub sidebar_width: u16,
 	pub recent_files: Vec<String>
 }
 
@@ -59,6 +62,7 @@ impl ConfigInfo {
 			show_room_colors: true,
 			bg_opacity: 50,
 			overlay_opacity: 50,
+			sidebar_width: 360,
 			recent_files: Vec::new()
 		}
 	}
@@ -117,6 +121,9 @@ pub fn load_config_file(handle: AppHandle) -> ConfigInfo {
 							"overlay_opacity" => {
 								config_info.overlay_opacity = u16::from_str_radix(value.trim(), 10).ok().unwrap_or(100);
 							},
+							"sidebar_width" => {
+								config_info.sidebar_width = u16::from_str_radix(value.trim(), 10).ok().unwrap_or(360);
+							},
 							"recent_file" => {
 								if fs::exists(value.trim()).unwrap_or(false) {
 									config_info.recent_files.push(value.trim().to_string());
@@ -153,6 +160,9 @@ pub fn load_config_file(handle: AppHandle) -> ConfigInfo {
 	*config_state.recent_files.lock().unwrap() = config_info.recent_files.clone();
 	update_recent_files(&handle).unwrap_or_default();
 
+	*config_state.sidebar_width.lock().unwrap() = config_info.sidebar_width;
+	set_sidebar_width(handle, config_info.sidebar_width, true);
+
 	config_info
 }
 
@@ -162,13 +172,14 @@ pub fn save_config_file(handle: &AppHandle) {
 		let config_file_path = config_dir.join("roomie.conf");
 		if let Ok(()) = fs::create_dir_all(config_dir) {
 			fs::write(config_file_path, format!(
-				"theme: {}\nshow_toolbar: {}\nshow_coords: {}\nshow_room_colors: {}\nbg_opacity: {}\noverlay_opacity: {}{}",
+				"theme: {}\nshow_toolbar: {}\nshow_coords: {}\nshow_room_colors: {}\nbg_opacity: {}\noverlay_opacity: {}\nsidebar_width: {}{}",
 				config_state.theme.lock().unwrap(),
 				config_state.show_toolbar.lock().unwrap(),
 				config_state.show_coords.lock().unwrap(),
 				config_state.show_room_colors.lock().unwrap(),
 				config_state.bg_opacity.lock().unwrap(),
 				config_state.overlay_opacity.lock().unwrap(),
+				config_state.sidebar_width.lock().unwrap(),
 				config_state.recent_files.lock().unwrap().iter().map(|f| format!("\nrecent_file: {}", f)).collect::<Vec<String>>().join("")
 			)).unwrap_or_default();
 		}
@@ -176,7 +187,6 @@ pub fn save_config_file(handle: &AppHandle) {
 }
 
 pub fn set_theme(handle: &AppHandle, new_theme: Theme, init: bool) {
-
 	if let Some(menu) = handle.menu() {
 		if let Some(MenuItemKind::Submenu(view_menu)) = menu.get("view") {
 			if let Some(MenuItemKind::Submenu(theme_menu)) = view_menu.get("theme") {
@@ -297,6 +307,16 @@ pub fn set_overlay_opacity(handle: &AppHandle, overlay_opacity: u16, init: bool)
 		*config_state.overlay_opacity.lock().unwrap() = overlay_opacity;
 		handle.emit("set_overlay_opacity", overlay_opacity).unwrap_or_default();
 		save_config_file(handle);
+	}
+}
+
+#[tauri::command]
+pub fn set_sidebar_width(handle: AppHandle, sidebar_width: u16, init: bool) {
+	if !init {
+		let config_state: State<ConfigState> = handle.state();
+		*config_state.sidebar_width.lock().unwrap() = sidebar_width;
+		handle.emit("set_sidebar_width", sidebar_width).unwrap_or_default();
+		save_config_file(&handle);
 	}
 }
 
