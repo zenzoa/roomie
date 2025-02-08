@@ -29,6 +29,12 @@ const setupInput = () => {
 
 	metaroomContainer.addEventListener('wheel', mouseWheel)
 
+	document.getElementById('main').addEventListener('mouseenter', (event) => {
+		if (isMouseDown && !event.buttons) {
+			mouseUp(event)
+		}
+	})
+
 	document.getElementById('sidebar-handle').addEventListener('mousedown', (event) => {
 		if (!isResizingSidebar) {
 			isResizingSidebar = true
@@ -52,7 +58,7 @@ const setupInput = () => {
 		if (isResizingSidebar) {
 			isResizingSidebar = false
 			Sidebar.setWidth(tempWidth)
-		} else {
+		} else if (event.pageX < window.innerWidth - Sidebar.width) {
 			mouseUp(event)
 		}
 	})
@@ -348,12 +354,19 @@ const mouseWheel = (event) => {
 	isCtrlDown = event.ctrlKey || event.metaKey
 	isShiftDown = event.shiftKey
 
-	if (isCtrlDown && metaroom) {
+	if (metaroom) {
 		event.preventDefault()
-		scrollAmount -= event.deltaY
-		scrollAmount = Math.min(Math.max(scrollAmount, -1000), 1000)
-		const newScale = (scrollAmount + 1000) / 2000 * (MAX_SCALE - MIN_SCALE)
-		setScale(newScale)
+		if (isCtrlDown) {
+			scrollAmount -= event.deltaY
+			scrollAmount = Math.min(Math.max(scrollAmount, -1000), 1000)
+			const newScale = (scrollAmount + 1000) / 2000 * (MAX_SCALE - MIN_SCALE)
+			setScale(newScale)
+		} else {
+			const scrollX = event.deltaX / scale * DPR * 2
+			const scrollY = event.deltaY / scale * DPR * 2
+			setOffset(xOffset - scrollX, yOffset - scrollY)
+			drawAll()
+		}
 	}
 }
 
