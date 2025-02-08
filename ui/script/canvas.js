@@ -3,12 +3,13 @@ const MAX_SCALE = 10
 
 let main = null
 let metaroomContainer = null
-let metaroomBG = null
 
+let canvasBG = null
 let canvasRooms = null
 let canvasOverlays = null
 let canvasSelection = null
 
+let ctxBG = null
 let ctxRooms = null
 let ctxOverlays = null
 let ctxSelection = null
@@ -25,6 +26,7 @@ let showOverlayCanvas = true
 
 let showRoomColors = true
 
+let bgImage = null
 let faviconImage = null
 let overlayImages = []
 
@@ -56,7 +58,9 @@ const polygon = (ctx, points) => {
 const setupCanvas = () => {
 	main = document.getElementById('main')
 	metaroomContainer = document.getElementById('metaroom-container')
-	metaroomBG = document.getElementById('metaroom-bg')
+
+	canvasBG = document.getElementById('canvas-bg')
+	ctxBG = canvasBG.getContext('2d')
 
 	canvasRooms = document.getElementById('canvas-rooms')
 	ctxRooms = canvasRooms.getContext('2d')
@@ -80,11 +84,6 @@ const resizeCanvas = () => {
 	metaroomContainer.style.width = `${width}px`
 	metaroomContainer.style.height = `${height}px`
 
-	metaroomBG.style.width = `${unadjustPos(metaroom.width)}px`
-	metaroomBG.style.height = `${unadjustPos(metaroom.height)}px`
-	metaroomBG.style.top = `${Math.floor(yOffset / DPR)}px`
-	metaroomBG.style.left = `${Math.floor(xOffset / DPR)}px`
-
 	const setCanvasSize = (canvas) => {
 		canvas.width = width * DPR
 		canvas.height = height * DPR
@@ -92,6 +91,7 @@ const resizeCanvas = () => {
 		canvas.style.height = `${height}px`
 	}
 
+	setCanvasSize(canvasBG)
 	setCanvasSize(canvasRooms)
 	setCanvasSize(canvasOverlays)
 	setCanvasSize(canvasSelection)
@@ -100,9 +100,28 @@ const resizeCanvas = () => {
 const drawAll = () => {
 	if (!metaroom) return
 	resizeCanvas()
+	drawBG()
 	drawRooms()
 	drawOverlays()
 	drawSelection()
+}
+
+const drawBG = () => {
+	ctxBG.setTransform(1, 0, 0, 1, 0, 0);
+	ctxBG.clearRect(0, 0, canvasBG.width, canvasBG.height)
+	ctxBG.translate(xOffset, yOffset)
+
+	if (!metaroom || !showBGCanvas) return
+
+	if (bgImage) {
+		ctxBG.drawImage(
+			bgImage,
+			0,
+			0,
+			bgImage.width * scale,
+			bgImage.height * scale
+		)
+	}
 }
 
 const drawRooms = () => {
@@ -485,16 +504,19 @@ const nudgeOffset = (dir) => {
 }
 
 const updateBGImage = (event) => {
-	if (metaroomBG && event.payload) {
-		metaroomBG.style.backgroundImage = `url(${convertFileSrc(`${Date.now()}-background`, 'getimage')})`
+	if (event.payload) {
+		bgImage = new Image()
+		bgImage.src = convertFileSrc(`${Date.now()}-background`, 'getimage')
+		bgImage.onload = drawBG
 	} else {
-		metaroomBG.style.backgroundImage = null
+		bgImage = null
+		drawBG()
 	}
 }
 
 const updateFaviconImage = (event) => {
 	if (event.payload) {
-		faviconImage = new Image(50, 45)
+		faviconImage = new Image()
 		faviconImage.src = convertFileSrc(`${Date.now()}-favicon`, 'getimage')
 		faviconImage.onload = drawRooms
 	} else {
@@ -517,7 +539,7 @@ const updateOverlayImage = (event) => {
 				metaroom.overlays[overlayID].h = event.payload[3]
 			}
 			if (event.payload[0]) {
-				overlayImages[overlayID] = new Image(event.payload[2], event.payload[3])
+				overlayImages[overlayID] = new Image()
 				overlayImages[overlayID].src = convertFileSrc(`${Date.now()}-overlay-${overlayID}`, 'getimage')
 				overlayImages[overlayID].onload = drawOverlays
 			} else {
@@ -534,7 +556,7 @@ const setRoomColorVisibility = (value, redraw) => {
 }
 
 const setBGOpacity = (value) => {
-	metaroomBG.style.opacity = `${value / 100}`
+	canvasBG.style.opacity = `${value / 100}`
 }
 
 const setOverlayOpacity = (value) => {
@@ -543,7 +565,7 @@ const setOverlayOpacity = (value) => {
 
 const setBGVisibility = (value) => {
 	showBGCanvas = value
-	metaroomBG.style.display = value ? 'block' : 'none'
+	canvasBG.style.display = value ? 'block' : 'none'
 }
 
 const setRoomVisibility = (value) => {

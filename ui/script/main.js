@@ -31,7 +31,7 @@ window.addEventListener('load', () => {
 			metaroom = event.payload[0]
 
 			if (event.payload[1]) {
-				metaroomBG.style.backgroundImage = null
+				bgImage = null
 				faviconImage = null
 				overlayImages = []
 				resetSelection()

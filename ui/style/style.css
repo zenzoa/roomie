@@ -181,11 +181,6 @@ canvas {
 	left: 0;
 }
 
-#metaroom-bg {
-	background-size: 100%;
-	background-repeat: no-repeat;
-}
-
 #position {
 	position: absolute;
 	bottom: 0;
