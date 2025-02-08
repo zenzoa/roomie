@@ -179,6 +179,37 @@ class Sidebar {
 		return selectEl
 	}
 
+	static createIconButton(id, title, iconName) {
+		const buttonEl = document.createElement('button')
+		buttonEl.id = id
+		buttonEl.title = title
+		const iconEl = document.createElement('img')
+		iconEl.src = `library/mono-icons/svg/${iconName}.svg`
+		iconEl.alt = title
+		buttonEl.append(iconEl)
+		return buttonEl
+	}
+
+	static createFileInput(id, label) {
+		let labelEl = document.createElement('label')
+
+		let spanEl = document.createElement('span')
+		spanEl.innerText = label
+		labelEl.append(spanEl)
+
+		let inputEl = document.createElement('input')
+		inputEl.setAttribute('type', 'text')
+		inputEl.id = id
+		labelEl.append(inputEl)
+
+		let buttonEl = Sidebar.createIconButton(null, 'Choose File', 'folder')
+		labelEl.append(buttonEl)
+
+		Sidebar.contentEl.append(labelEl)
+
+		return [inputEl, buttonEl]
+	}
+
 	static getInputInt(el, originalValue) {
 		const min = parseInt(el.getAttribute('min'))
 		const max = parseInt(el.getAttribute('max'))

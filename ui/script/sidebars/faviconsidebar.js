@@ -10,11 +10,19 @@ class FaviconSidebar {
 			tauri_invoke('update_favicon', { favicon, reloadImage: false })
 		})
 
-		const spriteInput = Sidebar.createStrInput('favicon-sprite', 'sprite')
+		const [spriteInput, spriteButton] = Sidebar.createFileInput('favicon-sprite', 'sprite')
 		spriteInput.value = favicon.sprite
 		spriteInput.addEventListener('change', () => {
 			favicon.sprite = spriteInput.value
 			tauri_invoke('update_favicon', { favicon, reloadImage: true })
+		})
+		spriteButton.addEventListener('click', () => {
+			tauri_invoke('select_c16_file').then((result) => {
+				if (result) {
+					favicon.sprite = result
+					tauri_invoke('update_favicon', { favicon, reloadImage: true })
+				}
+			})
 		})
 
 		const xInput = Sidebar.createIntInput('favicon-x', 'x', MAX_U32)

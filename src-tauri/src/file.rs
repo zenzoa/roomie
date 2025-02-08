@@ -1,6 +1,7 @@
 use std::fs;
 use std::error::Error;
 use std::path::{ Path, PathBuf };
+use std::ffi::OsStr;
 use std::sync::Mutex;
 use std::collections::HashMap;
 
@@ -9,13 +10,14 @@ use tauri::async_runtime::spawn;
 
 use rfd::{ FileDialog, MessageDialog, MessageButtons, MessageDialogResult };
 
-use image::RgbaImage;
+use image::{ ImageReader, RgbaImage };
 
 use crate::frontend::{ error_dialog, update_window_title, update_frontend_metaroom };
 use crate::caos::{ encode_metaroom, decode_metaroom };
 use crate::metaroom::{ MetaroomState, Metaroom };
 use crate::history::reset_history;
 use crate::config::{ add_recent_file, get_recent_file_path };
+use crate::format::blk::encode_blk;
 
 #[derive(Default)]
 pub struct FileState {
@@ -41,7 +43,9 @@ pub fn create_open_dialog(handle: &AppHandle) -> FileDialog {
 	let file_state: State<FileState> = handle.state();
 	let path_opt = file_state.path.lock().unwrap().clone();
 	if let Some(path) = path_opt {
-		file_dialog = file_dialog.set_directory(path);
+		if let Some(parent) = path.parent() {
+			file_dialog = file_dialog.set_directory(parent);
+		}
 	}
 
 	file_dialog
@@ -260,4 +264,131 @@ pub fn save_file_to_path(handle: &AppHandle, path: &Path) -> Result<(), Box<dyn 
 	add_recent_file(handle, path);
 
 	Ok(())
+}
+
+pub fn select_file(handle: &AppHandle, path: &PathBuf) -> Result<(String, String), Box<dyn Error>> {
+	let parent = path.parent().ok_or("Unable to get base path.")?;
+	let stem = path.file_stem().ok_or("Unable to get file title.")?.to_str().unwrap_or("").to_string();
+	let extension = path.extension().ok_or("Unable to get file title.")?.to_str().unwrap_or("").to_lowercase();
+
+	let file_state: State<FileState> = handle.state();
+	let path_opt = file_state.path.lock().unwrap();
+	if let Some(metaroom_path) = path_opt.as_ref() {
+		if let Some(metaroom_parent) = metaroom_path.parent() {
+			if metaroom_parent != parent {
+				return Err("File must be in same folder as metaroom file".into());
+			}
+		}
+	}
+
+	Ok((stem, extension))
+}
+
+pub fn ask_to_convert_image(path: &PathBuf, new_extension: &str) -> Option<String> {
+	let filename = path.file_name().unwrap_or(OsStr::new("")).to_str().unwrap_or("");
+	let stem = path.file_stem().unwrap_or(OsStr::new("")).to_str().unwrap_or("");
+
+	let convert_image = MessageDialog::new()
+		.set_title("Convert File?")
+		.set_description(format!("Do you want to convert {} to {}?", filename, new_extension.to_uppercase()))
+		.set_buttons(MessageButtons::YesNo)
+		.show();
+
+	if let MessageDialogResult::Yes = convert_image {
+		let new_path = path.with_extension(new_extension);
+		if new_path.exists() {
+			let overwrite_file = MessageDialog::new()
+				.set_title("Overwrite File?")
+				.set_description(format!("{}.{} already exists. Do you want to overwrite it?", stem, new_extension))
+				.set_buttons(MessageButtons::YesNo)
+				.show();
+			if let MessageDialogResult::No = overwrite_file {
+				return None
+			}
+		}
+		match new_extension {
+			"blk" => {
+				match png_to_blk(&path, &new_path) {
+					Ok(()) => return Some(stem.to_string()),
+					Err(why) => error_dialog(why.to_string())
+				}
+			},
+			// "c16" => {
+			// 	match png_to_c16(&path, &new_path) {
+			// 		Ok(()) => return Some(stem.to_string()),
+			// 		Err(why) => error_dialog(why.to_string())
+			// 	}
+			// },
+			_ => {}
+		}
+	}
+
+	None
+}
+
+#[tauri::command]
+pub fn select_blk_file(handle: AppHandle) -> Option<String> {
+	let path_opt = create_open_dialog(&handle)
+		.set_title("Open Background Image")
+		.add_filter("Image", &["blk", "BLK", "png", "PNG"])
+		.pick_file();
+	if let Some(path) = path_opt {
+		match select_file(&handle, &path) {
+			Ok((stem, extension)) => {
+				match extension.as_str() {
+					"blk" => return Some(stem.to_string()),
+					"png" => return ask_to_convert_image(&path, "blk"),
+					_ => {}
+				}
+			},
+			Err(why) => error_dialog(why.to_string())
+		}
+	}
+	None
+}
+
+#[tauri::command]
+pub fn select_c16_file(handle: AppHandle) -> Option<String> {
+	let path_opt = create_open_dialog(&handle)
+		.set_title("Open Image")
+		.add_filter("Image", &["c16", "C16"])
+		.pick_file();
+	if let Some(path) = path_opt {
+		match select_file(&handle, &path) {
+			Ok((stem, extension)) => {
+				match extension.as_str() {
+					"c16" => return Some(stem.to_string()),
+					// "png" => return ask_to_convert_image(&path, "c16"),
+					_ => {}
+				}
+			},
+			Err(why) => error_dialog(why.to_string())
+		}
+	}
+	None
+}
+
+#[tauri::command]
+pub fn select_mng_file(handle: AppHandle) -> Option<String> {
+	let path_opt = create_open_dialog(&handle)
+		.set_title("Open Music")
+		.add_filter("Creatures Music", &["mng", "MNG"])
+		.pick_file();
+	if let Some(path) = path_opt {
+		match select_file(&handle, &path) {
+			Ok((stem, extension)) => return Some(format!("{}.{}", stem, extension)),
+			Err(why) => error_dialog(why.to_string())
+		}
+	}
+	None
+}
+
+fn open_png(path: &Path) -> Result<RgbaImage, Box<dyn Error>> {
+	Ok(ImageReader::open(path)?.decode()?.to_rgba8())
+}
+
+fn png_to_blk(path: &Path, new_path: &Path) -> Result<(), Box<dyn Error>> {
+	let img = open_png(path)?;
+	let data = encode_blk(&img)?;
+	Ok(fs::write(new_path, &data)?)
 }

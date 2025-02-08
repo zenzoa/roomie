@@ -10,11 +10,19 @@ class OverlaySidebar {
 			tauri_invoke('update_overlays', { overlays, reloadImages: false })
 		})
 
-		const spriteInput = Sidebar.createStrInput('overlay-sprite', 'sprite')
+		const [spriteInput, spriteButton] = Sidebar.createFileInput('overlay-sprite', 'sprite')
 		spriteInput.value = Sidebar.allTheSame(overlays, 'sprite') ? overlays[0].sprite : ''
 		spriteInput.addEventListener('change', () => {
 			for (let overlay of overlays) overlay.sprite = spriteInput.value
 			tauri_invoke('update_overlays', { overlays, reloadImages: true })
+		})
+		spriteButton.addEventListener('click', () => {
+			tauri_invoke('select_c16_file').then((result) => {
+				if (result) {
+					for (let overlay of overlays) overlay.sprite = result
+					tauri_invoke('update_overlays', { overlays, reloadImages: true })
+				}
+			})
 		})
 
 		const animationInput = Sidebar.createStrInput('overlay-animation', 'animation')

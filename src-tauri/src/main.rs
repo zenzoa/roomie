@@ -207,6 +207,8 @@ fn main() {
 			frontend::get_objects_within,
 
 			frontend::update_metaroom,
+			frontend::update_metaroom_bg,
+			frontend::resize_metaroom,
 
 			frontend::update_doors,
 
@@ -233,6 +235,10 @@ fn main() {
 			config::toggle_room_visibility,
 			config::toggle_overlay_visibility,
 			config::set_sidebar_width,
+
+			file::select_blk_file,
+			file::select_c16_file,
+			file::select_mng_file,
 
 			load_config_file,
 			error_dialog,

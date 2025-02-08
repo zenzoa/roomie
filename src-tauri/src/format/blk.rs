@@ -1,13 +1,14 @@
 use std::error::Error;
-use bytes::{ Bytes, Buf };
-use image::RgbaImage;
+use bytes::{ Bytes, BytesMut, Buf, BufMut };
+use image::{ Rgba, RgbaImage };
 
 use super::{
 	PixelFormat,
 	file_header_error,
 	image_header_error,
 	image_error,
-	parse_pixel
+	parse_pixel,
+	encode_pixel
 };
 
 struct FileHeader {
@@ -113,4 +114,87 @@ fn combine_frames(frames: &Vec<RgbaImage>, cols: usize, rows: usize, by_rows: bo
 	}
 
 	Ok(output_image)
+}
+
+pub fn encode_blk(img: &RgbaImage) -> Result<Bytes, Box<dyn Error>> {
+	let cols = (img.width() as f32 / 128.0).ceil() as u32;
+	let rows = (img.height() as f32 / 128.0).ceil() as u32;
+
+	let mut frames: Vec<RgbaImage> = Vec::new();
+	for col in 0..cols {
+		for row in 0..rows {
+			let tile_x = col * 128_u32;
+			let tile_y = row * 128_u32;
+			let mut tile_image = RgbaImage::new(128, 128);
+			for y in 0..128 {
+				for x in 0..128 {
+					let image_x = tile_x + x;
+					let image_y = tile_y + y;
+					let pixel = if image_x < img.width() && image_y < img.height() {
+						*img.get_pixel(image_x, image_y)
+					} else {
+						Rgba([0, 0, 0, 255])
+					};
+					tile_image.put_pixel(x, y, pixel);
+				}
+			}
+			frames.push(tile_image);
+		}
+	}
+
+	export_blk(&frames, cols as u16, rows as u16)
+}
+
+pub fn export_blk(frames: &[RgbaImage], width: u16, height: u16) -> Result<Bytes, Box<dyn Error>> {
+	if frames.len() != width as usize * height as usize {
+		return Err(format!("Expected {} frames, found {}.", width * height, frames.len()).into());
+	}
+
+	let mut buffer = BytesMut::new();
+	buffer.unsplit(write_file_header(width, height));
+
+	let header_size = 10 + (8 * frames.len());
+	let frame_size = 128 * 128 * 2;
+
+	let mut images_buffer = BytesMut::new();
+	for (i, frame) in frames.iter().enumerate() {
+		if frame.width() != 128 || frame.height() != 128 {
+			return Err("All frames in a BLK file must be 128 x 128px.".into());
+		}
+		let first_line_offset = header_size + (frame_size * i);
+		buffer.unsplit(write_image_header(first_line_offset as u32));
+		let image_buffer = write_image_data(&frame);
+		images_buffer.unsplit(image_buffer);
+	}
+
+	buffer.unsplit(images_buffer);
+	Ok(buffer.freeze())
+}
+
+fn write_file_header(cols: u16, rows: u16) -> BytesMut {
+	let mut buffer = BytesMut::new();
+	buffer.put_u32_le(1); // 565 format
+	buffer.put_u16_le(cols);
+	buffer.put_u16_le(rows);
+	buffer.put_u16_le(cols * rows);
+	buffer
+}
+
+fn write_image_header(first_line_offset: u32) -> BytesMut {
+	let mut buffer = BytesMut::new();
+	buffer.put_u32_le(first_line_offset - 4);
+	buffer.put_u16_le(128);
+	buffer.put_u16_le(128);
+	buffer
+}
+
+fn write_image_data(image: &RgbaImage) -> BytesMut {
+	let mut buffer = BytesMut::new();
+	for y in 0..128 {
+		for x in 0..128 {
+			let pixel = image.get_pixel(x, y);
+			buffer.put_u16_le(encode_pixel(pixel));
+		}
+	}
+	buffer
 }

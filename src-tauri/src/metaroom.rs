@@ -1,10 +1,13 @@
 use std::sync::Mutex;
 use std::collections::HashMap;
 use std::fs;
+use std::error::Error;
+
+use rfd::{ MessageDialog, MessageButtons, MessageDialogResult };
+use serde::{ Serialize, Deserialize };
 
 use tauri::{ AppHandle, State, Manager, Emitter as TauriEmitter };
-
-use serde::{ Serialize, Deserialize };
+use tauri::async_runtime::spawn;
 
 use crate::geometry::{ Point, Polygon };
 
@@ -334,6 +337,31 @@ impl Metaroom {
 		closest_overlay_id
 	}
 
+	pub fn resize(&mut self, w: u32, h: u32) -> Result<(), Box<dyn Error>> {
+		if let Some(favicon) = &self.favicon {
+			if favicon.x + 24 >= w || favicon.y + 23 >= h {
+				return Err("Unable to resize metaroom because one or more objects are outside the new dimensions.".into());
+			}
+		}
+
+		for overlay in &self.overlays {
+			if overlay.x + overlay.w >= w || overlay.y + overlay.h >= h {
+				return Err("Unable to resize metaroom because one or more objects are outside the new dimensions.".into());
+			}
+		}
+
+		for room in &self.rooms {
+			if room.x_right >= w || room.y_bot_left >= h || room.y_bot_right >= h {
+				return Err("Unable to resize metaroom because one or more objects are outside the new dimensions.".into());
+			}
+		}
+
+		self.width = w;
+		self.height = h;
+
+		Ok(())
+	}
+
 	pub fn load_background_image(&self, handle: &AppHandle) {
 		if !self.background.is_empty() {
 			let file_state: State<FileState> = handle.state();
@@ -342,15 +370,40 @@ impl Metaroom {
 				let bg_path = path.with_file_name(format!("{}.blk", self.background));
 				match fs::read(&bg_path) {
 					Ok(img_contents) => {
-						match import_blk(&img_contents) {
-							Ok(bg_image) => {
-								let file_state: State<FileState> = handle.state();
-								*file_state.bg_image.lock().unwrap() = Some(bg_image);
-								handle.emit("update_bg_image", true).unwrap_or_default();
-								return
-							},
-							Err(_why) => error_dialog(format!("ERROR: Unable to read background image {}", bg_path.to_string_lossy()))
-						}
+						let handle = handle.clone();
+						spawn(async move {
+							let mut bg_found = false;
+							match import_blk(&img_contents) {
+								Ok(bg_image) => {
+									let metaroom_state: State<MetaroomState> = handle.state();
+									let mut metaroom_opt = metaroom_state.metaroom.lock().unwrap();
+									if let Some(metaroom) = metaroom_opt.as_mut() {
+										if bg_image.width() != metaroom.width || bg_image.height() != metaroom.height {
+											let result = MessageDialog::new()
+												.set_title("Resize Metaroom?")
+												.set_description(format!("Background image ({}x{}) has different dimensions than metaroom ({}x{}). Resize metaroom to match?", bg_image.width(), bg_image.height(), metaroom.width, metaroom.height))
+												.set_buttons(MessageButtons::YesNo)
+												.show();
+											if let MessageDialogResult::Yes = result {
+												if let Err(why) = metaroom.resize(bg_image.width(), bg_image.height()) {
+													error_dialog(why.to_string());
+												} else {
+													handle.emit("update_metaroom", (metaroom.clone(), false)).unwrap_or_default();
+												}
+											}
+										}
+									}
+									let file_state: State<FileState> = handle.state();
+									*file_state.bg_image.lock().unwrap() = Some(bg_image);
+									bg_found = true;
+								},
+								Err(_why) => {
+									error_dialog(format!("ERROR: Unable to read background image {}", bg_path.to_string_lossy()))
+								}
+							}
+							handle.emit("update_bg_image", bg_found).unwrap_or_default();
+						});
+						return;
 					}
 					Err(_why) => error_dialog(format!("ERROR: Unable to find background image {}", bg_path.to_string_lossy()))
 				}

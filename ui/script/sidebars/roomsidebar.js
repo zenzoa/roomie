@@ -101,10 +101,10 @@ class RoomSidebar {
 			const rightHeight = room.y_bot_right - room.y_top_right
 			const slope = -Math.floor(bottomHeight / width * 100 * 100)/ 100
 
-			if (width < 150 || leftHeight < 170 || rightHeight < 170) {
+			if (leftHeight < 170 || rightHeight < 170) {
 				const sizeWarningEl = document.createElement('div')
 				sizeWarningEl.className = 'size-warning'
-				sizeWarningEl.innerText = 'Room may be too small for some creatures'
+				sizeWarningEl.innerText = 'Room may be too short for some creatures'
 				Sidebar.contentEl.append(sizeWarningEl)
 			}
 
@@ -127,7 +127,7 @@ class RoomSidebar {
 			Sidebar.createDivider()
 		}
 
-		const musicFileInput = Sidebar.createStrInput('room-music-file', 'music file')
+		const [musicFileInput, musicFileButton] = Sidebar.createFileInput('room-music-file', 'music file')
 		musicFileInput.value = Sidebar.allTheSame(rooms, 'music_file_name') ? rooms[0].music_file_name : ''
 		musicFileInput.addEventListener('change', () => {
 			for (let room of rooms) room.music_file_name = musicFileInput.value
@@ -221,13 +221,7 @@ class RoomSidebar {
 		})
 		smellEl.append(smellAmountInput)
 
-		const smellDeleteButton = document.createElement('button')
-		smellDeleteButton.id = `smell-${smellId}-delete`
-		smellDeleteButton.title = 'Delete Smell'
-		const smellDeleteIcon = document.createElement('img')
-		smellDeleteIcon.src = 'library/mono-icons/svg/delete.svg'
-		smellDeleteIcon.alt = 'Delete Smell'
-		smellDeleteButton.append(smellDeleteIcon)
+		const smellDeleteButton = createIconButton(`smell-${smellId}-delete`, 'Delete Smell', 'delete')
 		smellDeleteButton.addEventListener('click', () => {
 			room.smells.splice(smellId, 1)
 			tauri_invoke('update_smells', { roomId: room.id, smells: room.smells })

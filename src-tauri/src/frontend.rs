@@ -193,6 +193,29 @@ pub fn update_metaroom(handle: AppHandle, metaroom_state: State<MetaroomState>, 
 }
 
 #[tauri::command]
+pub fn update_metaroom_bg(handle: AppHandle, metaroom_state: State<MetaroomState>, bg: String) {
+	if let Some(metaroom) = metaroom_state.metaroom.lock().unwrap().as_mut() {
+		add_history_state(&handle, &metaroom);
+		metaroom.background = bg;
+		metaroom.load_background_image(&handle);
+	}
+	update_frontend_metaroom(&handle, false);
+	update_window_title(&handle);
+}
+
+#[tauri::command]
+pub fn resize_metaroom(handle: AppHandle, metaroom_state: State<MetaroomState>, w: u32, h: u32) {
+	if let Some(metaroom) = metaroom_state.metaroom.lock().unwrap().as_mut() {
+		add_history_state(&handle, &metaroom);
+		if let Err(why) = metaroom.resize(w, h) {
+			error_dialog(why.to_string());
+		}
+	}
+	update_frontend_metaroom(&handle, false);
+	update_window_title(&handle);
+}
+
+#[tauri::command]
 pub fn update_doors(handle: AppHandle, metaroom_state: State<MetaroomState>, doors: Vec<Door>) {
 	if let Some(metaroom) = metaroom_state.metaroom.lock().unwrap().as_mut() {
 		add_history_state(&handle, &metaroom);
