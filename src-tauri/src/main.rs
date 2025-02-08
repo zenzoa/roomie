@@ -41,12 +41,9 @@ fn main() {
 	Builder::default()
 
 		.on_window_event(|window, event| {
-			match event {
-				WindowEvent::CloseRequested { api, .. } => {
-					api.prevent_close();
-					try_quit(window.app_handle().clone());
-				},
-				_ => {}
+			if let WindowEvent::CloseRequested { api, .. } = event {
+				api.prevent_close();
+				try_quit(window.app_handle().clone());
 			}
 		})
 
@@ -286,7 +283,7 @@ fn main() {
 					},
 					"overlay" => {
 						if uri_parts.len() >= 3 {
-							if let Ok(overlay_id) = u32::from_str_radix(uri_parts[2], 10) {
+							if let Ok(overlay_id) = uri_parts[2].parse::<u32>() {
 								let overlay_images = file_state.overlay_images.lock().unwrap();
 								if let Some(overlay_image) = overlay_images.get(&overlay_id) {
 									let mut img_data = Cursor::new(Vec::new());

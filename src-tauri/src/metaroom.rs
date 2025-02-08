@@ -2,6 +2,7 @@ use std::sync::Mutex;
 use std::collections::HashMap;
 use std::fs;
 use std::error::Error;
+use std::cmp::Ordering;
 
 use rfd::{ MessageDialog, MessageButtons, MessageDialogResult };
 use serde::{ Serialize, Deserialize };
@@ -99,10 +100,8 @@ impl Metaroom {
 		for room in self.rooms.iter_mut() {
 			room.collision = false;
 			for other_room in &other_rooms {
-				if room.id != other_room.id {
-					if room.collides_room(other_room) {
-						room.collision = true;
-					}
+				if room.id != other_room.id && room.collides_room(other_room) {
+					room.collision = true;
 				}
 			}
 		}
@@ -121,7 +120,7 @@ impl Metaroom {
 				if room1_id != room2_id && !existing_room_pairs.contains(&room_pair) {
 					existing_room_pairs.push(room_pair);
 
-					if let Some(line) = room1.get_overlap(&room2) {
+					if let Some(line) = room1.get_overlap(room2) {
 						let permeability = match self.permeabilities.get(&room_pair) {
 							Some(perm) => *perm,
 							None => 100
@@ -178,28 +177,28 @@ impl Metaroom {
 
 	pub fn remove_room(&mut self, room_id: u32) {
 		self.rooms = self.rooms.clone().into_iter().filter_map(|mut room| {
-			if room.id == room_id {
-				return None;
-			} else if room.id > room_id {
-				room.id -= 1;
+			match room.id.cmp(&room_id) {
+				Ordering::Equal => { return None; },
+				Ordering::Greater => { room.id -= 1; },
+				Ordering::Less => {},
 			}
 			Some(room)
 		}).collect();
 
 		self.sides = self.sides.clone().into_iter().filter_map(|mut side| {
-			if side.room_id == room_id {
-				return None;
-			} else if side.room_id > room_id {
-				side.room_id -= 1;
+			match side.room_id.cmp(&room_id) {
+				Ordering::Equal => { return None; },
+				Ordering::Greater => { side.room_id -= 1; },
+				Ordering::Less => {},
 			}
 			Some(side)
 		}).collect();
 
 		self.corners = self.corners.clone().into_iter().filter_map(|mut corner| {
-			if corner.room_id == room_id {
-				return None;
-			} else if corner.room_id > room_id {
-				corner.room_id -= 1;
+			match corner.room_id.cmp(&room_id) {
+				Ordering::Equal => { return None; },
+				Ordering::Greater => { corner.room_id -= 1; },
+				Ordering::Less => {},
 			}
 			Some(corner)
 		}).collect();
@@ -424,17 +423,17 @@ impl Metaroom {
 
 	pub fn refresh_images(&mut self, handle: &AppHandle, other_metaroom: &Metaroom) {
 		if self.background != other_metaroom.background {
-			self.load_background_image(&handle);
+			self.load_background_image(handle);
 		}
 		if self.favicon != other_metaroom.favicon {
 			if let Some(favicon) = &self.favicon {
-				favicon.load_image(&handle);
+				favicon.load_image(handle);
 			}
 		}
 		for overlay in self.overlays.iter_mut() {
 			if let Some(other_overlay) = other_metaroom.overlays.get(overlay.id as usize) {
 				if overlay.sprite != other_overlay.sprite {
-					overlay.load_image(&handle);
+					overlay.load_image(handle);
 				}
 			}
 		}

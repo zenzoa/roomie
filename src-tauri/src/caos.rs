@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::error::Error;
+use std::fmt;
 
 use crate::metaroom::{
 	Metaroom,
@@ -51,19 +52,21 @@ impl ByteString {
 	fn from_string(s: &str) -> Self {
 		let mut bytes = Vec::new();
 		for b in s.split(' ').collect::<Vec<&str>>() {
-			if let Some(byte) = u8::from_str_radix(b, 10).ok() {
+			if let Ok(byte) = b.parse::<u8>() {
 				bytes.push(byte);
 			}
 		}
 		ByteString{ bytes }
 	}
+}
 
-	fn to_string(&self) -> String {
+impl fmt::Display for ByteString {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let s = self.bytes.iter()
 			.map(|b| b.to_string())
 			.collect::<Vec<String>>()
 			.join(" ");
-		format!("[{}]", s)
+		write!(f, "[{}]", s)
 	}
 }
 
@@ -94,7 +97,7 @@ fn parse_tokens(file_contents: &str) -> Vec<Token> {
 		if let Some(current_token_inner) = current_token.as_mut() {
 			match current_token_inner {
 				Token::Number(value) => {
-					if c.is_digit(10) || c == '.' {
+					if c.is_ascii_digit() || c == '.' {
 						value.push(c);
 					} else {
 						finalize_token(&mut tokens, &mut current_token);
@@ -127,16 +130,14 @@ fn parse_tokens(file_contents: &str) -> Vec<Token> {
 					}
 				}
 			}
-		} else {
-			if c.is_digit(10) {
-				current_token = Some(Token::Number(c.to_string()));
-			} else if c == '"' {
-				current_token = Some(Token::String("".to_string()));
-			} else if c == '[' {
-				current_token = Some(Token::ByteString("".to_string()));
-			} else if !c.is_whitespace() {
-				current_token = Some(Token::Command(c.to_string()));
-			}
+		} else if c.is_ascii_digit() {
+			current_token = Some(Token::Number(c.to_string()));
+		} else if c == '"' {
+			current_token = Some(Token::String("".to_string()));
+		} else if c == '[' {
+			current_token = Some(Token::ByteString("".to_string()));
+		} else if !c.is_whitespace() {
+			current_token = Some(Token::Command(c.to_string()));
 		}
 	}
 
@@ -157,7 +158,7 @@ fn get_next_token_float(context: &mut Context, tokens: &[Token], i: &mut usize) 
 	match eval_next_token(context, tokens, i)? {
 		TokenValue::Number(value) => Ok(value),
 		TokenValue::String(value) => Err(format!("Expected number, found string \"{}\"", value).into()),
-		TokenValue::ByteString(value) => Err(format!("Expected number, found byte string \"{}\"", value.to_string()).into()),
+		TokenValue::ByteString(value) => Err(format!("Expected number, found byte string \"{}\"", value).into()),
 		TokenValue::None => Err("Expected number, found nothing".into())
 	}
 }
@@ -176,7 +177,7 @@ fn get_next_token_str(context: &mut Context, tokens: &[Token], i: &mut usize) ->
 	match eval_next_token(context, tokens, i)? {
 		TokenValue::Number(value) => Err(format!("Expected string, found number {}", value).into()),
 		TokenValue::String(value) => Ok(value),
-		TokenValue::ByteString(value) => Err(format!("Expected string, found byte string \"{}\"", value.to_string()).into()),
+		TokenValue::ByteString(value) => Err(format!("Expected string, found byte string \"{}\"", value).into()),
 		TokenValue::None => Err("Expected string, found nothing".into())
 	}
 }
@@ -194,7 +195,7 @@ fn get_next_token_symbol(tokens: &[Token], i: &mut usize) -> Result<String, Box<
 	match get_next_token(tokens, i)? {
 		Token::Number(value) => Err(format!("Expected symbol, found number {}", value).into()),
 		Token::String(value) => Err(format!("Expected symbol, found string \"{}\"", value).into()),
-		Token::ByteString(value) => Err(format!("Expected symbol, found byte string \"{}\"", value.to_string()).into()),
+		Token::ByteString(value) => Err(format!("Expected symbol, found byte string \"{}\"", value).into()),
 		Token::Command(value) => Ok(value)
 	}
 }
@@ -241,7 +242,7 @@ fn eval_next_token(context: &mut Context, tokens: &[Token], i: &mut usize) -> Re
 							));
 							Ok(TokenValue::Number(room_id as f32))
 					} else {
-						return Err(format!("ADDR room {} is outside metaroom", room_id).into());
+						Err(format!("ADDR room {} is outside metaroom", room_id).into())
 					}
 
 
@@ -412,7 +413,7 @@ fn eval_next_token(context: &mut Context, tokens: &[Token], i: &mut usize) -> Re
 						}
 						Ok(TokenValue::None)
 					} else {
-						Err(format!("ANIM {} has no target overlay", ByteString{ bytes }.to_string()).into())
+						Err(format!("ANIM {} has no target overlay", ByteString{ bytes }).into())
 					}
 				},
 

@@ -81,11 +81,7 @@ pub fn is_ok_to_modify(handle: &AppHandle) -> bool {
 			.set_description("Do you want to continue anyway and lose any unsaved work?")
 			.set_buttons(MessageButtons::YesNo)
 			.show();
-		if let MessageDialogResult::Yes = confirm_continue {
-			true
-		} else {
-			false
-		}
+		matches!(confirm_continue, MessageDialogResult::Yes)
 	} else {
 		true
 	}
@@ -119,7 +115,7 @@ pub fn open_file(handle: AppHandle) {
 		if let Some(file_handle) = file_handle_opt {
 			handle.emit("show_spinner", ()).unwrap_or_default();
 			spawn(async move {
-				if let Err(why) = open_file_from_path(&handle, &file_handle.as_path()) {
+				if let Err(why) = open_file_from_path(&handle, file_handle.as_path()) {
 					println!("ERROR: {}", why);
 					error_dialog(why.to_string());
 				};
@@ -195,13 +191,13 @@ pub fn open_file_from_path(handle: &AppHandle, path: &Path) -> Result<(), Box<dy
 	*file_state.lines_after.lock().unwrap() = lines_after;
 	*file_state.bg_image.lock().unwrap() = None;
 
-	add_recent_file(&handle, path);
+	add_recent_file(handle, path);
 
-	update_window_title(&handle);
-	update_frontend_metaroom(&handle, true);
-	reset_history(&handle);
+	update_window_title(handle);
+	update_frontend_metaroom(handle, true);
+	reset_history(handle);
 
-	metaroom.load_images(&handle);
+	metaroom.load_images(handle);
 
 	Ok(())
 }
@@ -233,7 +229,7 @@ pub fn save_as(handle: AppHandle) {
 	if let Some(file_handle) = file_handle_opt {
 		handle.emit("show_spinner", ()).unwrap_or_default();
 		spawn(async move {
-			if let Err(why) = save_file_to_path(&handle, &file_handle.as_path()) {
+			if let Err(why) = save_file_to_path(&handle, file_handle.as_path()) {
 				println!("ERROR: {}", why);
 				error_dialog(why.to_string());
 			}
@@ -250,7 +246,7 @@ pub fn save_file_to_path(handle: &AppHandle, path: &Path) -> Result<(), Box<dyn 
 	let metaroom_opt = metaroom_state.metaroom.lock().unwrap();
 	let metaroom = metaroom_opt.as_ref().ok_or("No metaroom")?;
 
-	let metaroom_data = encode_metaroom(&metaroom, &version);
+	let metaroom_data = encode_metaroom(metaroom, &version);
 
 	let file_state: State<FileState> = handle.state();
 	let data_before = file_state.lines_before.lock().unwrap().join("\r\n");
@@ -266,7 +262,7 @@ pub fn save_file_to_path(handle: &AppHandle, path: &Path) -> Result<(), Box<dyn 
 	Ok(())
 }
 
-pub fn select_file(handle: &AppHandle, path: &PathBuf) -> Result<(String, String), Box<dyn Error>> {
+pub fn select_file(handle: &AppHandle, path: &Path) -> Result<(String, String), Box<dyn Error>> {
 	let parent = path.parent().ok_or("Unable to get base path.")?;
 	let stem = path.file_stem().ok_or("Unable to get file title.")?.to_str().unwrap_or("").to_string();
 	let extension = path.extension().ok_or("Unable to get file title.")?.to_str().unwrap_or("").to_lowercase();
@@ -284,7 +280,7 @@ pub fn select_file(handle: &AppHandle, path: &PathBuf) -> Result<(String, String
 	Ok((stem, extension))
 }
 
-pub fn ask_to_convert_image(path: &PathBuf, new_extension: &str) -> Option<String> {
+pub fn ask_to_convert_image(path: &Path, new_extension: &str) -> Option<String> {
 	let filename = path.file_name().unwrap_or(OsStr::new("")).to_str().unwrap_or("");
 	let stem = path.file_stem().unwrap_or(OsStr::new("")).to_str().unwrap_or("");
 
@@ -308,7 +304,7 @@ pub fn ask_to_convert_image(path: &PathBuf, new_extension: &str) -> Option<Strin
 		}
 		match new_extension {
 			"blk" => {
-				match png_to_blk(&path, &new_path) {
+				match png_to_blk(path, &new_path) {
 					Ok(()) => return Some(stem.to_string()),
 					Err(why) => error_dialog(why.to_string())
 				}

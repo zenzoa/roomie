@@ -163,7 +163,7 @@ pub fn export_blk(frames: &[RgbaImage], width: u16, height: u16) -> Result<Bytes
 		}
 		let first_line_offset = header_size + (frame_size * i);
 		buffer.unsplit(write_image_header(first_line_offset as u32));
-		let image_buffer = write_image_data(&frame);
+		let image_buffer = write_image_data(frame);
 		images_buffer.unsplit(image_buffer);
 	}
 

@@ -185,7 +185,7 @@ pub fn get_objects_within(metaroom_state: State<MetaroomState>, config_state: St
 #[tauri::command]
 pub fn update_metaroom(handle: AppHandle, metaroom_state: State<MetaroomState>, metaroom: Metaroom) {
 	if let Some(old_metaroom) = metaroom_state.metaroom.lock().unwrap().as_mut() {
-		add_history_state(&handle, &old_metaroom);
+		add_history_state(&handle, old_metaroom);
 		*old_metaroom = metaroom;
 	}
 	update_frontend_metaroom(&handle, false);
@@ -195,7 +195,7 @@ pub fn update_metaroom(handle: AppHandle, metaroom_state: State<MetaroomState>, 
 #[tauri::command]
 pub fn update_metaroom_bg(handle: AppHandle, metaroom_state: State<MetaroomState>, bg: String) {
 	if let Some(metaroom) = metaroom_state.metaroom.lock().unwrap().as_mut() {
-		add_history_state(&handle, &metaroom);
+		add_history_state(&handle, metaroom);
 		metaroom.background = bg;
 		metaroom.load_background_image(&handle);
 	}
@@ -206,7 +206,7 @@ pub fn update_metaroom_bg(handle: AppHandle, metaroom_state: State<MetaroomState
 #[tauri::command]
 pub fn resize_metaroom(handle: AppHandle, metaroom_state: State<MetaroomState>, w: u32, h: u32) {
 	if let Some(metaroom) = metaroom_state.metaroom.lock().unwrap().as_mut() {
-		add_history_state(&handle, &metaroom);
+		add_history_state(&handle, metaroom);
 		if let Err(why) = metaroom.resize(w, h) {
 			error_dialog(why.to_string());
 		}
@@ -218,7 +218,7 @@ pub fn resize_metaroom(handle: AppHandle, metaroom_state: State<MetaroomState>, 
 #[tauri::command]
 pub fn update_doors(handle: AppHandle, metaroom_state: State<MetaroomState>, doors: Vec<Door>) {
 	if let Some(metaroom) = metaroom_state.metaroom.lock().unwrap().as_mut() {
-		add_history_state(&handle, &metaroom);
+		add_history_state(&handle, metaroom);
 		for updated_door in doors {
 			let door_id = updated_door.id as usize;
 			if let Some(door) = metaroom.doors.get_mut(door_id) {
@@ -233,14 +233,14 @@ pub fn update_doors(handle: AppHandle, metaroom_state: State<MetaroomState>, doo
 #[tauri::command]
 pub fn update_rooms(handle: AppHandle, metaroom_state: State<MetaroomState>, rooms: Vec<Room>) {
 	if let Some(metaroom) = metaroom_state.metaroom.lock().unwrap().as_mut() {
-		add_history_state(&handle, &metaroom);
+		add_history_state(&handle, metaroom);
 		for updated_room in rooms {
 			let room_id = updated_room.id as usize;
 			if let Some(room) = metaroom.rooms.get_mut(room_id) {
 				*room = updated_room;
 			}
 			if let Some(room) = metaroom.rooms.get(room_id) {
-				metaroom.update_room_bits(room.id as u32);
+				metaroom.update_room_bits(room.id);
 			}
 		}
 		metaroom.mark_room_collisions();
@@ -254,7 +254,7 @@ pub fn update_rooms(handle: AppHandle, metaroom_state: State<MetaroomState>, roo
 pub fn add_room(handle: AppHandle) {
 	let metaroom_state: State<MetaroomState> = handle.state();
 	if let Some(metaroom) = metaroom_state.metaroom.lock().unwrap().as_mut() {
-		add_history_state(&handle, &metaroom);
+		add_history_state(&handle, metaroom);
 		metaroom.add_room(Room::default());
 	}
 	update_frontend_metaroom(&handle, false);
@@ -265,7 +265,7 @@ pub fn add_room(handle: AppHandle) {
 #[tauri::command]
 pub fn remove_rooms(handle: AppHandle, metaroom_state: State<MetaroomState>, mut ids: Vec<u32>) {
 	if let Some(metaroom) = metaroom_state.metaroom.lock().unwrap().as_mut() {
-		add_history_state(&handle, &metaroom);
+		add_history_state(&handle, metaroom);
 		for i in 0..ids.len() {
 			metaroom.remove_room(ids[i]);
 			for j in i..ids.len() {
@@ -283,7 +283,7 @@ pub fn remove_rooms(handle: AppHandle, metaroom_state: State<MetaroomState>, mut
 #[tauri::command]
 pub fn update_smells(handle: AppHandle, metaroom_state: State<MetaroomState>, room_id: usize, smells: Vec<Smell>) {
 	if let Some(metaroom) = metaroom_state.metaroom.lock().unwrap().as_mut() {
-		add_history_state(&handle, &metaroom);
+		add_history_state(&handle, metaroom);
 		if let Some(room) = metaroom.rooms.get_mut(room_id) {
 			room.smells = smells
 		}
@@ -300,7 +300,7 @@ pub fn update_link(handle: AppHandle, metaroom_state: State<MetaroomState>, id: 
 		None
 	};
 	if let Some(metaroom) = metaroom_state.metaroom.lock().unwrap().as_mut() {
-		add_history_state(&handle, &metaroom);
+		add_history_state(&handle, metaroom);
 		let links = metaroom.links.clone();
 		if let Some(link) = metaroom.links.get_mut(id) {
 			if let Some(room_id) = room_id {
@@ -334,7 +334,7 @@ pub fn add_link(handle: AppHandle, room1_id: u32, room2_id: u32) {
 		if !link_exists(&links, room1_id, room2_id) {
 			let link_id = metaroom.links.len() as u32;
 			if let Ok(link) = Link::new(link_id, room1_id, room2_id, &metaroom.rooms) {
-				add_history_state(&handle, &metaroom);
+				add_history_state(&handle, metaroom);
 				metaroom.links.push(link);
 			}
 		}
@@ -346,7 +346,7 @@ pub fn add_link(handle: AppHandle, room1_id: u32, room2_id: u32) {
 #[tauri::command]
 pub fn remove_links(handle: AppHandle, metaroom_state: State<MetaroomState>, ids: Vec<u32>) {
 	if let Some(metaroom) = metaroom_state.metaroom.lock().unwrap().as_mut() {
-		add_history_state(&handle, &metaroom);
+		add_history_state(&handle, metaroom);
 		metaroom.links = metaroom.links.clone().into_iter()
 			.filter(|l| !ids.contains(&l.id))
 			.collect::<Vec<Link>>();
@@ -381,7 +381,7 @@ pub fn try_adding_favicon(handle: AppHandle) {
 #[tauri::command]
 pub fn update_favicon(handle: AppHandle, metaroom_state: State<MetaroomState>, favicon: Favicon, reload_image: bool) {
 	if let Some(metaroom) = metaroom_state.metaroom.lock().unwrap().as_mut() {
-		add_history_state(&handle, &metaroom);
+		add_history_state(&handle, metaroom);
 		if reload_image {
 			favicon.load_image(&handle);
 		}
@@ -394,7 +394,7 @@ pub fn update_favicon(handle: AppHandle, metaroom_state: State<MetaroomState>, f
 #[tauri::command]
 pub fn add_favicon(handle: AppHandle, metaroom_state: State<MetaroomState>, x: u32, y: u32) {
 	if let Some(metaroom) = metaroom_state.metaroom.lock().unwrap().as_mut() {
-		add_history_state(&handle, &metaroom);
+		add_history_state(&handle, metaroom);
 		metaroom.favicon = Some(Favicon { species: 0, sprite: String::new(), x, y })
 	}
 	update_frontend_metaroom(&handle, false);
@@ -404,7 +404,7 @@ pub fn add_favicon(handle: AppHandle, metaroom_state: State<MetaroomState>, x: u
 #[tauri::command]
 pub fn remove_favicon(handle: AppHandle, metaroom_state: State<MetaroomState>) {
 	if let Some(metaroom) = metaroom_state.metaroom.lock().unwrap().as_mut() {
-		add_history_state(&handle, &metaroom);
+		add_history_state(&handle, metaroom);
 		metaroom.favicon = None
 	}
 	update_frontend_metaroom(&handle, false);
@@ -420,7 +420,7 @@ pub fn try_adding_overlay(handle: AppHandle) {
 #[tauri::command]
 pub fn update_overlays(handle: AppHandle, metaroom_state: State<MetaroomState>, overlays: Vec<Overlay>, reload_images: bool) {
 	if let Some(metaroom) = metaroom_state.metaroom.lock().unwrap().as_mut() {
-		add_history_state(&handle, &metaroom);
+		add_history_state(&handle, metaroom);
 		for updated_overlay in overlays {
 			let overlay_id = updated_overlay.id as usize;
 			if let Some(overlay) = metaroom.overlays.get_mut(overlay_id) {
@@ -438,7 +438,7 @@ pub fn update_overlays(handle: AppHandle, metaroom_state: State<MetaroomState>, 
 #[tauri::command]
 pub fn add_overlay(handle: AppHandle, metaroom_state: State<MetaroomState>, x: u32, y: u32) {
 	if let Some(metaroom) = metaroom_state.metaroom.lock().unwrap().as_mut() {
-		add_history_state(&handle, &metaroom);
+		add_history_state(&handle, metaroom);
 		let mut new_overlay = Overlay::new_at(x, y);
 		new_overlay.id = metaroom.overlays.len() as u32;
 		new_overlay.load_image(&handle);
@@ -451,7 +451,7 @@ pub fn add_overlay(handle: AppHandle, metaroom_state: State<MetaroomState>, x: u
 #[tauri::command]
 pub fn remove_overlays(handle: AppHandle, metaroom_state: State<MetaroomState>, ids: Vec<u32>) {
 	if let Some(metaroom) = metaroom_state.metaroom.lock().unwrap().as_mut() {
-		add_history_state(&handle, &metaroom);
+		add_history_state(&handle, metaroom);
 		metaroom.overlays = metaroom.overlays.clone().into_iter()
 			.filter(|o| !ids.contains(&o.id))
 			.collect::<Vec<Overlay>>();

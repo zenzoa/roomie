@@ -116,13 +116,13 @@ pub fn load_config_file(handle: AppHandle) -> ConfigInfo {
 								config_info.show_room_colors = value.trim() != "false";
 							},
 							"bg_opacity" => {
-								config_info.bg_opacity = u16::from_str_radix(value.trim(), 10).ok().unwrap_or(50);
+								config_info.bg_opacity = value.trim().parse::<u16>().unwrap_or(50);
 							},
 							"overlay_opacity" => {
-								config_info.overlay_opacity = u16::from_str_radix(value.trim(), 10).ok().unwrap_or(100);
+								config_info.overlay_opacity = value.trim().parse::<u16>().unwrap_or(100);
 							},
 							"sidebar_width" => {
-								config_info.sidebar_width = u16::from_str_radix(value.trim(), 10).ok().unwrap_or(360);
+								config_info.sidebar_width = value.trim().parse::<u16>().unwrap_or(360);
 							},
 							"recent_file" => {
 								if fs::exists(value.trim()).unwrap_or(false) {
@@ -347,7 +347,7 @@ pub fn add_recent_file(handle: &AppHandle, path: &Path) {
 	if let Some(path_str) = path.to_str() {
 		let config_state: State<ConfigState> = handle.state();
 		let mut recent_files = config_state.recent_files.lock().unwrap().clone();
-		recent_files = recent_files.into_iter().filter(|f| f != path_str).collect();
+		recent_files.retain(|f| f != path_str);
 		recent_files.push(path_str.to_string());
 		if recent_files.len() > 10 {
 			recent_files.remove(0);
@@ -382,7 +382,7 @@ pub fn get_recent_file_path(handle: &AppHandle, id: &str) -> Option<PathBuf> {
 	let config_state: State<ConfigState> = handle.state();
 	let recent_files = config_state.recent_files.lock().unwrap();
 	if let Some(index_str) = id.split('_').last() {
-		if let Ok(index) = usize::from_str_radix(index_str, 10) {
+		if let Ok(index) = index_str.parse::<usize>() {
 			if let Some(recent_file) = recent_files.get(index) {
 				return PathBuf::from_str(recent_file).ok();
 			}

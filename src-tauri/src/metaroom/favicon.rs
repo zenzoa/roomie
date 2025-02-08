@@ -19,10 +19,7 @@ pub struct Favicon {
 
 impl Favicon {
 	pub fn new(species: u16, sprite: String) -> Self {
-		let mut favicon = Favicon::default();
-		favicon.species = species;
-		favicon.sprite = sprite;
-		favicon
+		Favicon { species, sprite, ..Default::default() }
 	}
 
 	pub fn center(&self) -> Point {

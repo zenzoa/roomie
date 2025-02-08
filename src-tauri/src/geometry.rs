@@ -70,7 +70,7 @@ impl Point {
 						return true;
 					}
 				}
-				return false
+				false
 			}
 		}
 	}
@@ -148,8 +148,7 @@ impl Line {
 		let ab2 = dot(&ab, &ab);
 		let acab = dot(&ac, &ab);
 		let mut t = acab / ab2;
-		if t < 0.0 { t = 0.0; }
-		if t > 1.0 { t = 1.0; }
+		t = t.clamp(0.0, 1.0);
 		let h = Point::new((ab.x * t + self.a.x) - cx, (ab.y * t + self.a.y) - cy);
 		let h2 = dot(&h, &h);
 		h2 <= cr * cr
@@ -192,7 +191,7 @@ impl Line {
 			return None
 		}
 
-		let endpoints = self.get_common_endpoints(&other);
+		let endpoints = self.get_common_endpoints(other);
 		if endpoints.len() == 2 {
 			return Some(Line::new(endpoints[0], endpoints[1]));
 		}
@@ -202,9 +201,9 @@ impl Line {
 			orientation(self.a, self.b, other.b) == Orientation::Collinear;
 		if collinear_segments {
 			if self.intersects(&other.a) && self.intersects(&other.b) {
-				return Some(other.clone());
+				return Some(*other);
 			} else if other.intersects(&self.a) && other.intersects(&self.b) {
-				return Some(self.clone());
+				return Some(*self);
 			} else {
 				let p1 = if self.intersects(&other.a) { other.a } else { other.b };
 				let p2 = if other.intersects(&self.a) { self.a } else { self.b };

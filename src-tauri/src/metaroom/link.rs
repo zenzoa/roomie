@@ -31,7 +31,7 @@ impl Link {
 pub fn link_exists(links: &[Link], room1_id: u32, room2_id: u32) -> bool {
 	for link in links {
 		if (link.room1_id == room1_id && link.room2_id == room2_id) ||
-			(link.room1_id == room1_id && link.room2_id == room2_id) {
+			(link.room2_id == room1_id && link.room1_id == room2_id) {
 				return true;
 		}
 	}

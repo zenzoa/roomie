@@ -29,15 +29,16 @@ pub struct Smell {
 
 impl Room {
 	pub fn new(id: u32, x_l: u32, x_r: u32, y_tl: u32, y_tr: u32, y_bl: u32, y_br: u32) -> Self {
-		let mut room = Room::default();
-		room.id = id;
-		room.x_left = x_l;
-		room.x_right = x_r;
-		room.y_top_left = y_tl;
-		room.y_top_right = y_tr;
-		room.y_bot_left = y_bl;
-		room.y_bot_right = y_br;
-		room
+		Room {
+			id,
+			x_left: x_l,
+			x_right: x_r,
+			y_top_left: y_tl,
+			y_top_right: y_tr,
+			y_bot_left: y_bl,
+			y_bot_right: y_br,
+			..Default::default()
+		}
 	}
 
 	pub fn as_polygon(&self) -> Polygon {
