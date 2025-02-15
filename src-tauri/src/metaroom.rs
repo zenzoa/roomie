@@ -173,6 +173,8 @@ impl Metaroom {
 		self.sides.extend_from_slice(&room.sides());
 		self.corners.extend_from_slice(&room.corners());
 		self.rooms.push(room);
+		self.mark_room_collisions();
+		self.doors = self.create_doors();
 	}
 
 	pub fn remove_room(&mut self, room_id: u32) {

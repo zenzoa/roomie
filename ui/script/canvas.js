@@ -293,6 +293,12 @@ const drawSelection = () => {
 			drawFavicon(ctxSelection, tempFavicon, false)
 		}
 
+	} else if (mouseAction === 'addingRoom') {
+		ctxSelection.lineWidth = 6 * DPR
+		ctxSelection.strokeStyle = 'white'
+		ctxSelection.fillStyle = 'white'
+		drawRoomInProgress(ctxSelection)
+
 	} else if (mouseAction === 'addingLink') {
 		ctxSelection.lineWidth = 6 * DPR
 		ctxSelection.strokeStyle = 'cyan'
@@ -347,6 +353,21 @@ const drawRoom = (ctx, room, fill) => {
 		}
 	}
 	ctx.stroke()
+}
+
+const drawRoomInProgress = (ctx) => {
+	const [xSnap, ySnap] = getSnapPoint(xMouseRel, yMouseRel)
+	circle(ctx, xSnap, ySnap, 6)
+	ctx.fill()
+	if (newRoomX != null && newRoomY != null) {
+		polygon(ctx, [
+			[newRoomX, newRoomY],
+			[newRoomX, ySnap],
+			[xSnap, ySnap],
+			[xSnap, newRoomY]
+		])
+		ctx.stroke()
+	}
 }
 
 const drawSide = (ctx, side) => {

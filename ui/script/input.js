@@ -96,7 +96,7 @@ const setupInput = () => {
 				event.preventDefault()
 				removeSelectedObjects()
 
-			} else if (key === 'escape' && (mouseAction === 'addingLink' || mouseAction === 'addingFavicon' || mouseAction === 'addingOverlay')) {
+			} else if (key === 'escape' && (mouseAction === 'addingRoom' || mouseAction === 'addingLink' || mouseAction === 'addingFavicon' || mouseAction === 'addingOverlay')) {
 				event.preventDefault()
 				cancelMouseAction()
 
@@ -130,7 +130,7 @@ const setupInput = () => {
 
 			} else if (!isCtrlDown && isShiftDown && key === 'r') {
 				event.preventDefault()
-				tauri_invoke('add_room')
+				startAddingRoom()
 
 			} else if (!isCtrlDown && isShiftDown && key === 'l') {
 				event.preventDefault()
@@ -234,11 +234,26 @@ const mouseDown = (event) => {
 	} else if (mouseAction === 'moving') {
 		finishMovingSelection()
 
+	} else if (mouseAction === 'addingRoom') {
+		const [xSnap, ySnap] = getSnapPoint(xMouseRel, yMouseRel)
+		if (newRoomX == null || newRoomY == null) {
+			newRoomX = xSnap
+			newRoomY = ySnap
+		} else {
+			const x = Math.min(newRoomX, xSnap)
+			const y = Math.min(newRoomY, ySnap)
+			const w = Math.abs(xSnap - newRoomX)
+			const h = Math.abs(ySnap - newRoomY)
+			addedRoom = true
+			cancelMouseAction()
+			tauri_invoke('add_room', { x, y, w, h })
+		}
+
 	} else if (mouseAction === 'addingLink') {
 		const x = xMouseRel
 		const y = yMouseRel
 		const r = SELECT_RADIUS / scale * DPR
-		tauri_invoke('get_object_at', { x, y, r, selectionType: 'Rooms' }).then((result) => {
+		tauri_invoke('get_object_at', { x, y, r, selectionType: 'Rooms' }).then(result => {
 			if (result && result.Rooms && result.Rooms.length) {
 				if (newLinkRoom1 == null) {
 					newLinkRoom1 = result.Rooms[0]
@@ -287,7 +302,7 @@ const mouseMove = (event) => {
 	isCtrlDown = event.ctrlKey || event.metaKey
 	isShiftDown = event.shiftKey
 
-	if (isMouseDown || mouseAction === 'moving' || mouseAction === 'addingLink' || mouseAction === 'addingFavicon' || mouseAction === 'addingOverlay') {
+	if (isMouseDown || mouseAction === 'addingRoom' ||  mouseAction === 'addingLink' || mouseAction === 'addingFavicon' || mouseAction === 'addingOverlay') {
 		event.preventDefault()
 
 		let dx = xMouse - xDragStart
@@ -315,6 +330,9 @@ const mouseMove = (event) => {
 		} else if (mouseAction === 'selecting') {
 			startSelectingArea(event)
 			drawAll()
+
+		} else if (mouseAction === 'addingRoom') {
+			drawSelection()
 
 		} else if (mouseAction === 'addingLink') {
 			drawSelection()
@@ -345,7 +363,7 @@ const mouseUp = (event) => {
 		finishSelectingArea()
 	}
 
-	if (mouseAction !== 'addingLink') {
+	if (mouseAction !== 'addingRoom' && mouseAction !== 'addingLink') {
 		cancelMouseAction()
 	}
 }

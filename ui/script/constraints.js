@@ -179,46 +179,66 @@ const checkCornerConstraints = (corner, room) => {
 					{ x: other.x_right, y: other.y_bot_right },
 				]
 
+				let hasCornerSnap = false
 				if (corner.position === 'TopLeft') {
 					for (const otherCorner of otherCorners) {
-						checkTLonCorner(room, otherCorner.x, otherCorner.y, rSq)
+						if (checkTLonCorner(room, otherCorner.x, otherCorner.y, rSq)) {
+							hasCornerSnap = true
+						}
 					}
-					checkTLonR(room, other, rSq)
-					checkTLonB(room, other, rSq, true)
-					checkLonTR(room, other, rSq)
-					checkLonBR(room, other, rSq)
-					checkTonBL(room, other, rSq)
-					checkTonBR(room, other, rSq)
+					if (!hasCornerSnap) {
+						checkLonTR(room, other, rSq)
+						checkLonBR(room, other, rSq)
+						checkTonBL(room, other, rSq)
+						checkTonBR(room, other, rSq)
+						checkTLonR(room, other, rSq)
+						checkTLonB(room, other, rSq, true)
+					}
+
 				} else if (corner.position === 'TopRight') {
 					for (const otherCorner of otherCorners) {
-						checkTRonCorner(room, otherCorner.x, otherCorner.y, rSq)
+						if (checkTRonCorner(room, otherCorner.x, otherCorner.y, rSq)) {
+							hasCornerSnap = true
+						}
 					}
-					checkTRonL(room, other, rSq)
-					checkTRonB(room, other, rSq, true)
-					checkRonTL(room, other, rSq)
-					checkRonBL(room, other, rSq)
-					checkTonBL(room, other, rSq)
-					checkTonBR(room, other, rSq)
+					if (!hasCornerSnap) {
+						checkRonTL(room, other, rSq)
+						checkRonBL(room, other, rSq)
+						checkTonBL(room, other, rSq)
+						checkTonBR(room, other, rSq)
+						checkTRonL(room, other, rSq)
+						checkTRonB(room, other, rSq, true)
+					}
+
 				} else if (corner.position === 'BottomLeft') {
 					for (const otherCorner of otherCorners) {
-						checkBLonCorner(room, otherCorner.x, otherCorner.y, rSq)
+						if (checkBLonCorner(room, otherCorner.x, otherCorner.y, rSq)) {
+							hasCornerSnap = true
+						}
 					}
-					checkBLonR(room, other, rSq)
-					checkBLonT(room, other, rSq, true)
-					checkLonTR(room, other, rSq)
-					checkLonBR(room, other, rSq)
-					checkBonTL(room, other, rSq)
-					checkBonTR(room, other, rSq)
+					if (!hasCornerSnap) {
+						checkLonTR(room, other, rSq)
+						checkLonBR(room, other, rSq)
+						checkBonTL(room, other, rSq)
+						checkBonTR(room, other, rSq)
+						checkBLonR(room, other, rSq)
+						checkBLonT(room, other, rSq, true)
+					}
+
 				} else if (corner.position === 'BottomRight') {
 					for (const otherCorner of otherCorners) {
-						checkBRonCorner(room, otherCorner.x, otherCorner.y, rSq)
+						if (checkBRonCorner(room, otherCorner.x, otherCorner.y, rSq)) {
+							hasCornerSnap = true
+						}
 					}
-					checkBRonL(room, other, rSq)
-					checkBRonT(room, other, rSq, true)
-					checkRonTL(room, other, rSq)
-					checkRonBL(room, other, rSq)
-					checkBonTL(room, other, rSq)
-					checkBonTR(room, other, rSq)
+					if (!hasCornerSnap) {
+						checkRonTL(room, other, rSq)
+						checkRonBL(room, other, rSq)
+						checkBonTL(room, other, rSq)
+						checkBonTR(room, other, rSq)
+						checkBRonL(room, other, rSq)
+						checkBRonT(room, other, rSq, true)
+					}
 				}
 			}
 		}
@@ -267,6 +287,7 @@ const checkTLonCorner = (room, x, y, rSq) => {
 	)) {
 		new_x_left = x
 		new_y_top_left = y
+		return true
 	}
 }
 
@@ -278,6 +299,7 @@ const checkTRonCorner = (room, x, y, rSq) => {
 	)) {
 		new_x_right = x
 		new_y_top_right = y
+		return true
 	}
 }
 
@@ -289,6 +311,7 @@ const checkBLonCorner = (room, x, y, rSq) => {
 	)) {
 		new_x_left = x
 		new_y_bot_left = y
+		return true
 	}
 }
 
@@ -300,6 +323,7 @@ const checkBRonCorner = (room, x, y, rSq) => {
 	)) {
 		new_x_right = x
 		new_y_bot_right = y
+		return true
 	}
 }
 
@@ -515,4 +539,61 @@ const closestPointOnLine = (px, py, x1, y1, x2, y2) => {
 
 const distSq = (x1, y1, x2, y2) => {
 	return (x2 - x1)**2 + (y2 - y1)**2
+}
+
+const getSnapPoint = (x, y) => {
+	let newX = null
+	let newY = null
+
+	const r = SNAP_RADIUS / scale * DPR
+	const rSq = r*r
+
+	for (room of metaroom.rooms) {
+		const corners = [
+			{ x: room.x_left, y: room.y_top_left },
+			{ x: room.x_right, y: room.y_top_right },
+			{ x: room.x_left, y: room.y_bot_left },
+			{ x: room.x_right, y: room.y_bot_right },
+		]
+		let hasCornerSnap = false
+		for (const corner of corners) {
+			const snapPoint = cornerCornerSnapPoint(x, y, corner.x, corner.y, rSq)
+			if (snapPoint && (
+				newX == null || newY == null ||
+				distSq(x, y, snapPoint.x, snapPoint.y) < distSq(x, y, newX, newY)
+			)) {
+				hasCornerSnap = true
+				newX = snapPoint.x
+				newY = snapPoint.y
+			}
+		}
+		if (!hasCornerSnap) {
+			const sides = [
+				{ x1: room.x_left, y1: room.y_top_left, x2: room.x_right, y2: room.y_top_right },
+				{ x1: room.x_left, y1: room.y_bot_left, x2: room.x_right, y2: room.y_bot_right },
+				{ x1: room.x_left, y1: room.y_top_left, x2: room.x_left, y2: room.y_bot_left },
+				{ x1: room.x_right, y1: room.y_top_right, x2: room.x_right, y2: room.y_bot_right }
+			]
+			for (const side of sides) {
+				const snapPoint = cornerLineSnapPoint(x, y, side.x1, side.y1, side.x2, side.x2, rSq)
+				if (snapPoint && (
+					newX == null || newY == null ||
+					distSq(x, y, snapPoint.x, snapPoint.y) < distSq(x, y, newX, newY)
+				)) {
+					newX = snapPoint.x
+					newY = snapPoint.y
+				}
+			}
+		}
+	}
+
+	if (newX == null) newX = x
+	if (newX < 0) newX = 0
+	if (newX >= metaroom.width) newX = metaroom.width - 1
+
+	if (newY == null) newY = y
+	if (newY < 0) newY = 0
+	if (newY >= metaroom.height) newY = metaroom.height - 1
+
+	return [Math.floor(newX), Math.floor(newY)]
 }

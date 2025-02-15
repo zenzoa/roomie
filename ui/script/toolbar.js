@@ -26,7 +26,7 @@ class Toolbar {
 		})
 
 		document.getElementById('add-room-button').addEventListener('click', () => {
-			tauri_invoke('add_room')
+			startAddingRoom()
 		})
 		document.getElementById('add-link-button').addEventListener('click', () => {
 			startAddingLink()

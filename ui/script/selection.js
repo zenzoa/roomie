@@ -14,9 +14,13 @@ let isFaviconSelected = false
 
 let newSelection = []
 
+let newRoomX = null
+let newRoomY = null
+
 let newLinkRoom1 = null
 let newLinkRoom2 = null
 
+let addedRoom = false
 let addedLink = false
 let addedOverlay = false
 let addedFavicon = false
@@ -54,6 +58,7 @@ const resetSelection = (except) => {
 		tempFavicon = null
 	}
 
+	addedRoom = false
 	addedLink = false
 	addedOverlay = false
 	addedFavicon = false

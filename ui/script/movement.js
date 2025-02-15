@@ -329,22 +329,11 @@ const nudgeSelection = (dir) => {
 
 const startAddingRoom = () => {
 	if (!metaroom) return
-
-	const roomID = metaroom.rooms.length - 1
-
-	metaroom.rooms[roomID].x_left = xMouseRel - 75
-	metaroom.rooms[roomID].x_right = xMouseRel + 75
-	metaroom.rooms[roomID].y_top_left = yMouseRel - 85
-	metaroom.rooms[roomID].y_top_right = yMouseRel - 85
-	metaroom.rooms[roomID].y_bot_left = yMouseRel + 85
-	metaroom.rooms[roomID].y_bot_right = yMouseRel + 85
-
-	selectionType = 'Rooms'
-	selectedRooms = [roomID]
-	Sidebar.setTo(selectionType)
-	setupSelectionForMovement()
-	setDragPos(xMouse, yMouse)
-	startMoving()
+	clearSelection()
+	mouseAction = 'addingRoom'
+	newRoomX = null
+	newRoomY = null
+	canvasSelection.style.cursor = 'crosshair'
 }
 
 const startAddingLink = () => {

@@ -251,15 +251,14 @@ pub fn update_rooms(handle: AppHandle, metaroom_state: State<MetaroomState>, roo
 }
 
 #[tauri::command]
-pub fn add_room(handle: AppHandle) {
-	let metaroom_state: State<MetaroomState> = handle.state();
+pub fn add_room(handle: AppHandle, metaroom_state: State<MetaroomState>, x: u32, y: u32, w: u32, h: u32) {
 	if let Some(metaroom) = metaroom_state.metaroom.lock().unwrap().as_mut() {
 		add_history_state(&handle, metaroom);
-		metaroom.add_room(Room::default());
+		let room_id = metaroom.rooms.len() as u32;
+		metaroom.add_room(Room::new(room_id, x, x + w, y, y, y + h, y + h));
 	}
 	update_frontend_metaroom(&handle, false);
 	update_window_title(&handle);
-	handle.emit("start_adding_room", ()).unwrap_or_default();
 }
 
 #[tauri::command]

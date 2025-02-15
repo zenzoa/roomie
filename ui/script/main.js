@@ -36,6 +36,11 @@ window.addEventListener('load', () => {
 				overlayImages = []
 				resetSelection()
 
+			} else if (addedRoom) {
+				selectionType = 'Rooms'
+				newSelection = [metaroom.rooms.length - 1]
+				finishSelectingObject()
+
 			} else if (addedLink) {
 				selectionType = 'Links'
 				newSelection = [metaroom.links.length - 1]

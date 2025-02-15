@@ -138,7 +138,7 @@ fn main() {
 					"redo" => redo(handle),
 
 					// ADD MENU
-					"add_room" => frontend::add_room(handle),
+					"add_room" => handle.emit("start_adding_room", ()).unwrap_or_default(),
 					"add_link" => handle.emit("start_adding_link", ()).unwrap_or_default(),
 					"add_favicon" => frontend::try_adding_favicon(handle),
 					"add_overlay" => frontend::try_adding_overlay(handle),
