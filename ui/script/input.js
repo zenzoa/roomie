@@ -235,18 +235,14 @@ const mouseDown = (event) => {
 		finishMovingSelection()
 
 	} else if (mouseAction === 'addingRoom') {
-		const [xSnap, ySnap] = getSnapPoint(xMouseRel, yMouseRel)
+		const [xSnap, ySnap, _] = getSnapPoint(xMouseRel, yMouseRel)
 		if (newRoomX == null || newRoomY == null) {
-			newRoomX = xSnap
-			newRoomY = ySnap
+			newRoomX = Math.floor(xSnap)
+			newRoomY = Math.floor(ySnap)
 		} else {
-			const x = Math.min(newRoomX, xSnap)
-			const y = Math.min(newRoomY, ySnap)
-			const w = Math.abs(xSnap - newRoomX)
-			const h = Math.abs(ySnap - newRoomY)
-			addedRoom = true
-			cancelMouseAction()
-			tauri_invoke('add_room', { x, y, w, h })
+			if (!finishAddingRoom(Math.floor(xSnap), Math.floor(ySnap))) {
+				cancelMouseAction()
+			}
 		}
 
 	} else if (mouseAction === 'addingLink') {
@@ -361,6 +357,9 @@ const mouseUp = (event) => {
 		finishMovingSelection()
 	} else if (mouseAction === 'selecting') {
 		finishSelectingArea()
+	} else if (mouseAction === 'addingRoom') {
+		const [xSnap, ySnap, _] = getSnapPoint(xMouseRel, yMouseRel)
+		finishAddingRoom(Math.floor(xSnap), Math.floor(ySnap))
 	}
 
 	if (mouseAction !== 'addingRoom' && mouseAction !== 'addingLink') {

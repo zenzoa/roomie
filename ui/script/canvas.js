@@ -356,7 +356,9 @@ const drawRoom = (ctx, room, fill) => {
 }
 
 const drawRoomInProgress = (ctx) => {
-	const [xSnap, ySnap] = getSnapPoint(xMouseRel, yMouseRel)
+	let [xSnap, ySnap, _] = getSnapPoint(xMouseRel, yMouseRel)
+	xSnap = Math.floor(xSnap)
+	ySnap = Math.floor(ySnap)
 	circle(ctx, xSnap, ySnap, 6)
 	ctx.fill()
 	if (newRoomX != null && newRoomY != null) {

@@ -37,8 +37,7 @@ const updateFromTempPos = (room) => {
 
 const checkRoomConstraints = (room) => {
 	if (!isCtrlDown) {
-		const r = SNAP_RADIUS / scale * DPR
-		const rSq = r*r
+		const rSq = (SNAP_RADIUS / scale * DPR)**2
 
 		resetTempPos()
 
@@ -95,8 +94,7 @@ const checkRoomConstraints = (room) => {
 
 const checkSideConstraints = (side, room) => {
 	if (!isCtrlDown) {
-		const r = SNAP_RADIUS / scale * DPR
-		const rSq = r*r
+		const rSq = (SNAP_RADIUS / scale * DPR)**2
 		resetTempPos()
 		for (other of metaroom.rooms) {
 			if (other.id === room.id) continue
@@ -203,8 +201,7 @@ const checkSideToSideSnap = (room, roomSide, other, otherSide, rSq) => {
 
 const checkCornerConstraints = (corner, room) => {
 	if (!isCtrlDown) {
-		const r = SNAP_RADIUS / scale * DPR
-		const rSq = r*r
+		const rSq = (SNAP_RADIUS / scale * DPR)**2
 
 		resetTempPos()
 
@@ -345,6 +342,8 @@ const distSq = (x1, y1, x2, y2) => {
 }
 
 const getSnapPoint = (x, y, id, rSq) => {
+	if (rSq == null) rSq = (SNAP_RADIUS / scale * DPR)**2
+
 	let newX = null
 	let newY = null
 

@@ -336,6 +336,21 @@ const startAddingRoom = () => {
 	canvasSelection.style.cursor = 'crosshair'
 }
 
+const finishAddingRoom = (endX, endY) => {
+	const x = Math.min(newRoomX, endX)
+	const y = Math.min(newRoomY, endY)
+	const w = Math.abs(endX - newRoomX)
+	const h = Math.abs(endY - newRoomY)
+	if (w >= MIN_DIM && h >= MIN_DIM) {
+		addedRoom = true
+		cancelMouseAction()
+		tauri_invoke('add_room', { x, y, w, h })
+		return true
+	} else {
+		return false
+	}
+}
+
 const startAddingLink = () => {
 	if (!metaroom) return
 	clearSelection()
