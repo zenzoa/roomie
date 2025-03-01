@@ -102,7 +102,13 @@ impl Room {
 		}
 	}
 
-	pub fn point_on_side(&self, x: u32, y: u32) -> bool {
+	pub fn point_on_side(&self, x: u32, y: u32, side_pos: SidePosition) -> bool {
+		let p = Point::new(x as f64, y as f64);
+		let side = self.get_side_line(&side_pos);
+		p.intersects(&side)
+	}
+
+	pub fn point_on_any_side(&self, x: u32, y: u32) -> bool {
 		let p = Point::new(x as f64, y as f64);
 		let top = self.get_side_line(&SidePosition::Top);
 		let bottom = self.get_side_line(&SidePosition::Bottom);
@@ -116,18 +122,45 @@ impl Room {
 	}
 
 	pub fn strictly_contains_point(&self, x: u32, y: u32) -> bool {
-		self.contains_point(x, y) && !self.point_on_side(x, y)
+		self.contains_point(x, y) && !self.point_on_any_side(x, y)
 	}
 
-	pub fn collides_room(&self, other_room: &Room) -> bool {
+	pub fn contains_corner(&self, other_room: &Room) -> bool {
 		self.strictly_contains_point(other_room.x_left, other_room.y_top_left) ||
 			self.strictly_contains_point(other_room.x_right, other_room.y_top_right) ||
 			self.strictly_contains_point(other_room.x_left, other_room.y_bot_left) ||
-			self.strictly_contains_point(other_room.x_right, other_room.y_bot_right) ||
-			other_room.strictly_contains_point(self.x_left, self.y_top_left) ||
-			other_room.strictly_contains_point(self.x_right, self.y_top_right) ||
-			other_room.strictly_contains_point(self.x_left, self.y_bot_left) ||
-			other_room.strictly_contains_point(self.x_right, self.y_bot_right)
+			self.strictly_contains_point(other_room.x_right, other_room.y_bot_right)
+	}
+
+	pub fn collides_room(&self, other_room: &Room) -> bool {
+		let corner_collides = self.contains_corner(other_room) ||
+			other_room.contains_corner(self);
+
+		let left_sides_collide =
+			(self.point_on_side(other_room.x_left, other_room.y_top_left, SidePosition::Left)
+				&& !(other_room.x_left == self.x_left && other_room.y_top_left == self.y_bot_left)) ||
+			(self.point_on_side(other_room.x_left, other_room.y_bot_left, SidePosition::Left) &&
+				!(other_room.x_left == self.x_left && other_room.y_bot_left == self.y_top_left));
+
+		let right_sides_collide =
+			(self.point_on_side(other_room.x_right, other_room.y_top_right, SidePosition::Right)
+				&& !(other_room.x_right == self.x_right && other_room.y_top_right == self.y_bot_right)) ||
+			(self.point_on_side(other_room.x_right, other_room.y_bot_right, SidePosition::Right) &&
+				!(other_room.x_right == self.x_right && other_room.y_bot_right == self.y_top_right));
+
+		let top_sides_collide =
+			(self.point_on_side(other_room.x_left, other_room.y_top_left, SidePosition::Top)
+				&& !(other_room.x_left == self.x_right && other_room.y_top_left == self.y_top_right)) ||
+			(self.point_on_side(other_room.x_right, other_room.y_top_right, SidePosition::Top) &&
+				!(other_room.x_right == self.x_left && other_room.y_top_right == self.y_top_left));
+
+		let bot_sides_collide =
+			(self.point_on_side(other_room.x_left, other_room.y_bot_left, SidePosition::Bottom)
+				&& !(other_room.x_left == self.x_right && other_room.y_bot_left == self.y_bot_right)) ||
+			(self.point_on_side(other_room.x_right, other_room.y_bot_right, SidePosition::Bottom) &&
+				!(other_room.x_right == self.x_left && other_room.y_bot_right == self.y_bot_left));
+
+		corner_collides || left_sides_collide || right_sides_collide || top_sides_collide || bot_sides_collide
 	}
 
 	pub fn get_overlap(&self, other_room: &Room) -> Option<Line> {
