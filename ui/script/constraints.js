@@ -185,8 +185,8 @@ const checkSideToSideSnap = (room, roomSide, other, otherSide, rSq) => {
 		if (d*d <= rSq && ay1 <= by2 && ay2 >= by1) {
 			newCoords[roomCoords.x1] = round(bx1)
 			newCoords[roomCoords.x2] = round(bx1)
-			newCoords[roomCoords.y1] = ay1
-			newCoords[roomCoords.y2] = ay2
+			newCoords[roomCoords.y1] = round(ay1)
+			newCoords[roomCoords.y2] = round(ay2)
 		}
 		checkCorners1(round)
 
@@ -221,11 +221,11 @@ const checkSideToSideSnap = (room, roomSide, other, otherSide, rSq) => {
 				newCoords[roomCoords.y1] = round(by1 + bSlope * (ax1 - bx1))
 				newCoords[roomCoords.y2] = round(by2 + bSlope * (ax2 - bx2))
 			} else if (b1onA != null) {
-				newCoords[roomCoords.y1] = by1 + aSlope * (ax1 - bx1)
-				newCoords[roomCoords.y2] = by1 + aSlope * (ax2 - bx1)
+				newCoords[roomCoords.y1] = round(by1 + aSlope * (ax1 - bx1))
+				newCoords[roomCoords.y2] = round(by1 + aSlope * (ax2 - bx1))
 			} else if (b2onA != null) {
-				newCoords[roomCoords.y1] = by2 + aSlope * (ax1 - bx2)
-				newCoords[roomCoords.y2] = by2 + aSlope * (ax2 - bx2)
+				newCoords[roomCoords.y1] = round(by2 + aSlope * (ax1 - bx2))
+				newCoords[roomCoords.y2] = round(by2 + aSlope * (ax2 - bx2))
 			}
 		}
 		checkCorners1(round)
@@ -233,17 +233,17 @@ const checkSideToSideSnap = (room, roomSide, other, otherSide, rSq) => {
 	} else if ((roomSide === 'Top' || roomSide === 'Bottom') && (otherSide === 'Left' || otherSide === 'Right')) {
 		const round = otherSide === 'Right' ? Math.ceil : Math.floor
 		if (ax1 === bx1 && Math.abs(ay1 - by1)**2 <= rSq) {
-			newCoords[roomCoords.y1] = by1
-			newCoords[roomCoords.y2] = by1 + (ay2 - ay1)
+			newCoords[roomCoords.y1] = round(by1)
+			newCoords[roomCoords.y2] = round(by1 + (ay2 - ay1))
 		} else if (ax1 === bx2 && Math.abs(ay1 - by2)**2 <= rSq) {
-			newCoords[roomCoords.y1] = by2
-			newCoords[roomCoords.y2] = by2 + (ay2 - ay1)
+			newCoords[roomCoords.y1] = round(by2)
+			newCoords[roomCoords.y2] = round(by2 + (ay2 - ay1))
 		} else if (ax2 === bx1 && Math.abs(ay2 - by1)**2 <= rSq) {
-			newCoords[roomCoords.y2] = by1
-			newCoords[roomCoords.y1] = by1 + (ay1 - ay2)
+			newCoords[roomCoords.y2] = round(by1)
+			newCoords[roomCoords.y1] = round(by1 + (ay1 - ay2))
 		} else if (ax2 === bx2 && Math.abs(ay2 - by2)**2 <= rSq) {
-			newCoords[roomCoords.y2] = by2
-			newCoords[roomCoords.y1] = by2 + (ay1 - ay2)
+			newCoords[roomCoords.y2] = round(by2)
+			newCoords[roomCoords.y1] = round(by2 + (ay1 - ay2))
 		}
 		checkCorners1(round)
 		checkCorners2(round)

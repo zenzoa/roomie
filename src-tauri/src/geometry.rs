@@ -158,66 +158,41 @@ impl Line {
 		h2 <= cr * cr
 	}
 
-	pub fn get_common_endpoints(&self, other: &Line) -> Vec<Point> {
-		let mut points = Vec::new();
-		if self.a == other.a {
-			points.push(self.a);
-			if self.b == other.b {
-				points.push(self.b);
-			}
-		} else if self.a == other.b {
-			points.push(self.a);
-			if self.b == other.a {
-				points.push(self.b);
-			}
-		} else if self.b == other.a {
-			points.push(self.b);
-			if self.a == self.b {
-				points.push(self.a);
-			}
-		} else if self.b == other.b {
-			points.push(self.b);
-			if self.a == other.a {
-				points.push(self.a);
-			}
-		}
-		points
-	}
-
 	pub fn get_overlap(&self, other: &Line) -> Option<Line> {
-		if !self.intersects(other) {
-			return None
-		}
+		let self_a_on_other = other.intersects_circle(self.a.x, self.a.y, 1.0);
+		let self_b_on_other = other.intersects_circle(self.b.x, self.b.y, 1.0);
+		let other_a_on_self = self.intersects_circle(other.a.x, other.a.y, 1.0);
+		let other_b_on_self = self.intersects_circle(other.b.x, other.b.y, 1.0);
 
-		let self_is_point = self.a == self.b;
-		let other_is_point = other.a == other.b;
-		if self_is_point || other_is_point {
-			return None
-		}
+		if (self.a == other.a && self.b == other.b) || (self.a == other.b && self.b == other.a) {
+			Some(self.clone())
 
-		let endpoints = self.get_common_endpoints(other);
-		if endpoints.len() == 2 {
-			return Some(Line::new(endpoints[0], endpoints[1]));
-		}
+		} else if self.a == other.a && other_b_on_self {
+			Some(Line::new(self.a, other.b))
+		} else if self.a == other.b && other_a_on_self {
+			Some(Line::new(self.a, other.a))
+		} else if self.b == other.a && other_b_on_self {
+			Some(Line::new(other.b, self.b))
+		} else if self.b == other.b && other_a_on_self {
+			Some(Line::new(other.a, self.b))
 
-		let collinear_segments =
-			orientation(self.a, self.b, other.a) == Orientation::Collinear &&
-			orientation(self.a, self.b, other.b) == Orientation::Collinear;
-		if collinear_segments {
-			if self.intersects(&other.a) && self.intersects(&other.b) {
-				return Some(*other);
-			} else if other.intersects(&self.a) && other.intersects(&self.b) {
-				return Some(*self);
-			} else {
-				let p1 = if self.intersects(&other.a) { other.a } else { other.b };
-				let p2 = if other.intersects(&self.a) { self.a } else { self.b };
-				if p1 != p2 {
-					return Some(Line::new(p1, p2));
-				}
-			}
-		}
+		} else if self_a_on_other && self_b_on_other{
+			Some(self.clone())
+		} else if other_a_on_self && other_b_on_self{
+			Some(other.clone())
 
-		None
+		} else if self_a_on_other && other_a_on_self {
+			Some(Line::new(self.a, other.a))
+		} else if self_a_on_other && other_b_on_self {
+			Some(Line::new(self.a, other.b))
+		} else if self_b_on_other && other_a_on_self {
+			Some(Line::new(self.b, other.a))
+		} else if self_b_on_other && other_b_on_self {
+			Some(Line::new(self.b, other.b))
+
+		} else {
+			None
+		}
 	}
 
 	pub fn dist_sq<T:Geometry>(&self, other: &T) -> f64 {

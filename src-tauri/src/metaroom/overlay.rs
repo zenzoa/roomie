@@ -4,7 +4,6 @@ use tauri::{ AppHandle, State, Manager, Emitter };
 
 use serde::{ Serialize, Deserialize };
 
-use crate::geometry::Point;
 use crate::frontend::error_dialog;
 use crate::format::c16::import_c16;
 use crate::file::FileState;
@@ -31,10 +30,6 @@ impl Overlay {
 
 	pub fn new_at(x: u32, y: u32) -> Self {
 		Self { x, y, w: 50, h: 50, ..Default::default() }
-	}
-
-	pub fn center(&self) -> Point {
-		Point::new((self.x + self.w / 2) as f64, (self.y + self.h / 2) as f64)
 	}
 
 	pub fn contains(&self, x: u32, y: u32) -> bool {
