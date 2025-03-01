@@ -74,6 +74,10 @@ impl Point {
 			}
 		}
 	}
+
+	pub fn intersects_circle(&self, cx: f64, cy: f64, cr: f64) -> bool {
+		self.dist_sq(&Point::new(cx, cy)) <= cr * cr
+	}
 }
 
 #[derive(Default, Copy, Clone, Serialize, Deserialize)]

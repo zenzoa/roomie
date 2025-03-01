@@ -159,6 +159,14 @@ impl Metaroom {
 		None
 	}
 
+	pub fn get_room_ids_at(&self, x: u32, y: u32) -> Option<Vec<u32>> {
+		let room_ids: Vec<u32> = self.rooms.iter()
+			.filter_map(|room|
+				if room.contains_point(x, y) { Some(room.id) } else { None })
+			.collect();
+		if room_ids.is_empty() { None } else { Some(room_ids) }
+	}
+
 	pub fn get_room_ids_within(&self, x: u32, y: u32, w: u32, h: u32) -> Option<Vec<u32>> {
 		let rect = &Polygon::from_rect(x, y, w, h);
 		let room_ids: Vec<u32> = self.rooms.iter()
@@ -232,18 +240,12 @@ impl Metaroom {
 		}).collect();
 	}
 
-	pub fn get_side_id_at(&self, x: u32, y: u32, r: f64) -> Option<u32> {
-		let mouse_point = Point::new(x as f64, y as f64);
-		let mut closest_side_id = None;
-		let mut closest_dist_sq = r * r;
-		for (i, side) in self.sides.iter().enumerate() {
-			let dist_sq = side.as_line().dist_sq(&mouse_point);
-			if dist_sq < closest_dist_sq && side.as_line().intersects_circle(x as f64, y as f64, r) {
-				closest_side_id = Some(i as u32);
-				closest_dist_sq = dist_sq;
-			}
-		}
-		closest_side_id
+	pub fn get_side_ids_at(&self, x: u32, y: u32, r: f64) -> Option<Vec<u32>> {
+		let side_ids: Vec<u32> = self.sides.iter().enumerate()
+			.filter_map(|(i, s)|
+				if s.as_line().intersects_circle(x as f64, y as f64, r) { Some(i as u32) } else { None })
+			.collect();
+		if side_ids.is_empty() { None } else { Some(side_ids) }
 	}
 
 	pub fn get_side_ids_within(&self, x: u32, y: u32, w: u32, h: u32) -> Option<Vec<u32>> {
@@ -255,18 +257,12 @@ impl Metaroom {
 		if side_ids.is_empty() { None } else { Some(side_ids) }
 	}
 
-	pub fn get_corner_id_at(&self, x: u32, y: u32, r: f64) -> Option<u32> {
-		let mouse_point = Point::new(x as f64, y as f64);
-		let mut closest_corner_id = None;
-		let mut closest_dist_sq = r * r;
-		for (i, corner) in self.corners.iter().enumerate() {
-			let dist_sq = corner.as_point().dist_sq(&mouse_point);
-			if dist_sq < closest_dist_sq {
-				closest_corner_id = Some(i as u32);
-				closest_dist_sq = dist_sq;
-			}
-		}
-		closest_corner_id
+	pub fn get_corner_ids_at(&self, x: u32, y: u32, r: f64) -> Option<Vec<u32>> {
+		let corner_ids: Vec<u32> = self.corners.iter().enumerate()
+			.filter_map(|(i, c)|
+				if c.as_point().intersects_circle(x as f64, y as f64, r) { Some(i as u32) } else { None })
+			.collect();
+		if corner_ids.is_empty() { None } else { Some(corner_ids) }
 	}
 
 	pub fn get_corner_ids_within(&self, x: u32, y: u32, w: u32, h: u32) -> Option<Vec<u32>> {
@@ -278,18 +274,12 @@ impl Metaroom {
 		if corner_ids.is_empty() { None } else { Some(corner_ids) }
 	}
 
-	pub fn get_door_id_at(&self, x: u32, y: u32, r: f64) -> Option<u32> {
-		let mouse_point = Point::new(x as f64, y as f64);
-		let mut closest_id = None;
-		let mut closest_dist_sq = r * r;
-		for (i, door) in self.doors.iter().enumerate() {
-			let dist_sq = door.line.dist_sq(&mouse_point);
-			if dist_sq < closest_dist_sq && door.line.intersects_circle(x as f64, y as f64, r) {
-				closest_id = Some(i as u32);
-				closest_dist_sq = dist_sq;
-			}
-		}
-		closest_id
+	pub fn get_door_ids_at(&self, x: u32, y: u32, r: f64) -> Option<Vec<u32>> {
+		let door_ids: Vec<u32> = self.doors.iter().enumerate()
+			.filter_map(|(i, d)|
+				if d.line.intersects_circle(x as f64, y as f64, r) { Some(i as u32) } else { None })
+			.collect();
+		if door_ids.is_empty() { None } else { Some(door_ids) }
 	}
 
 	pub fn get_door_ids_within(&self, x: u32, y: u32, w: u32, h: u32) -> Option<Vec<u32>> {
@@ -322,20 +312,12 @@ impl Metaroom {
 		if overlay_ids.is_empty() { None } else { Some(overlay_ids) }
 	}
 
-	pub fn get_overlay_id_at(&self, x: u32, y: u32) -> Option<u32> {
-		let mouse_point = Point::new(x as f64, y as f64);
-		let mut closest_overlay_id = None;
-		let mut closest_dist_sq = f64::MAX;
-		for (i, overlay) in self.overlays.iter().enumerate() {
-			if overlay.contains(x, y) {
-				let dist_sq = overlay.center().dist_sq(&mouse_point);
-				if dist_sq < closest_dist_sq {
-					closest_overlay_id = Some(i as u32);
-					closest_dist_sq = dist_sq;
-				}
-			}
-		}
-		closest_overlay_id
+	pub fn get_overlay_ids_at(&self, x: u32, y: u32) -> Option<Vec<u32>> {
+		let overlay_ids: Vec<u32> = self.overlays.iter().enumerate()
+			.filter_map(|(i, o)|
+				if o.contains(x, y) { Some(i as u32) } else { None })
+			.collect();
+		if overlay_ids.is_empty() { None } else { Some(overlay_ids) }
 	}
 
 	pub fn resize(&mut self, w: u32, h: u32) -> Result<(), Box<dyn Error>> {

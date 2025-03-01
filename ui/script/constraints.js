@@ -92,12 +92,12 @@ const checkRoomConstraints = (room) => {
 	}
 }
 
-const checkSideConstraints = (side, room) => {
+const checkSideConstraints = (side, room, idsToIgnore) => {
 	if (!isCtrlDown) {
 		const rSq = (SNAP_RADIUS / scale * DPR)**2
 		resetTempPos()
 		for (other of metaroom.rooms) {
-			if (other.id === room.id) continue
+			if (idsToIgnore.includes(other.id)) continue
 			for (otherSide of sideNames) {
 				checkSideToSideSnap(room, side.position, other, otherSide, rSq)
 			}
@@ -153,6 +153,32 @@ const checkSideToSideSnap = (room, roomSide, other, otherSide, rSq) => {
 	const b1onA = closestYOnLine(bx1, by1, ax1, ay1, ax2, ay2, rSq)
 	const b2onA = closestYOnLine(bx2, by2, ax1, ay1, ax2, ay2, rSq)
 
+	const checkCorners1 = (round) => {
+		const [x1, y1] = cornerCornerSnapPoint(ax1, ay1, bx1, by1, rSq)
+		if (x1 != null && y1 != null) {
+			newCoords[roomCoords.x1] = round(x1)
+			newCoords[roomCoords.y1] = round(y1)
+		}
+		const [x2, y2] = cornerCornerSnapPoint(ax2, ay2, bx2, by2, rSq)
+		if (x2 != null && y2 != null) {
+			newCoords[roomCoords.x2] = round(x2)
+			newCoords[roomCoords.y2] = round(y2)
+		}
+	}
+
+	const checkCorners2 = (round) => {
+		const [x1, y1] = cornerCornerSnapPoint(ax1, ay1, bx2, by2, rSq)
+		if (x1 != null && y1 != null) {
+			newCoords[roomCoords.x1] = round(x1)
+			newCoords[roomCoords.y1] = round(y1)
+		}
+		const [x2, y2] = cornerCornerSnapPoint(ax2, ay2, bx1, by1, rSq)
+		if (x2 != null && y2 != null) {
+			newCoords[roomCoords.x2] = round(x2)
+			newCoords[roomCoords.y2] = round(y2)
+		}
+	}
+
 	if ((roomSide === 'Left' && otherSide === 'Right') || (roomSide === 'Right' && otherSide === 'Left')) {
 		const round = roomSide === 'Left' ? Math.ceil : Math.floor
 		const d = bx1 - ax1
@@ -162,13 +188,19 @@ const checkSideToSideSnap = (room, roomSide, other, otherSide, rSq) => {
 			newCoords[roomCoords.y1] = ay1
 			newCoords[roomCoords.y2] = ay2
 		}
+		checkCorners1(round)
 
 	} else if ((roomSide === 'Left' || roomSide === 'Right') && (otherSide === 'Top' || otherSide === 'Bottom')) {
+		const round = otherSide === 'Bottom' ? Math.ceil : Math.floor
 		if (a1onB != null && otherSide === 'Bottom') {
 			newCoords[roomCoords.y1] = Math.ceil(a1onB)
+			newCoords[roomCoords.y2] = Math.min(newCoords[roomCoords.y1] + (ay2 - ay1), metaroom.height - 1)
 		} else if (a2onB != null && otherSide === 'Top') {
 			newCoords[roomCoords.y2] = Math.floor(a2onB)
+			newCoords[roomCoords.y1] = Math.max(newCoords[roomCoords.y2] - (ay2 - ay1), 0)
 		}
+		checkCorners1(round)
+		checkCorners2(round)
 
 	} else if ((roomSide === 'Top' && otherSide === 'Bottom') || (roomSide === 'Bottom' && otherSide === 'Top')) {
 		const round = roomSide === 'Top' ? Math.ceil : Math.floor
@@ -196,17 +228,36 @@ const checkSideToSideSnap = (room, roomSide, other, otherSide, rSq) => {
 				newCoords[roomCoords.y2] = by2 + aSlope * (ax2 - bx2)
 			}
 		}
+		checkCorners1(round)
+
+	} else if ((roomSide === 'Top' || roomSide === 'Bottom') && (otherSide === 'Left' || otherSide === 'Right')) {
+		const round = otherSide === 'Right' ? Math.ceil : Math.floor
+		if (ax1 === bx1 && Math.abs(ay1 - by1)**2 <= rSq) {
+			newCoords[roomCoords.y1] = by1
+			newCoords[roomCoords.y2] = by1 + (ay2 - ay1)
+		} else if (ax1 === bx2 && Math.abs(ay1 - by2)**2 <= rSq) {
+			newCoords[roomCoords.y1] = by2
+			newCoords[roomCoords.y2] = by2 + (ay2 - ay1)
+		} else if (ax2 === bx1 && Math.abs(ay2 - by1)**2 <= rSq) {
+			newCoords[roomCoords.y2] = by1
+			newCoords[roomCoords.y1] = by1 + (ay1 - ay2)
+		} else if (ax2 === bx2 && Math.abs(ay2 - by2)**2 <= rSq) {
+			newCoords[roomCoords.y2] = by2
+			newCoords[roomCoords.y1] = by2 + (ay1 - ay2)
+		}
+		checkCorners1(round)
+		checkCorners2(round)
 	}
 }
 
-const checkCornerConstraints = (corner, room) => {
+const checkCornerConstraints = (corner, room, idsToIgnore) => {
 	if (!isCtrlDown) {
 		const rSq = (SNAP_RADIUS / scale * DPR)**2
 
 		resetTempPos()
 
 		if (corner.position === 'TopLeft') {
-			[newCoords.x_left, newCoords.y_top_left, hasSnap] = getSnapPoint(room.x_left, room.y_top_left, room.id, rSq)
+			[newCoords.x_left, newCoords.y_top_left, hasSnap] = getSnapPoint(room.x_left, room.y_top_left, idsToIgnore, rSq)
 			newCoords.x_left = Math.ceil(newCoords.x_left)
 			newCoords.y_top_left = Math.ceil(newCoords.y_top_left)
 			if (!hasSnap && Math.abs(room.y_top_left - room.y_top_right)**2 <= rSq) {
@@ -214,7 +265,7 @@ const checkCornerConstraints = (corner, room) => {
 			}
 
 		} else if (corner.position === 'TopRight') {
-			[newCoords.x_right, newCoords.y_top_right, hasSnap] = getSnapPoint(room.x_right, room.y_top_right, room.id, rSq)
+			[newCoords.x_right, newCoords.y_top_right, hasSnap] = getSnapPoint(room.x_right, room.y_top_right, idsToIgnore, rSq)
 			newCoords.x_right = Math.floor(newCoords.x_right)
 			newCoords.y_top_right = Math.ceil(newCoords.y_top_right)
 			if (!hasSnap && Math.abs(room.y_top_left - room.y_top_right)**2 <= rSq) {
@@ -222,7 +273,7 @@ const checkCornerConstraints = (corner, room) => {
 			}
 
 		} else if (corner.position === 'BottomLeft') {
-			[newCoords.x_left, newCoords.y_bot_left, hasSnap] = getSnapPoint(room.x_left, room.y_bot_left, room.id, rSq)
+			[newCoords.x_left, newCoords.y_bot_left, hasSnap] = getSnapPoint(room.x_left, room.y_bot_left, idsToIgnore, rSq)
 			newCoords.x_left = Math.ceil(newCoords.x_left)
 			newCoords.y_bot_left = Math.floor(newCoords.y_bot_left)
 			if (!hasSnap && Math.abs(room.y_bot_left - room.y_bot_right)**2 <= rSq) {
@@ -230,7 +281,7 @@ const checkCornerConstraints = (corner, room) => {
 			}
 
 		} else if (corner.position === 'BottomRight') {
-			[newCoords.x_right, newCoords.y_bot_right, hasSnap] = getSnapPoint(room.x_right, room.y_bot_right, room.id, rSq)
+			[newCoords.x_right, newCoords.y_bot_right, hasSnap] = getSnapPoint(room.x_right, room.y_bot_right, idsToIgnore, rSq)
 			newCoords.x_right = Math.floor(newCoords.x_right)
 			newCoords.y_bot_right = Math.floor(newCoords.y_bot_right)
 			if (!hasSnap && Math.abs(room.y_bot_left - room.y_bot_right)**2 <= rSq) {
@@ -298,7 +349,7 @@ const checkMetaroomEdges = (room) => {
 }
 
 const cornerCornerSnapPoint = (px1, py1, px2, py2, rSq) => {
-	if (distSq(px1, py1, px2, py2) < rSq) {
+	if (distSq(px1, py1, px2, py2) <= rSq) {
 		return [px2, py2]
 	} else {
 		return [null, null]
@@ -310,7 +361,7 @@ const cornerLineSnapPoint = (px, py, x1, y1, x2, y2, rSq) => {
 	const closestIsOnLine =
 		Math.min(x1, x2) <= closestX && closestX <= Math.max(x1, x2) &&
 		Math.min(y1, y2) <= closestY && closestY <= Math.max(y1, y2)
-	if (closestIsOnLine && distSq(px, py, closestX, closestY) < rSq) {
+	if (closestIsOnLine && distSq(px, py, closestX, closestY) <= rSq) {
 		return [closestX, closestY]
 	} else {
 		return [null, null]
@@ -341,14 +392,14 @@ const distSq = (x1, y1, x2, y2) => {
 	return (x2 - x1)**2 + (y2 - y1)**2
 }
 
-const getSnapPoint = (x, y, id, rSq) => {
+const getSnapPoint = (x, y, idsToIgnore, rSq) => {
 	if (rSq == null) rSq = (SNAP_RADIUS / scale * DPR)**2
 
 	let newX = null
 	let newY = null
 
 	for (room of metaroom.rooms) {
-		if (id != null && room.id === id) continue
+		if (idsToIgnore != null && idsToIgnore.includes(room.id)) continue
 
 		const corners = [
 			{ x: room.x_left, y: room.y_top_left },

@@ -14,86 +14,84 @@ const tryMovingSelection = () => {
 	const y = yDragStartRel
 	const r = SELECT_RADIUS / scale * DPR
 
-	let tempSelectionType = 'AnyMoveable'
-	if (selectedLinks.length) tempSelectionType = 'Links'
-	if (selectedCorners.length) tempSelectionType = 'Corners'
-	if (selectedSides.length) tempSelectionType = 'Sides'
-	if (selectedRooms.length) tempSelectionType = 'Rooms'
-	if (selectedOverlays.length) tempSelectionType = 'Overlays'
-	if (isFaviconSelected) tempSelectionType = 'Favicon'
-
 	linkEnd = null
 
-	tauri_invoke('get_object_at', { x, y, r, selectionType: tempSelectionType }).then((result) => {
-		let mouseOverSelection = false
-		if (!result) {
-			//
+	tauri_invoke('get_objects_at', { x, y, r, selectionType: 'AnyMoveable' }).then((result) => {
+		let isMoving = false
 
-		} else if (result.Overlays && tempSelectionType === 'Overlays') {
-			if (result.Overlays.filter(o => selectedOverlays.includes(o)).length) {
-				selectionType = 'Overlays'
-				mouseOverSelection = true
+		if (result && result.Overlays) {
+			isMoving = true
+			selectionType = 'Overlays'
+			const clickExistingSelection = result.Overlays.find(o => selectedOverlays.includes(o)) != null
+			if (!clickExistingSelection && !selectionStyle) {
+				newSelection = result.Overlays
+				finishSelectingObject()
 			}
 
-		} else if (result.Links) {
-			if (!selectedLinks.length || !selectedLinks.find(l => newSelection.includes(l))) {
+		} else if (result && result.Favicon) {
+			isMoving = true
+			selectionType = 'Favicon'
+			if (!isFaviconSelected) {
+				finishSelectingObject()
+			}
+
+		} else if (result && result.Links) {
+			isMoving = true
+			selectionType = 'Links'
+			const clickExistingSelection = result.Links.find(l => selectedLinks.includes(l)) != null
+			if (!clickExistingSelection && !selectionStyle) {
+				newSelection = result.Links
 				finishSelectingObject()
 			}
 			if (selectedLinks.length === 1) {
-				const link = metaroom.links[selectedLinks[0]]
-				dx1 = x - link.line.a.x
-				dy1 = y - link.line.a.y
-				d1 = dx1**2 + dy1**2
-				dx2 = x - link.line.b.x
-				dy2 = y - link.line.b.y
-				d2 = dx2**2 + dy2**2
-				if (d1 < d2 && d1 < r**2) {
-					linkEnd = 'a'
-					xOriginalLinkEnd = link.line.a.x
-					yOriginalLinkEnd = link.line.a.y
-					mouseOverSelection = true
-				} else if (d2 < r**2) {
-					linkEnd = 'b'
-					xOriginalLinkEnd = link.line.b.x
-					yOriginalLinkEnd = link.line.b.y
-					mouseOverSelection = true
+				const linkId = selectedLinks[0]
+				const link = metaroom.links[linkId]
+				if (link != null) {
+					dx1 = x - link.line.a.x
+					dy1 = y - link.line.a.y
+					d1 = dx1*dx1 + dy1*dy1
+					dx2 = x - link.line.b.x
+					dy2 = y - link.line.b.y
+					d2 = dx2*dx2 + dy2*dy2
+					if (d1 < d2) {
+						linkEnd = 'a'
+						xOriginalLinkEnd = link.line.a.x
+						yOriginalLinkEnd = link.line.a.y
+					} else {
+						linkEnd = 'b'
+						xOriginalLinkEnd = link.line.b.x
+						yOriginalLinkEnd = link.line.b.y
+					}
 				}
 			}
 
-		}  else if (result.Corners && tempSelectionType === 'Corners') {
-			if (result.Corners.filter(corner => selectedCorners.includes(corner)).length) {
-				selectionType = 'Corners'
-				mouseOverSelection = true
+		} else if (result && result.Corners) {
+			isMoving = true
+			selectionType = 'Corners'
+			const clickExistingSelection = result.Corners.find(c => selectedCorners.includes(c)) != null
+			if (!clickExistingSelection && !selectionStyle) {
+				newSelection = result.Corners
+				finishSelectingObject()
 			}
 
-		} else if (result.Sides && tempSelectionType === 'Sides') {
-			if (result.Sides.filter(side => selectedSides.includes(side)).length) {
-				selectionType = 'Sides'
-				mouseOverSelection = true
-			}
-
-		} else if (result.Rooms && tempSelectionType === 'Rooms') {
-			if (result.Rooms.filter(room => selectedRooms.includes(room)).length) {
-				selectionType = 'Rooms'
-				mouseOverSelection = true
-			}
-
-		} else if (result.Favicon && tempSelectionType === 'Favicon') {
-			selectionType = 'Favicon'
-			mouseOverSelection = true
-		}
-
-		if (!mouseOverSelection && result && result.Sides && (selectionType === 'Sides' || selectionType === 'Doors')) {
+		} else if (result && result.Sides) {
+			isMoving = true
 			selectionType = 'Sides'
-			newSelection = result.Sides
-		}
+			const clickExistingSelection = result.Sides.find(s => selectedSides.includes(s)) != null
+			if (!clickExistingSelection && !selectionStyle) {
+				newSelection = result.Sides
+				finishSelectingObject()
+			}
 
-		let isMoving = false
-		if (mouseOverSelection) {
+		} else if (result && result.Rooms) {
 			isMoving = true
-		} else if (selectionType !== 'Any' && selectionType !== 'Doors' && !selectionStyle) {
-			isMoving = true
-			finishSelectingObject()
+			selectionType = 'Rooms'
+			const clickExistingSelection = result.Rooms.find(r => selectedRooms.includes(r)) != null
+			if (!clickExistingSelection && !selectionStyle) {
+				newSelection = result.Rooms
+				finishSelectingObject()
+			}
+
 		} else {
 			mouseAction = 'selecting'
 			canvasSelection.style.cursor = 'crosshair'
@@ -151,6 +149,7 @@ const moveSelection = (dx, dy, ignoreShift) => {
 	}
 
 	if (selectionType === 'Rooms') {
+		const idsToIgnore = tempRooms.map(room => room.id)
 		for (let room of tempRooms) {
 			const originalRoom = metaroom.rooms[room.id]
 			if (originalRoom) {
@@ -160,11 +159,12 @@ const moveSelection = (dx, dy, ignoreShift) => {
 				room.y_top_right = originalRoom.y_top_right + dy
 				room.y_bot_left = originalRoom.y_bot_left + dy
 				room.y_bot_right = originalRoom.y_bot_right + dy
-				checkRoomConstraints(room)
+				checkRoomConstraints(room, idsToIgnore)
 			}
 		}
 
 	} else if (selectionType === 'Sides') {
+		const idsToIgnore = tempSides.map(side => side.room_id)
 		for (let side of tempSides) {
 			const originalSide = metaroom.sides[side.id]
 			if (originalSide) {
@@ -186,13 +186,14 @@ const moveSelection = (dx, dy, ignoreShift) => {
 						room.y_top_right = originalRoom.y_top_right + dy
 						room.y_bot_right = originalRoom.y_bot_right + dy
 					}
-					checkSideConstraints(side, room)
+					checkSideConstraints(side, room, idsToIgnore)
 					updateSideXY(side, room)
 				}
 			}
 		}
 
 	} else if (selectionType === 'Corners') {
+		const idsToIgnore = tempCorners.map(corner => corner.room_id)
 		for (let corner of tempCorners) {
 			const originalCorner = metaroom.corners[corner.id]
 			if (originalCorner) {
@@ -212,7 +213,7 @@ const moveSelection = (dx, dy, ignoreShift) => {
 						room.x_right = originalRoom.x_right + dx
 						room.y_bot_right = originalRoom.y_bot_right + dy
 					}
-					checkCornerConstraints(corner, room)
+					checkCornerConstraints(corner, room, idsToIgnore)
 					updateCornerXY(corner, room)
 				}
 			}

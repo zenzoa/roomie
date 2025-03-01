@@ -249,7 +249,7 @@ const mouseDown = (event) => {
 		const x = xMouseRel
 		const y = yMouseRel
 		const r = SELECT_RADIUS / scale * DPR
-		tauri_invoke('get_object_at', { x, y, r, selectionType: 'Rooms' }).then(result => {
+		tauri_invoke('get_objects_at', { x, y, r, selectionType: 'Rooms' }).then(result => {
 			if (result && result.Rooms && result.Rooms.length) {
 				if (newLinkRoom1 == null) {
 					newLinkRoom1 = result.Rooms[0]

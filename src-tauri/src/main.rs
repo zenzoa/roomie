@@ -200,7 +200,7 @@ fn main() {
 			undo,
 			redo,
 
-			frontend::get_object_at,
+			frontend::get_objects_at,
 			frontend::get_objects_within,
 
 			frontend::update_metaroom,

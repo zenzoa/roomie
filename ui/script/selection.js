@@ -93,7 +93,7 @@ const startSelectingObject = (event) => {
 	const y = yMouseRel
 	const r = SELECT_RADIUS / scale * DPR
 
-	tauri_invoke('get_object_at', { x, y, r, selectionType }).then(startNewSelection)
+	tauri_invoke('get_objects_at', { x, y, r, selectionType }).then(startNewSelection)
 }
 
 const finishSelectingObject = () => {

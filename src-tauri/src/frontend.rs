@@ -86,15 +86,15 @@ pub fn update_window_title(handle: &AppHandle) {
 }
 
 #[tauri::command]
-pub fn get_object_at(metaroom_state: State<MetaroomState>, config_state: State<ConfigState>, x: u32, y: u32, r: f64, selection_type: SelectionType) -> Option<MetaroomObjectIds> {
+pub fn get_objects_at(metaroom_state: State<MetaroomState>, config_state: State<ConfigState>, x: u32, y: u32, r: f64, selection_type: SelectionType) -> Option<MetaroomObjectIds> {
 	if let Some(metaroom) = metaroom_state.metaroom.lock().unwrap().as_ref() {
 		let select_any = selection_type == SelectionType::Any || selection_type == SelectionType::AnyMoveable;
 		let show_rooms = *config_state.show_rooms.lock().unwrap();
 		let show_overlays = *config_state.show_overlays.lock().unwrap();
 
 		if show_overlays && (selection_type == SelectionType::Overlays || select_any) {
-			if let Some(overlay_id) = metaroom.get_overlay_id_at(x, y) {
-				return Some(MetaroomObjectIds::Overlays([overlay_id].to_vec()));
+			if let Some(overlay_ids) = metaroom.get_overlay_ids_at(x, y) {
+				return Some(MetaroomObjectIds::Overlays(overlay_ids));
 			}
 		}
 
@@ -112,23 +112,23 @@ pub fn get_object_at(metaroom_state: State<MetaroomState>, config_state: State<C
 				}
 			}
 			if selection_type == SelectionType::Corners || select_any {
-				if let Some(corner_id) = metaroom.get_corner_id_at(x, y, r) {
-					return Some(MetaroomObjectIds::Corners([corner_id].to_vec()));
+				if let Some(corner_ids) = metaroom.get_corner_ids_at(x, y, r) {
+					return Some(MetaroomObjectIds::Corners(corner_ids));
 				}
 			}
 			if selection_type == SelectionType::Doors || selection_type == SelectionType::Any {
-				if let Some(door_id) = metaroom.get_door_id_at(x, y, r) {
-					return Some(MetaroomObjectIds::Doors([door_id].to_vec()));
+				if let Some(door_ids) = metaroom.get_door_ids_at(x, y, r) {
+					return Some(MetaroomObjectIds::Doors(door_ids));
 				}
 			}
 			if selection_type == SelectionType::Sides || select_any {
-				if let Some(side_id) = metaroom.get_side_id_at(x, y, r) {
-					return Some(MetaroomObjectIds::Sides([side_id].to_vec()));
+				if let Some(side_ids) = metaroom.get_side_ids_at(x, y, r) {
+					return Some(MetaroomObjectIds::Sides(side_ids));
 				}
 			}
 			if selection_type == SelectionType::Rooms || select_any {
-				if let Some(room_id) = metaroom.get_room_id_at(x, y) {
-					return Some(MetaroomObjectIds::Rooms([room_id].to_vec()));
+				if let Some(room_ids) = metaroom.get_room_ids_at(x, y) {
+					return Some(MetaroomObjectIds::Rooms(room_ids));
 				}
 			}
 		}
