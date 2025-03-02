@@ -90,18 +90,33 @@ pub fn is_ok_to_modify(handle: &AppHandle) -> bool {
 #[tauri::command]
 pub fn new_file(handle: AppHandle) {
 	if is_ok_to_modify(&handle) {
-		let metaroom_state: State<MetaroomState> = handle.state();
-		*metaroom_state.metaroom.lock().unwrap() = Some(Metaroom::new());
+		let file_handle_opt = create_save_dialog(&handle, "cos")
+			.set_title("New File")
+			.add_filter("Metaroom Script", &["cos", "COS"])
+			.save_file();
 
-		let file_state: State<FileState> = handle.state();
-		*file_state.path.lock().unwrap() = None;
-		*file_state.is_modified.lock().unwrap() = false;
-		*file_state.lines_before.lock().unwrap() = Vec::new();
-		*file_state.lines_after.lock().unwrap() = Vec::new();
+		if let Some(file_handle) = file_handle_opt {
+			handle.emit("show_spinner", ()).unwrap_or_default();
+			spawn(async move {
+				let path = file_handle.as_path();
 
-		update_window_title(&handle);
-		update_frontend_metaroom(&handle, true);
-		reset_history(&handle);
+				let metaroom_state: State<MetaroomState> = handle.state();
+				*metaroom_state.metaroom.lock().unwrap() = Some(Metaroom::new());
+
+				let file_state: State<FileState> = handle.state();
+				*file_state.path.lock().unwrap() = Some(path.to_path_buf());
+				*file_state.is_modified.lock().unwrap() = true;
+				*file_state.lines_before.lock().unwrap() = Vec::new();
+				*file_state.lines_after.lock().unwrap() = Vec::new();
+
+				add_recent_file(&handle, path);
+				update_window_title(&handle);
+				update_frontend_metaroom(&handle, true);
+				reset_history(&handle);
+
+				handle.emit("hide_spinner", ()).unwrap_or_default();
+			});
+		}
 	}
 }
 
