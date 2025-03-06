@@ -176,13 +176,15 @@ impl Metaroom {
 		if room_ids.is_empty() { None } else { Some(room_ids) }
 	}
 
-	pub fn add_room(&mut self, mut room: Room) {
+	pub fn add_room(&mut self, mut room: Room, create_doors: bool) {
 		room.id = self.rooms.len() as u32;
 		self.sides.extend_from_slice(&room.sides());
 		self.corners.extend_from_slice(&room.corners());
 		self.rooms.push(room);
 		self.mark_room_collisions();
-		self.doors = self.create_doors();
+		if create_doors {
+			self.doors = self.create_doors();
+		}
 	}
 
 	pub fn remove_room(&mut self, room_id: u32) {

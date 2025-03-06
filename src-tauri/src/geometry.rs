@@ -164,30 +164,28 @@ impl Line {
 		let other_a_on_self = self.intersects_circle(other.a.x, other.a.y, 1.0);
 		let other_b_on_self = self.intersects_circle(other.b.x, other.b.y, 1.0);
 
-		if (self.a == other.a && self.b == other.b) || (self.a == other.b && self.b == other.a) {
-			Some(self.clone())
+		if self.a == self.b || other.a == other.b {
+			None
 
-		} else if self.a == other.a && other_b_on_self {
-			Some(Line::new(self.a, other.b))
-		} else if self.a == other.b && other_a_on_self {
+		} else if (self.a == other.a && self.b == other.b) ||
+			(self.a == other.b && self.b == other.a) ||
+			(self.b == other.a && self.a == self.b) ||
+			(self.b == other.b && self.a == other.a) {
+				Some(*self)
+
+		} else if self_a_on_other && self_b_on_other {
+			Some(*self)
+
+		} else if other_a_on_self && other_b_on_self {
+			Some(*other)
+
+		} else if self_a_on_other && other_a_on_self && self.a != other.a {
 			Some(Line::new(self.a, other.a))
-		} else if self.b == other.a && other_b_on_self {
-			Some(Line::new(other.b, self.b))
-		} else if self.b == other.b && other_a_on_self {
-			Some(Line::new(other.a, self.b))
-
-		} else if self_a_on_other && self_b_on_other{
-			Some(self.clone())
-		} else if other_a_on_self && other_b_on_self{
-			Some(other.clone())
-
-		} else if self_a_on_other && other_a_on_self {
-			Some(Line::new(self.a, other.a))
-		} else if self_a_on_other && other_b_on_self {
+		} else if self_a_on_other && other_b_on_self && self.a != other.b {
 			Some(Line::new(self.a, other.b))
-		} else if self_b_on_other && other_a_on_self {
+		} else if self_b_on_other && other_a_on_self && self.b != other.a {
 			Some(Line::new(self.b, other.a))
-		} else if self_b_on_other && other_b_on_self {
+		} else if self_b_on_other && other_b_on_self && self.b != other.b {
 			Some(Line::new(self.b, other.b))
 
 		} else {

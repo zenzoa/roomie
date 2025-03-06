@@ -255,7 +255,7 @@ pub fn add_room(handle: AppHandle, metaroom_state: State<MetaroomState>, x: u32,
 	if let Some(metaroom) = metaroom_state.metaroom.lock().unwrap().as_mut() {
 		add_history_state(&handle, metaroom);
 		let room_id = metaroom.rooms.len() as u32;
-		metaroom.add_room(Room::new(room_id, x, x + w, y, y, y + h, y + h));
+		metaroom.add_room(Room::new(room_id, x, x + w, y, y, y + h, y + h), true);
 	}
 	update_frontend_metaroom(&handle, false);
 	update_window_title(&handle);

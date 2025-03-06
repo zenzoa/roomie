@@ -1,6 +1,6 @@
 class RoomSidebar {
 	static setup(rooms) {
-		Sidebar.createHeader(rooms.length > 1 ? 'Rooms' : 'Room')
+		Sidebar.createHeader(rooms.length > 1 ? 'Rooms' : `Room ${rooms[0].id}`)
 
 		const roomTypeInput = Sidebar.createDropdown('room-type', 'type', [
 			{ value: '', label: '-' },

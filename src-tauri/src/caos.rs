@@ -239,13 +239,11 @@ fn eval_next_token(context: &mut Context, tokens: &[Token], i: &mut usize) -> Re
 								y_top_right - context.metaroom.y,
 								y_bot_left - context.metaroom.y,
 								y_bot_right - context.metaroom.y
-							));
+							), false);
 							Ok(TokenValue::Number(room_id as f32))
 					} else {
 						Err(format!("ADDR room {} is outside metaroom", room_id).into())
 					}
-
-
 				}
 
 				// SET ROOM TYPE
@@ -506,6 +504,8 @@ pub fn decode_metaroom(file_contents: &str) -> Result<Metaroom, Box<dyn Error>> 
 
 	push_temp_objects(&mut context);
 
+	context.metaroom.doors = context.metaroom.create_doors();
+
 	Ok(context.metaroom)
 }
 
@@ -646,8 +646,8 @@ pub fn encode_metaroom(metaroom: &Metaroom, version: &str) -> String {
 	}
 
 	if let Some(favicon) = &metaroom.favicon {
-		contents.push("*Add favorite place icon".to_string());
-		contents.push(format!("new: simp 1 4 {} \"{}\" 1 0 1",
+		contents.push("*Add favorite place signpost".to_string());
+		contents.push(format!("new: simp 1 3 {} \"{}\" 1 0 1",
 			favicon.species,
 			favicon.sprite
 		));
