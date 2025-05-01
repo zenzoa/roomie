@@ -255,49 +255,26 @@ fn main() {
 
 			let uri_parts: Vec<&str> = request.uri().path().split('-').collect();
 
-			if uri_parts.len() >= 2 {
-				match uri_parts[1] {
-					"background" => {
-						let mut img_data = Cursor::new(Vec::new());
-						let bg_image_opt = file_state.bg_image.lock().unwrap().clone();
-						if let Some(bg_image) = bg_image_opt {
-							if let Ok(()) = bg_image.write_to(&mut img_data, ImageFormat::Png) {
-								return http::Response::builder()
-									.header("Content-Type", "image/png")
-									.body(img_data.into_inner())
-									.unwrap_or_default()
-							}
-						}
+			let img_opt = match uri_parts.as_slice() {
+				[_, "background"] => file_state.bg_image.lock().unwrap().clone(),
+				[_, "favicon"] => file_state.favicon_image.lock().unwrap().clone(),
+				[_, "overlay", overlay_id] =>
+					match overlay_id.parse::<u32>() {
+						Ok(id) => {
+							let overlay_images = file_state.overlay_images.lock().unwrap();
+							overlay_images.get(&id).cloned()
+						},
+						_ => None
 					},
-					"favicon" => {
-						let favicon_image_opt = file_state.favicon_image.lock().unwrap().clone();
-						if let Some(favicon_image) = favicon_image_opt {
-							let mut img_data = Cursor::new(Vec::new());
-							if let Ok(()) = favicon_image.write_to(&mut img_data, ImageFormat::Png) {
-								return http::Response::builder()
-									.header("Content-Type", "image/png")
-									.body(img_data.into_inner())
-									.unwrap_or_default()
-							}
-						}
-					},
-					"overlay" => {
-						if uri_parts.len() >= 3 {
-							if let Ok(overlay_id) = uri_parts[2].parse::<u32>() {
-								let overlay_images = file_state.overlay_images.lock().unwrap();
-								if let Some(overlay_image) = overlay_images.get(&overlay_id) {
-									let mut img_data = Cursor::new(Vec::new());
-									if let Ok(()) = overlay_image.write_to(&mut img_data, ImageFormat::Png) {
-										return http::Response::builder()
-											.header("Content-Type", "image/png")
-											.body(img_data.into_inner())
-											.unwrap_or_default()
-									}
-								}
-							}
-						}
-					},
-					_ => {}
+				_ => None
+			};
+			if let Some(img) = img_opt {
+				let mut img_data = Cursor::new(Vec::new());
+				if let Ok(()) = img.write_to(&mut img_data, ImageFormat::Png) {
+					return http::Response::builder()
+						.header("Content-Type", "image/png")
+						.body(img_data.into_inner())
+						.unwrap_or_default()
 				}
 			}
 
