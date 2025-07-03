@@ -45,8 +45,8 @@ fn parse_pixel_565(pixel: u16) -> Rgba<u8> {
 }
 
 pub fn encode_pixel(pixel: &Rgba<u8>) -> u16 {
-	let r = ((pixel[0] as u16) << 8) & 0xf800;
-	let g = ((pixel[1] as u16) << 3) & 0x07c0;
-	let b = ((pixel[2] as u16) >> 3) & 0x003e;
+	let r = ((pixel[0] as u16) & 0xf8) << 8;
+	let g = ((pixel[1] as u16) & 0xfc) << 3;
+	let b = ((pixel[2] as u16) & 0xf8) >> 3;
 	r | g | b
 }
